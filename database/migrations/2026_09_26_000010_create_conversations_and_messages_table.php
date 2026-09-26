@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete()->unique();
+            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+            $table->unique('student_id');
             $table->foreignId('teacher_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

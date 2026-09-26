@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('ic_number', 20)->nullable();
+            $table->string('ic_number', 20)->nullable()->unique();
             $table->string('phone', 20)->nullable();
             $table->string('password');
             $table->string('role', 20)->default('parent')->index(); // admin | teacher | parent

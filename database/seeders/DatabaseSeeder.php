@@ -21,87 +21,88 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Default pricing configuration
-        FeeSetting::create([
-            'monthly_fee' => 310.00,
-            'overtime_rate' => 6.00,
-            'is_active' => true,
-        ]);
+        // ---- Pricing -------------------------------------------------------
+        FeeSetting::create(['monthly_fee' => 310.00, 'overtime_rate' => 6.00, 'is_active' => true]);
 
-        // --- Demo accounts (all password: password123) ---
-
+        // ---- Admin ---------------------------------------------------------
         $admin = User::create([
-            'name' => 'Admin PPAK',
+            'name' => 'Pentadbir PPAK UTHM',
             'email' => 'admin@ppakuthm.com',
             'password' => 'password123',
             'role' => UserRole::Admin,
             'status' => AccountStatus::Active,
         ]);
 
-        $teacher = User::create([
-            'name' => 'Teacher Demo',
-            'email' => 'teacher@ppakuthm.com',
+        // ---- Teachers ------------------------------------------------------
+        $teacherData = [
+            ['Nurul Syazana binti Abdu Ghani', 'teacher@ppakuthm.com', '950120-03-5512', '0111234567'],
+            ['Farha Nur binti Ismail', 'farha@example.com', '930408-02-5524', '0128765432'],
+            ['Ahmad Zaki bin Osman', 'zaki@example.com', '910911-14-5549', '0135557788'],
+            ['Siti Hajar binti Mohamad Asbar', 'hajar@example.com', '960223-06-5535', '0147778899'],
+        ];
+
+        $teachers = collect($teacherData)->map(fn ($t) => User::create([
+            'name' => $t[0],
+            'email' => $t[1],
+            'ic_number' => str_replace('-', '', $t[2]),
+            'phone' => $t[3],
             'password' => 'password123',
             'role' => UserRole::Teacher,
             'status' => AccountStatus::Active,
             'email_verified_at' => now(),
-        ]);
+        ]));
 
-        $parent = User::create([
-            'name' => 'Parent Demo',
-            'email' => 'parent@ppakuthm.com',
-            'ic_number' => '920101141234',
-            'phone' => '0123456789',
+        $demoTeacher = $teachers->first();
+
+        // ---- Parents -------------------------------------------------------
+        $parentData = [
+            ['Ahmad Faizal bin Hassan', 'parent@ppakuthm.com', '800101-01-5523', '0134567890', AccountStatus::Active],
+            ['Noraini binti Yusof', 'noraini@example.com', '850312-08-5566', '0192345678', AccountStatus::Active],
+            ['Mohd Syafiq bin Rahman', 'syafiq@example.com', '900524-14-5531', '0178889900', AccountStatus::Active],
+            ['Siti Nurhaliza binti Omar', 'pending@ppakuthm.com', '870705-06-5588', '0166667788', AccountStatus::Pending],
+            ['Abdul Rahim bin Ismail', 'rahim@example.com', '820219-04-5577', '0112223344', AccountStatus::Active],
+            ['Zaleha binti Ahmad', 'zaleha@example.com', '780915-08-5544', '0159998877', AccountStatus::Active],
+        ];
+
+        $parents = collect($parentData)->map(fn ($p) => User::create([
+            'name' => $p[0],
+            'email' => $p[1],
+            'ic_number' => str_replace('-', '', $p[2]),
+            'phone' => $p[3],
             'password' => 'password123',
             'role' => UserRole::Parent,
-            'status' => AccountStatus::Active,
-            'email_verified_at' => now(),
-        ]);
+            'status' => $p[4],
+            'email_verified_at' => $p[4] === AccountStatus::Active ? now() : null,
+            'activation_token' => $p[4] === AccountStatus::Pending ? Str::random(64) : null,
+        ]));
 
-        // A freshly-registered parent, waiting for admin approval
-        User::create([
-            'name' => 'Ibu Bapa Baharu',
-            'email' => 'pending@ppakuthm.com',
-            'phone' => '0145556677',
-            'password' => 'password123',
-            'role' => UserRole::Parent,
-            'status' => AccountStatus::Pending,
-            'activation_token' => Str::random(64),
-        ]);
+        $demoParent = $parents->first();
 
-        $studentA = Student::create([
-            'parent_id' => $parent->id,
-            'name' => 'Anak Demo',
-            'age' => 6,
-            'class' => '6bintang',
-        ]);
+        // ---- Children (child name + bin/binti <father>) --------------------
+        // [parent index, name, age, class]
+        $childData = [
+            [0, 'Muhammad Adam bin Ahmad Faizal', 6, '6bintang'],
+            [0, 'Nur Aisyah binti Ahmad Faizal', 5, '5tahun'],
+            [0, 'Nur Fatihah binti Ahmad Faizal', 4, '5tahun'],
+            [1, 'Ahmad Danial bin Amran', 6, '6bintang'],
+            [2, 'Muhammad Harith bin Mohd Syafiq', 5, '5tahun'],
+            [2, 'Muhammad Luqman bin Mohd Syafiq', 6, '6bintang'],
+            [3, 'Nur Safiya binti Rizal', 5, '5tahun'],
+            [4, 'Muhamad Zikry bin Abdul Rahim', 6, '6bintang'],
+            [4, 'Nur Aliya binti Abdul Rahim', 4, '5tahun'],
+            [5, 'Nurul Iman binti Kamal', 5, '5tahun'],
+        ];
 
-        Student::create([
-            'parent_id' => $parent->id,
-            'name' => 'Adik Demo',
-            'age' => 5,
-            'class' => '5tahun',
-        ]);
+        $students = collect($childData)->map(fn ($c) => Student::create([
+            'parent_id' => $parents[$c[0]]->id,
+            'name' => $c[1],
+            'age' => $c[2],
+            'class' => $c[3],
+        ]));
 
-        Student::create([
-            'name' => 'Siti Aisyah',
-            'age' => 6,
-            'class' => '6bintang',
-        ]);
+        $demoStudent = $students->first();
 
-        Student::create([
-            'name' => 'Khali Rashid',
-            'age' => 6,
-            'class' => '6bintang',
-        ]);
-
-        Student::create([
-            'name' => 'Aidan Rahman',
-            'age' => 5,
-            'class' => '5tahun',
-        ]);
-
-        // Memos — real event notices in Malay, mirroring the legacy data
+        // ---- Memos ---------------------------------------------------------
         Memo::create([
             'author_id' => $admin->id,
             'title' => 'Sambutan Hari Kanak-Kanak — "Bintang Kecil Bersinar"',
@@ -114,30 +115,64 @@ class DatabaseSeeder extends Seeder
             'description' => "Tarikh: 28 Ogos 2025 (Khamis)\nMasa: 9:00 pagi – 11:30 pagi\nTempat: PPAK UTHM\n\nPerarakan dengan bendera kecil, nyanyian lagu patriotik, bengkel kraf dan kuiz mudah untuk menyemai semangat patriotik.",
         ]);
 
-        // Financial records for the demo student
-        $records = [
-            ['month' => 'January', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
-            ['month' => 'February', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
-            ['month' => 'March', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
-            ['month' => 'June', 'overtime' => 1.0, 'amount' => 316.00, 'status' => 'paid'],
-            ['month' => 'July', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'unpaid'],
+        Memo::create([
+            'author_id' => $admin->id,
+            'title' => 'Hari Sains & Alam Sekitar — "Cilik Eksperimen"',
+            'description' => "Tarikh: 12 November 2025 (Rabu)\nMasa: 8:30 pagi – 11:45 pagi\nTempat: PPAK UTHM\n\nAktiviti eksperimen mudah seperti gunung berapi baking soda dan penanaman biji kacang, bagi mencetuskan minat terhadap sains dan alam sekitar.",
+        ]);
+
+        // ---- Financial records --------------------------------------------
+        $months = [
+            ['January', 0.0, 'paid'],
+            ['February', 0.0, 'paid'],
+            ['March', 0.0, 'paid'],
+            ['April', 0.0, 'unpaid'],
+            ['May', 1.0, 'paid'],
+            ['June', 0.0, 'unpaid'],
         ];
 
-        foreach ($records as $record) {
+        foreach ($months as $index => [$month, $ot, $status]) {
             FinancialRecord::create([
-                'student_id' => $studentA->id,
-                'month' => $record['month'],
-                'overtime_hours' => $record['overtime'],
-                'amount' => $record['amount'],
-                'status' => $record['status'],
-                'paid_on' => $record['status'] === 'paid' ? now()->subDays(random_int(3, 30)) : null,
+                'student_id' => $demoStudent->id,
+                'month' => $month,
+                'overtime_hours' => $ot,
+                'amount' => 310.00 + ($ot * 6.00),
+                'status' => $status,
+                'paid_on' => $status === 'paid' ? now()->subMonths(count($months) - $index)->toDateString() : null,
             ]);
         }
 
-        // Teacher record: yesterday's daily activity for the demo student
+        // A couple of records for other children (unpaid)
+        FinancialRecord::create([
+            'student_id' => $students[3]->id,
+            'month' => 'June',
+            'overtime_hours' => 0,
+            'amount' => 310.00,
+            'status' => 'unpaid',
+        ]);
+
+        FinancialRecord::create([
+            'student_id' => $students[4]->id,
+            'month' => 'June',
+            'overtime_hours' => 2,
+            'amount' => 322.00,
+            'status' => 'unpaid',
+        ]);
+
+        // ---- Today/yesterday records for the demo child --------------------
+        DailyUpdate::create([
+            'student_id' => $demoStudent->id,
+            'date' => today()->toDateString(),
+            'arrival_time' => '07:30',
+            'sleep_status' => 'Good',
+            'bath_status' => 'Done',
+            'health_status' => 'Sihat',
+            'parent_notes' => 'Tolong beri air masak jika cuaca panas.',
+        ]);
+
         DailyActivity::create([
-            'student_id' => $studentA->id,
-            'teacher_id' => $teacher->id,
+            'student_id' => $demoStudent->id,
+            'teacher_id' => $demoTeacher->id,
             'date' => now()->subDay()->toDateString(),
             'afternoon_sleep' => 'yes',
             'medication' => 'no',
@@ -151,52 +186,40 @@ class DatabaseSeeder extends Seeder
             'tantrum_crying' => 'no',
             'health_issues' => 'no',
             'injuries' => 'no',
-            'treatment_notes' => '-',
+            'treatment_notes' => 'Selesa hari ini.',
         ]);
 
-        // Teacher record: latest progress
         ProgressRecord::create([
-            'student_id' => $studentA->id,
-            'teacher_id' => $teacher->id,
+            'student_id' => $demoStudent->id,
+            'teacher_id' => $demoTeacher->id,
             'date' => now()->subDay()->toDateString(),
-            'sub_theme' => 'outdoor',
+            'sub_theme' => 'dalaman',
             'activity_done' => 'Good',
             'child_proficiency' => 'Good',
             'permata_activity' => 'Drawing',
             'free_activity' => 'Learning',
             'development_proficiency' => 'Social Skills',
-            'notes' => 'good',
+            'notes' => 'Aktif dan menunjukkan kemajuan.',
         ]);
 
-        // Parent record: this morning's daily update
-        DailyUpdate::create([
-            'student_id' => $studentA->id,
-            'date' => now()->toDateString(),
-            'arrival_time' => '07:30',
-            'sleep_status' => 'Good',
-            'bath_status' => 'Done',
-            'health_status' => 'good',
-            'parent_notes' => 'Tolong bagi ubat jika demam.',
-        ]);
-
-        // Sample conversation between the demo teacher and parent
+        // ---- Conversation between the demo parent & teacher ---------------
         $conversation = Conversation::create([
-            'student_id' => $studentA->id,
-            'teacher_id' => $teacher->id,
+            'student_id' => $demoStudent->id,
+            'teacher_id' => $demoTeacher->id,
         ]);
 
         Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id' => $teacher->id,
-            'body' => 'Selamat pagi! Anak anda menunjukkan perkembangan yang baik hari ini.',
+            'sender_id' => $demoTeacher->id,
+            'body' => 'Selamat pagi! Anak tuan menunjukkan perkembangan yang baik hari ini.',
         ]);
 
         Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id' => $parent->id,
-            'body' => 'Terima kasih cikgu!',
+            'sender_id' => $demoParent->id,
+            'body' => 'Alhamdulillah, terima kasih cikgu!',
         ]);
 
-        $this->command?->info('Seeded demo data (admin/teacher/parent/pending, students, memos, payments).');
+        $this->command?->info('Seeded admin, teachers, parents, children, memos, fees, activities and chat.');
     }
 }

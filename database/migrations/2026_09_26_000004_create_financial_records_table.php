@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('status')->default('unpaid'); // unpaid | paid
             $table->date('paid_on')->nullable();
             $table->string('stripe_session_id', 255)->nullable();
+            $table->boolean('ReceiptGenerated')->default(false);
             $table->timestamps();
         });
     }

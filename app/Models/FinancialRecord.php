@@ -15,12 +15,14 @@ class FinancialRecord extends Model
         'status',
         'paid_on',
         'stripe_session_id',
+        'ReceiptGenerated',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'overtime_hours' => 'decimal:2',
         'paid_on' => 'date:Y-m-d',
+        'ReceiptGenerated' => 'boolean',
     ];
 
     public function student(): BelongsTo
