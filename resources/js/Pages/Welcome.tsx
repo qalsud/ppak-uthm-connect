@@ -5,12 +5,10 @@ import {
     BookOpen,
     CalendarCheck,
     CreditCard,
-    FileText,
     GraduationCap,
     MessagesSquare,
     ShieldCheck,
     Sparkles,
-    Users,
 } from 'lucide-react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
@@ -18,14 +16,6 @@ import { Button } from '@/Components/ui/button';
 import { useI18n } from '@/lib/i18n';
 import { homePathFor } from '@/lib/navigation';
 import type { PageProps } from '@/types';
-
-type Portal = {
-    label: string;
-    description: string;
-    icon: typeof Users;
-    login: string;
-    register?: string;
-};
 
 export default function Welcome({ auth }: PageProps) {
     const { t } = useI18n();
@@ -37,29 +27,6 @@ export default function Welcome({ auth }: PageProps) {
         { icon: MessagesSquare, title: 'Direct messaging', body: 'Parents and teachers keep in touch inside the platform.' },
         { icon: BookOpen, title: 'Progress reports', body: 'Learning progress aligned with PERMATA and KSPK syllabi.' },
         { icon: ShieldCheck, title: 'Secure & private', body: 'Role-based access with verified accounts and approval flow.' },
-    ];
-
-    const portals: Portal[] = [
-        {
-            label: t('parent'),
-            description: 'View your child’s activities, pay fees and chat with teachers.',
-            icon: Users,
-            login: '/parent/login',
-            register: '/parent/register',
-        },
-        {
-            label: t('teacher'),
-            description: 'Record daily activities and progress, message parents.',
-            icon: GraduationCap,
-            login: '/teacher/teacher_login',
-            register: '/teacher/register-teacher',
-        },
-        {
-            label: t('admin'),
-            description: 'Manage users, payments, memos and the whole centre.',
-            icon: ShieldCheck,
-            login: '/admin/login-admin',
-        },
     ];
 
     const dashboardHref = homePathFor(auth.user);
@@ -81,9 +48,6 @@ export default function Welcome({ auth }: PageProps) {
                             <a href="#features" className="transition-colors hover:text-white">
                                 Features
                             </a>
-                            <a href="#portals" className="transition-colors hover:text-white">
-                                Portals
-                            </a>
                             <a href="#about" className="transition-colors hover:text-white">
                                 About
                             </a>
@@ -99,7 +63,11 @@ export default function Welcome({ auth }: PageProps) {
                                 </Link>
                             ) : (
                                 <Link href="/login">
-                                    <Button size="sm" variant="secondary" className="bg-white/10 text-white hover:bg-white/20">
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="bg-white/10 text-white hover:bg-white/20"
+                                    >
                                         {t('login')}
                                     </Button>
                                 </Link>
@@ -122,10 +90,11 @@ export default function Welcome({ auth }: PageProps) {
                         </h1>
                         <p className="mx-auto mt-5 max-w-2xl text-base text-white/70">
                             PPAK UTHM Connect System is a school management solution that gives a
-                            personalised portal to every user — parents, teachers and administrators.
+                            personalised experience to every user — parents, teachers and
+                            administrators — through a single secure login.
                         </p>
                         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                            <Link href="/parent/register">
+                            <Link href="/register">
                                 <Button size="lg" className="gap-2">
                                     {t('register')}
                                     <ArrowRight className="size-4" />
@@ -228,48 +197,6 @@ export default function Welcome({ auth }: PageProps) {
                                 <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
                             </div>
                         ))}
-                    </div>
-                </section>
-
-                {/* Portals */}
-                <section id="portals" className="bg-[#f7f8fa] py-20">
-                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                        <div className="text-center">
-                            <h2 className="text-3xl font-bold tracking-tight">
-                                Choose your portal
-                            </h2>
-                            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-                                Select the portal that matches your role in our community.
-                            </p>
-                        </div>
-                        <div className="mt-12 grid gap-5 md:grid-cols-3">
-                            {portals.map((p) => (
-                                <div
-                                    key={p.label}
-                                    className="flex flex-col rounded-2xl border bg-white p-6"
-                                >
-                                    <span className="flex size-12 items-center justify-center rounded-xl bg-brand-navy text-white">
-                                        <p.icon className="size-6" />
-                                    </span>
-                                    <h3 className="mt-4 text-lg font-semibold">{p.label}</h3>
-                                    <p className="mt-1 flex-1 text-sm text-muted-foreground">
-                                        {p.description}
-                                    </p>
-                                    <div className="mt-5 flex gap-2">
-                                        <Link href={p.login} className="flex-1">
-                                            <Button className="w-full">{t('login')}</Button>
-                                        </Link>
-                                        {p.register && (
-                                            <Link href={p.register} className="flex-1">
-                                                <Button variant="outline" className="w-full">
-                                                    {t('register')}
-                                                </Button>
-                                            </Link>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </section>
 
