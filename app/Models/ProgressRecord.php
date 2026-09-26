@@ -21,7 +21,7 @@ class ProgressRecord extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
     ];
 
     public const PERMATA = ['Drawing', 'Coloring', 'Crafting', 'Reading', 'Writing'];

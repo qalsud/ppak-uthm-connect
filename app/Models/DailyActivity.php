@@ -27,7 +27,7 @@ class DailyActivity extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
     ];
 
     public const FIELDS = [

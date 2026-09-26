@@ -20,7 +20,7 @@ class FinancialRecord extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'overtime_hours' => 'decimal:2',
-        'paid_on' => 'date',
+        'paid_on' => 'date:Y-m-d',
     ];
 
     public function student(): BelongsTo
