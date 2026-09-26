@@ -31,13 +31,13 @@ export default function AttendanceActions({
     const { t } = useI18n();
     const [busy, setBusy] = useState<'arrive' | 'depart' | null>(null);
 
+    // Parents are read-only: attendance is marked by teachers.
+    const readOnly = role === 'parent';
+
     const post = (action: 'arrive' | 'depart') => {
         setBusy(action);
         router.post(
-            route(
-                role === 'parent' ? 'parent.attendance.store' : 'teacher.attendance.store',
-                { student: studentId },
-            ),
+            route('teacher.attendance.store', { student: studentId }),
             date ? { action, date } : { action },
             { preserveScroll: true, onFinish: () => setBusy(null) },
         );
@@ -52,9 +52,6 @@ export default function AttendanceActions({
               ? { label: `${t('back_home')}${departed_at ? ` · ${departed_at}` : ''}`, cls: 'bg-emerald-100 text-emerald-700' }
               : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
 
-    const arriveLabel = role === 'parent' ? t('send_to_school') : t('at_school');
-    const departLabel = role === 'parent' ? t('bring_home') : t('back_home');
-
     return (
         <div className="space-y-2">
             {showChip && (
@@ -62,28 +59,35 @@ export default function AttendanceActions({
                     {chip.label}
                 </span>
             )}
-            <div className="grid grid-cols-2 gap-2">
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 gap-1.5 rounded-xl text-xs"
-                    disabled={busy !== null || status === 'school'}
-                    onClick={() => post('arrive')}
-                >
-                    <LogIn className="size-4" />
-                    {arriveLabel}
-                </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 gap-1.5 rounded-xl text-xs"
-                    disabled={busy !== null || status === 'home'}
-                    onClick={() => post('depart')}
-                >
-                    <LogOut className="size-4" />
-                    {departLabel}
-                </Button>
-            </div>
+
+            {readOnly && (
+                <p className="text-[11px] text-muted-foreground">{t('updated_by_teacher')}</p>
+            )}
+
+            {!readOnly && (
+                <div className="grid grid-cols-2 gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 gap-1.5 rounded-xl text-xs"
+                        disabled={busy !== null || status === 'school'}
+                        onClick={() => post('arrive')}
+                    >
+                        <LogIn className="size-4" />
+                        {t('at_school')}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 gap-1.5 rounded-xl text-xs"
+                        disabled={busy !== null || status === 'home'}
+                        onClick={() => post('depart')}
+                    >
+                        <LogOut className="size-4" />
+                        {t('back_home')}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

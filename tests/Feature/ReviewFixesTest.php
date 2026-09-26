@@ -205,61 +205,61 @@ test('progress cannot be saved with placeholder Select values', function () {
     ])->assertSessionHasErrors('activity_done');
 });
 
-test('a parent marks attendance and a teacher can override it', function () {
-    [$parent, $children] = reviewParent();
+test('a teacher marks attendance and can toggle it back', function () {
+    [, $children] = reviewParent();
     $child = $children->first();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
 
-    $this->actingAs($parent)
-        ->post(route('parent.attendance.store', $child), ['action' => 'arrive'])
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.store', $child), ['action' => 'arrive'])
         ->assertRedirect();
 
-    $record = Attendance::where('student_id', $child->id)->first();
-    expect($record)->not->toBeNull()
-        ->and($record->status())->toBe('school');
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
 
-    $teacher = User::factory()->role(UserRole::Teacher)->create();
     $this->actingAs($teacher)
         ->post(route('teacher.attendance.store', $child), ['action' => 'depart'])
         ->assertRedirect();
 
     expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
-});
 
-test('attendance is scoped to the parent\'s children and keeps one row per day', function () {
-    [$parent, $children] = reviewParent();
-    $child = $children->first();
-
-    $other = Student::factory()->create();
-    $this->actingAs($parent)
-        ->post(route('parent.attendance.store', $other), ['action' => 'arrive'])
-        ->assertForbidden();
-
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
-
-    expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
-});
-
-test('a parent can re-check-in after the child is marked home', function () {
-    [$parent, $children] = reviewParent();
-    $child = $children->first();
-
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
-    $this->actingAs($parent)
-        ->post(route('parent.attendance.store', $child), ['action' => 'arrive'])
+    // Re-check-in reopens the day.
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.store', $child), ['action' => 'arrive'])
         ->assertSessionHas('success');
 
     expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
 });
 
-test('a teacher can override a closed day', function () {
-    [$parent, $children] = reviewParent();
+test('attendance keeps one row per student per day', function () {
+    [, $children] = reviewParent();
     $child = $children->first();
     $teacher = User::factory()->role(UserRole::Teacher)->create();
 
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'arrive']);
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'depart']);
+
+    expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
+});
+
+test('parents cannot mark attendance', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+
+    $this->actingAs($parent)
+        ->post(route('teacher.attendance.store', $child), ['action' => 'arrive'])
+        ->assertForbidden();
+
+    expect(Attendance::where('student_id', $child->id)->count())->toBe(0);
+});
+
+test('a teacher can correct a closed day', function () {
+    [, $children] = reviewParent();
+    $child = $children->first();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'depart']);
+
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
 
     $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), [
         'action' => 'arrive',
@@ -310,7 +310,7 @@ test('attendance history pages render', function () {
     $child = $children->first();
     $teacher = User::factory()->role(UserRole::Teacher)->create();
 
-    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'arrive']);
 
     $this->actingAs($parent)->get(route('parent.attendance.index'))->assertOk();
     $this->actingAs($parent)->get(route('parent.children.show', $child))->assertOk();

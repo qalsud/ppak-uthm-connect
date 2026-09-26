@@ -148,7 +148,6 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');
 
-            Route::post('/attendance/{student}', [ParentAttendanceController::class, 'store'])->name('attendance.store');
             Route::get('/attendance', [ParentAttendanceController::class, 'index'])->name('attendance.index');
             Route::post('/payments/checkout', [ParentPaymentController::class, 'checkout'])->name('payments.checkout');
             Route::get('/payments/{payment}/success', [ParentPaymentController::class, 'success'])->name('payments.success');
