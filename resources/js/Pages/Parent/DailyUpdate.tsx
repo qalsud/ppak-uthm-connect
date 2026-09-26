@@ -10,6 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import type { PageProps } from '@/types';
 import { useI18n } from '@/lib/i18n';
+import { localDate } from '@/lib/date';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -37,7 +38,7 @@ export default function ParentDailyUpdate() {
 
     const form = useForm({
         student_id: selected?.id?.toString() ?? '',
-        date: new Date().toISOString().slice(0, 10),
+        date: localDate(),
         arrival_time: existing?.arrival_time ?? '',
         sleep_status: existing?.sleep_status ?? 'Good',
         bath_status: existing?.bath_status ?? 'Done',
@@ -137,9 +138,13 @@ export default function ParentDailyUpdate() {
                                 <Input
                                     type="date"
                                     className="h-11"
+                                    max={localDate()}
                                     value={form.data.date}
                                     onChange={(e) => form.setData('date', e.target.value)}
                                 />
+                                {form.errors.date && (
+                                    <p className="text-xs text-destructive">{form.errors.date}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label>Arrival time</Label>
@@ -149,6 +154,11 @@ export default function ParentDailyUpdate() {
                                     value={form.data.arrival_time}
                                     onChange={(e) => form.setData('arrival_time', e.target.value)}
                                 />
+                                {form.errors.arrival_time && (
+                                    <p className="text-xs text-destructive">
+                                        {form.errors.arrival_time}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -192,6 +202,12 @@ export default function ParentDailyUpdate() {
 
                         {form.errors.student_id && (
                             <p className="text-xs text-destructive">{form.errors.student_id}</p>
+                        )}
+
+                        {Object.keys(form.errors).length > 0 && (
+                            <div className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                                Please check the highlighted fields and try again.
+                            </div>
                         )}
 
                         <Button

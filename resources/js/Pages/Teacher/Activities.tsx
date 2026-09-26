@@ -98,6 +98,9 @@ export default function Activities({
                                 max={today}
                                 onChange={(e) => form.setData('date', e.target.value)}
                             />
+                            {form.errors.date && (
+                                <p className="text-xs text-destructive">{form.errors.date}</p>
+                            )}
                         </div>
                     </div>
 

@@ -15,6 +15,7 @@ import {
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
+import { localDate } from '@/lib/date';
 import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -48,7 +49,7 @@ export default function Progress({
 
     const form = useForm({
         student_id: '',
-        date: new Date().toISOString().slice(0, 10),
+        date: localDate(),
         sub_theme: '',
         activity_done: 'Select',
         child_proficiency: 'Select',
@@ -115,9 +116,13 @@ export default function Progress({
                             <Input
                                 type="date"
                                 className="h-11"
+                                max={localDate()}
                                 value={form.data.date}
                                 onChange={(e) => form.setData('date', e.target.value)}
                             />
+                            {form.errors.date && (
+                                <p className="text-xs text-destructive">{form.errors.date}</p>
+                            )}
                         </div>
                     </div>
 
