@@ -24,17 +24,15 @@ type Existing = {
 };
 
 type Page = PageProps<{
-    data: {
-        children: Child[];
-        selected: Child | null;
-        existing: Existing | null;
-    };
+    children: Child[];
+    selected: Child | null;
+    existing: Existing | null;
 }>;
 
 export default function ParentDailyUpdate() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { children, selected, existing } = props.data;
+    const { children, selected, existing } = props;
     const [selectedId, setSelectedId] = useState<number | null>(selected?.id ?? null);
 
     const form = useForm({
@@ -145,7 +143,7 @@ export default function ParentDailyUpdate() {
                         </div>
 
                         {form.errors.student_id && (
-                            <p className="text-xs text-destructive">{form.errors.student_id[0]}</p>
+                            <p className="text-xs text-destructive">{form.errors.student_id}</p>
                         )}
 
                         <Button onClick={submit} disabled={form.processing}>
