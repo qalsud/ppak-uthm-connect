@@ -45,12 +45,16 @@ class DailyUpdateController extends Controller
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date|before_or_equal:today',
-            'arrival_time' => 'required|date_format:H:i',
+            'arrival_time' => ['required', 'regex:/^\d{1,2}:\d{2}(:\d{2})?$/'],
             'sleep_status' => ['required', Rule::in(['Good', 'Poor'])],
             'bath_status' => ['required', Rule::in(['Done', 'Not Done'])],
             'health_status' => 'nullable|string|max:50',
             'parent_notes' => 'nullable|string|max:1000',
         ]);
+
+        // Normalise arrival time to HH:MM (accepts HH:MM and HH:MM:SS).
+        [$hour, $minute] = array_pad(explode(':', $validated['arrival_time']), 2, '0');
+        $validated['arrival_time'] = sprintf('%02d:%02d', (int) $hour, (int) $minute);
 
         // A parent may only post updates for their own children.
         $own = $request->user()->students()->whereKey($validated['student_id'])->exists();

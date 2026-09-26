@@ -2,6 +2,7 @@
 
 use App\Enums\UserRole;
 use App\Models\Conversation;
+use App\Models\DailyUpdate;
 use App\Models\FinancialRecord;
 use App\Models\Payment;
 use App\Models\Student;
@@ -146,6 +147,34 @@ test('daily updates and progress reject future dates', function () {
         'free_activity' => 'Learning',
         'development_proficiency' => 'Social Skills',
     ])->assertSessionHasErrors('date');
+});
+
+test('daily update accepts HH:MM:SS and can be re-submitted the same day', function () {
+    [$parent, $children] = reviewParent();
+    $student = $children->first();
+
+    // First submit with seconds should be normalised to HH:MM.
+    $this->actingAs($parent)->post(route('parent.daily-update.store'), [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'arrival_time' => '07:30:00',
+        'sleep_status' => 'Good',
+        'bath_status' => 'Done',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(DailyUpdate::where('student_id', $student->id)->first()->arrival_time)->toBe('07:30');
+
+    // Re-submitting the same child/date must update, not fail on the unique index.
+    $this->actingAs($parent)->post(route('parent.daily-update.store'), [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'arrival_time' => '08:05',
+        'sleep_status' => 'Poor',
+        'bath_status' => 'Not Done',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(DailyUpdate::where('student_id', $student->id)->count())->toBe(1);
+    expect(DailyUpdate::where('student_id', $student->id)->first()->arrival_time)->toBe('08:05');
 });
 
 test('progress cannot be saved with placeholder Select values', function () {
