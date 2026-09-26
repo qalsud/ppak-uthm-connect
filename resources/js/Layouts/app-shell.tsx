@@ -1,5 +1,5 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { GraduationCap, LogOut, type LucideIcon } from 'lucide-react';
+import { GraduationCap, LogOut, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
@@ -14,7 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { Separator } from '@/Components/ui/separator';
+import { Input } from '@/Components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import type { NavItem } from '@/lib/navigation';
 import type { PageProps } from '@/types';
@@ -26,14 +26,21 @@ type Props = {
 };
 
 /**
- * Shared authenticated shell — brand header, optional role sidebar,
- * language switch and user menu.
+ * School-dashboard style shell: dark fixed sidebar (desktop) + light top bar
+ * with page title, search, notification bell and profile menu.
  */
 export default function AppShell({ children, nav = [], title }: Props) {
     const { t } = useI18n();
     const page = usePage<PageProps>();
     const user = page.props.auth.user;
     const activeUrl = page.url;
+
+    const activeNav = nav.find(
+        (item) => activeUrl === item.href || activeUrl.startsWith(`${item.href}/`),
+    );
+    const heading = title ?? activeNav?.label
+        ? (title ?? (activeNav ? t(activeNav.label) : t('dashboard')))
+        : t('dashboard');
 
     const initials = (user?.name ?? 'U')
         .split(' ')
@@ -46,71 +53,27 @@ export default function AppShell({ children, nav = [], title }: Props) {
         router.post(route('logout'));
     };
 
-    const isActive = (href: string) => {
-        if (href === '/') return activeUrl === '/';
-
-        return activeUrl === href || activeUrl.startsWith(`${href}/`);
-    };
+    const isActive = (href: string) =>
+        activeUrl === href || activeUrl.startsWith(`${href}/`);
 
     return (
-        <div className="min-h-screen bg-muted/40">
-            <header className="sticky top-0 z-30 border-b bg-card">
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-                    <Link href="/" className="flex items-center gap-2">
-                        <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-red to-brand-blue text-white">
-                            <GraduationCap className="size-5" />
-                        </span>
-                        <div className="leading-tight">
-                            <p className="text-sm font-bold">
-                                <span className="text-brand-red-strong">PPAK</span>{' '}
-                                <span className="text-brand-blue">UTHM</span>
-                            </p>
-                            {title && <p className="text-xs text-muted-foreground">{title}</p>}
-                        </div>
-                    </Link>
-
-                    <div className="flex items-center gap-2">
-                        <NotificationBell />
-                        {nav.length === 0 && <LanguageSwitcher />}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="gap-2 pl-1.5 pr-3">
-                                    <Avatar className="size-8">
-                                        <AvatarFallback className="bg-brand-blue/15 text-xs text-brand-blue">
-                                            {initials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="hidden text-sm font-medium sm:block">
-                                        {user?.name}
-                                    </span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>
-                                    <p className="text-sm font-semibold">{user?.name}</p>
-                                    <p className="text-xs font-normal text-muted-foreground">
-                                        {user?.email}
-                                    </p>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <div className="py-1 pl-1">
-                                    <LanguageSwitcher />
-                                </div>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleLogout}>
-                                    <LogOut className="size-4" />
-                                    {t('logout')}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
-            </header>
-
-            <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6">
+        <div className="min-h-screen bg-background">
+            <div className="flex min-h-screen">
                 {nav.length > 0 && (
-                    <aside className="hidden w-56 shrink-0 lg:block">
-                        <nav className="sticky top-24 space-y-1">
+                    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
+                        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
+                            <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                                <GraduationCap className="size-5" />
+                            </span>
+                            <div className="leading-tight">
+                                <p className="text-sm font-bold">
+                                    <span className="text-brand-red-strong">PPAK</span>{' '}
+                                    <span className="text-[#9ec5ff]">UTHM</span>
+                                </p>
+                                <p className="text-[11px] text-sidebar-foreground/60">Connect</p>
+                            </div>
+                        </div>
+                        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
                             {nav.map((item) => (
                                 <SidebarLink
                                     key={item.href}
@@ -119,52 +82,110 @@ export default function AppShell({ children, nav = [], title }: Props) {
                                 />
                             ))}
                         </nav>
+                        <div className="border-t border-sidebar-border p-3">
+                            <p className="truncate px-2 py-1 text-xs text-sidebar-foreground/60">
+                                {user?.email}
+                            </p>
+                        </div>
                     </aside>
                 )}
 
-                <main className="min-w-0 flex-1">
-                    {nav.length > 0 && (
-                        <nav className="mb-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-                            {nav.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${
-                                        isActive(item.href)
-                                            ? 'border-brand-blue bg-brand-blue text-white'
-                                            : 'border-border bg-card text-muted-foreground'
-                                    }`}
-                                >
-                                    {t(item.label)}
-                                </Link>
-                            ))}
-                        </nav>
-                    )}
-                    {children}
-                </main>
+                <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
+                    <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
+                        <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
+                            <div className="flex min-w-0 items-center gap-3">
+                                {nav.length > 0 && (
+                                    <Link href="/" className="flex items-center gap-2 lg:hidden">
+                                        <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                                            <GraduationCap className="size-4" />
+                                        </span>
+                                    </Link>
+                                )}
+                                <h1 className="truncate text-lg font-semibold text-foreground">
+                                    {heading}
+                                </h1>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                <div className="relative hidden md:block">
+                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        className="h-9 w-56 pl-9"
+                                        placeholder="Search…"
+                                    />
+                                </div>
+                                <NotificationBell />
+                                {nav.length === 0 && <LanguageSwitcher />}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="gap-2 pl-1.5 pr-3">
+                                            <Avatar className="size-8">
+                                                <AvatarFallback className="bg-indigo-100 text-xs text-indigo-700">
+                                                    {initials}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className="hidden text-sm font-medium sm:block">
+                                                {user?.name}
+                                            </span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-56">
+                                        <DropdownMenuLabel>
+                                            <p className="text-sm font-semibold">{user?.name}</p>
+                                            <p className="text-xs font-normal text-muted-foreground">
+                                                {user?.email}
+                                            </p>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <div className="py-1 pl-1 lg:hidden">
+                                            <LanguageSwitcher />
+                                        </div>
+                                        <DropdownMenuItem onClick={handleLogout}>
+                                            <LogOut className="size-4" />
+                                            {t('logout')}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+
+                        {nav.length > 0 && (
+                            <nav className="flex gap-2 overflow-x-auto px-4 pb-2 lg:hidden">
+                                {nav.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={`shrink-0 rounded-full px-3 py-1.5 text-sm ${
+                                            isActive(item.href)
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        {t(item.label)}
+                                    </Link>
+                                ))}
+                            </nav>
+                        )}
+                    </header>
+
+                    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+                </div>
             </div>
         </div>
     );
 }
 
-function SidebarLink({
-    item,
-    active,
-}: {
-    item: NavItem;
-    active: boolean;
-    icon?: LucideIcon;
-}) {
+function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
     const { t } = useI18n();
     const Icon = item.icon;
 
     return (
         <Link
             href={item.href}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                    ? 'bg-brand-blue text-white'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             }`}
         >
             <Icon className="size-4 shrink-0" />
