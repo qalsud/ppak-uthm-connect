@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\DailyActivity;
 use App\Models\DailyUpdate;
+use App\Models\Memo;
 use App\Models\Student;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,9 +16,7 @@ class DashboardController extends Controller
     {
         $today = today()->toDateString();
 
-        $students = Student::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'class']);
+        $students = Student::query()->orderBy('name')->get(['id', 'name', 'class']);
 
         $todayActivities = DailyActivity::query()
             ->where('date', $today)
@@ -37,9 +36,24 @@ class DashboardController extends Controller
             return $student;
         });
 
+        $recentActivities = DailyActivity::query()
+            ->with('student:id,name,class')
+            ->latest('date')
+            ->limit(6)
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'date' => $a->date->format('d M Y'),
+                'student' => $a->student?->name ?? '—',
+            ]);
+
         return Inertia::render('Teacher/Dashboard', [
             'students' => $students,
             'today' => $today,
+            'activityCount' => $todayActivities->count(),
+            'updateCount' => $todayUpdates->count(),
+            'memoCount' => Memo::count(),
+            'recentActivities' => $recentActivities,
         ]);
     }
 }

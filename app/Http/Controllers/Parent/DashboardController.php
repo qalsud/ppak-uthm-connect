@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
+use App\Models\FinancialRecord;
 use App\Models\Memo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,18 +14,34 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $children = $request->user()->students()->with('financialRecords')->get();
+        $children = $request->user()
+            ->students()
+            ->get(['id', 'name', 'age', 'class']);
 
-        $unpaidTotal = $children->flatMap(fn ($child) => $child->financialRecords)
-            ->where('status', 'unpaid')
-            ->sum('amount');
+        $children->each(function ($child) {
+            $unpaid = $child->financialRecords()->where('status', 'unpaid')->sum('amount');
+            $child->unpaid = (float) $unpaid;
+            $child->latest_update_date = $child->dailyUpdates()->latest('date')->value('date');
+            $child->latest_activity_date = $child->dailyActivities()->latest('date')->value('date');
+        });
 
+        $studentIds = $children->pluck('id');
+
+        $unread = $studentIds->isNotEmpty()
+            ? Conversation::query()
+                ->whereIn('student_id', $studentIds)
+                ->get()
+                ->sum(fn ($c) => $c->messages()->where('sender_id', '!=', auth()->id())->whereNull('read_at')->count())
+            : 0;
+
+        $totalUnpaid = $children->sum('unpaid');
         $memoCount = Memo::count();
 
         return Inertia::render('Parent/Dashboard', [
             'children' => $children,
-            'unpaidTotal' => $unpaidTotal,
+            'unpaidTotal' => $totalUnpaid,
             'memoCount' => $memoCount,
+            'unreadCount' => $unread,
         ]);
     }
 }
