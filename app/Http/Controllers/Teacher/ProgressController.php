@@ -15,22 +15,59 @@ use Inertia\Response;
 
 class ProgressController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $students = Student::query()->orderBy('name')->get(['id', 'name', 'class']);
-        $records = ProgressRecord::query()
-            ->with('student:id,name,class')
-            ->orderBy('date', 'desc')
-            ->limit(30)
-            ->get();
+
+        $studentId = $request->query('student');
+        $class = $request->query('class');
+
+        $query = ProgressRecord::query()->with([
+            'student:id,name,class',
+            'teacher:id,name',
+        ]);
+
+        if ($studentId) {
+            $query->where('student_id', $studentId);
+        }
+
+        if (in_array($class, Student::CLASSES, true)) {
+            $query->whereHas('student', fn ($q) => $q->where('class', $class));
+        }
+
+        $records = $query->orderByDesc('date')->limit(60)->get();
+
+        $summary = null;
+
+        if ($studentId) {
+            $latest = ProgressRecord::query()
+                ->where('student_id', $studentId)
+                ->orderByDesc('date')
+                ->first();
+
+            $summary = [
+                'count' => ProgressRecord::query()->where('student_id', $studentId)->count(),
+                'last_date' => $latest?->date?->format('Y-m-d'),
+                'latest' => $latest ? [
+                    'activity_performance' => $latest->activity_done,
+                    'skill_mastery' => $latest->child_proficiency,
+                    'development_area' => $latest->development_proficiency,
+                ] : null,
+            ];
+        }
 
         return Inertia::render('Teacher/Progress', [
             'students' => $students,
             'records' => $records,
+            'summary' => $summary,
             'permata' => ProgressRecord::PERMATA,
             'free' => ProgressRecord::FREE,
             'development' => ProgressRecord::DEVELOPMENT,
             'grades' => ProgressRecord::GRADES,
+            'filters' => [
+                'student' => $studentId ? (string) $studentId : '',
+                'class' => $class ?? '',
+            ],
         ]);
     }
 

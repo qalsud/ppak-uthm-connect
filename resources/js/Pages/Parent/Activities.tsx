@@ -1,6 +1,7 @@
 import { BookOpen, CalendarCheck } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
+import RatingChip from '@/Components/rating-chip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
@@ -32,6 +33,7 @@ type Child = {
         date: string;
         sub_theme: string | null;
         activity_done: string;
+        child_proficiency: string;
         development: string;
     }>;
 };
@@ -114,24 +116,42 @@ export default function ParentActivities({
                                     {t('progress')}
                                 </p>
                                 {child.latest_progress ? (
-                                    <dl className="space-y-1.5">
-                                        {[
-                                            [t('date'), child.latest_progress.date],
-                                            ['Sub-theme', child.latest_progress.sub_theme ?? '—'],
-                                            ['Activity', child.latest_progress.activity_done],
-                                            ['Proficiency', child.latest_progress.child_proficiency],
-                                            ['PERMATA', child.latest_progress.permata_activity],
-                                            ['Development', child.latest_progress.development_proficiency],
-                                        ].map(([k, v]) => (
-                                            <div
-                                                key={k as string}
-                                                className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2 text-xs"
-                                            >
-                                                <dt className="text-muted-foreground">{k}</dt>
-                                                <dd className="font-medium">{v}</dd>
+                                    <div className="space-y-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <p className="text-sm font-medium">
+                                                {child.latest_progress.sub_theme ?? t('progress')}
+                                            </p>
+                                            <span className="text-xs text-muted-foreground">
+                                                {child.latest_progress.date}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <RatingChip value={child.latest_progress.activity_done} />
+                                            <RatingChip value={child.latest_progress.child_proficiency} />
+                                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                                                {child.latest_progress.development_proficiency}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs">
+                                                <p className="text-muted-foreground">{t('permata_activity')}</p>
+                                                <p className="font-medium">
+                                                    {child.latest_progress.permata_activity}
+                                                </p>
                                             </div>
-                                        ))}
-                                    </dl>
+                                            <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs">
+                                                <p className="text-muted-foreground">{t('free_activity')}</p>
+                                                <p className="font-medium">
+                                                    {child.latest_progress.free_activity}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {child.latest_progress.notes && (
+                                            <p className="rounded-xl bg-muted/50 px-3 py-2 text-xs italic text-muted-foreground">
+                                                {child.latest_progress.notes}
+                                            </p>
+                                        )}
+                                    </div>
                                 ) : (
                                     <p className="py-4 text-center text-sm text-muted-foreground">
                                         {t('no_data')}
@@ -159,13 +179,14 @@ export default function ParentActivities({
                                         {child.recent_progress?.map((p) => (
                                             <div
                                                 key={`p${p.id}`}
-                                                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-1.5 text-xs"
+                                                className="flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-1.5 text-xs"
                                             >
-                                                <span className="text-muted-foreground">
+                                                <span className="truncate text-muted-foreground">
                                                     {p.sub_theme ?? t('progress')}
                                                 </span>
-                                                <span>
-                                                    {p.activity_done} · {p.development}
+                                                <span className="flex shrink-0 items-center gap-1.5">
+                                                    <RatingChip value={p.activity_done} />
+                                                    <span className="text-muted-foreground">{p.date}</span>
                                                 </span>
                                             </div>
                                         ))}

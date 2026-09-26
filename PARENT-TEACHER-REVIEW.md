@@ -164,4 +164,17 @@ These existed in the legacy system / the paper but aren't in the rebuild:
 
 ---
 
+## Progress module overhaul (later pass)
+
+The progress module was confusing: six flat selects with no grouping, misleading names (`activity_done` labelled "Activity performance" but a grade; `development_proficiency` an area, not a proficiency), **validation errors on the selects were never displayed** (saving silently appeared to do nothing), the history hid 5 of 8 fields, and there was no way to view one child's progress.
+
+**Done:**
+- Grouped the form into **Lesson / Activities today / Assessment** sections, each field with helper text and a **rating guide** (Good/Average/Poor chips).
+- Fixed the silent-failure bug — **all field errors render**; Save is **disabled until a student + date** is chosen; the `Select` sentinel was replaced with real placeholders.
+- **Progress history** now has **student + class filters**, a **per-student summary** (record count, last recorded, latest assessment) and full record cards (both ratings + development area as chips, PERMATA/free activity, notes, teacher).
+- Parent side (`/parent/activities` + the child page) now shows the same **clear labels and rating chips**, incl. notes.
+- New `RatingChip` component; ~25 new bilingual keys.
+
+---
+
 *Generated from a full read of `app/Http/Controllers/{Parent,Teacher}`, `app/Models`, `database/migrations`, `routes/web.php`, `app/Notifications`, `app/Services/Payments`, and the shared React components.*

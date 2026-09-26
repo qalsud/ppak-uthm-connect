@@ -6,10 +6,12 @@ use App\Models\Conversation;
 use App\Models\DailyUpdate;
 use App\Models\FinancialRecord;
 use App\Models\Payment;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\MessageReceivedNotification;
 use App\Services\Payments\PaymentCompletionService;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function reviewParent(): array
 {
@@ -265,6 +267,42 @@ test('a teacher can override a closed day', function () {
     ]);
 
     expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
+});
+
+test('teacher progress history can be filtered by student with a summary', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $child = Student::factory()->create(['parent_id' => $parent->id, 'class' => '5tahun']);
+    $other = Student::factory()->create(['parent_id' => $parent->id, 'class' => '5tahun']);
+
+    $make = fn (Student $student) => ProgressRecord::create([
+        'student_id' => $student->id,
+        'teacher_id' => $teacher->id,
+        'date' => today()->toDateString(),
+        'sub_theme' => 'Myself',
+        'activity_done' => 'Good',
+        'child_proficiency' => 'Average',
+        'permata_activity' => 'Drawing',
+        'free_activity' => 'Playing',
+        'development_proficiency' => 'Social Skills',
+    ]);
+
+    $make($child);
+    $make($other);
+
+    $this->actingAs($teacher)
+        ->get(route('teacher.progress.index', ['student' => $child->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Teacher/Progress')
+            ->has('records', 1)
+            ->where('records.0.student.name', $child->name)
+            ->where('summary.count', 1)
+            ->where('summary.latest.activity_performance', 'Good')
+        );
+
+    $this->actingAs($teacher)
+        ->get(route('teacher.progress.index', ['class' => $other->class]))
+        ->assertInertia(fn (Assert $page) => $page->has('records', 2));
 });
 
 test('attendance history pages render', function () {

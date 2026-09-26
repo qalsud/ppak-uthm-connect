@@ -27,12 +27,16 @@ class ActivityController extends Controller
             $child->recent_progress = $child->progressRecords()
                 ->latest('date')
                 ->limit(5)
-                ->get(['id', 'date', 'sub_theme', 'activity_done', 'development_proficiency'])
+                ->get([
+                    'id', 'date', 'sub_theme', 'activity_done', 'child_proficiency',
+                    'permata_activity', 'free_activity', 'development_proficiency',
+                ])
                 ->map(fn ($p) => [
                     'id' => $p->id,
                     'date' => $p->date->format('d M Y'),
                     'sub_theme' => $p->sub_theme,
                     'activity_done' => $p->activity_done,
+                    'child_proficiency' => $p->child_proficiency,
                     'development' => $p->development_proficiency,
                 ]);
         });

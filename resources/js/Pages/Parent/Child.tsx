@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History,
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
+import RatingChip from '@/Components/rating-chip';
 import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
@@ -36,7 +37,9 @@ type Progress = {
     activity_done: string;
     child_proficiency: string;
     permata_activity: string;
+    free_activity: string;
     development_proficiency: string;
+    notes: string | null;
 };
 type HistoryRow = {
     id: number;
@@ -275,15 +278,31 @@ export default function ParentChild() {
                     ) : (
                         <div className="space-y-2">
                             {progress.map((p) => (
-                                <div key={p.id} className="rounded-xl bg-muted/50 px-3 py-2.5">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="font-medium">{p.sub_theme ?? t('progress')}</span>
-                                        <span className="text-xs text-muted-foreground">{p.date}</span>
+                                <div key={p.id} className="rounded-xl border p-3">
+                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                        <span className="font-medium">
+                                            {p.sub_theme ?? t('progress')}
+                                        </span>
+                                        <span className="shrink-0 text-xs text-muted-foreground">
+                                            {formatDate(p.date)}
+                                        </span>
                                     </div>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Aktiviti: {p.activity_done} · Kemahiran: {p.child_proficiency} ·{' '}
-                                        {p.development_proficiency}
+                                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                        <RatingChip value={p.activity_done} />
+                                        <RatingChip value={p.child_proficiency} />
+                                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                                            {p.development_proficiency}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                                        {t('permata_activity')}: {p.permata_activity} · {t('free_activity')}:{' '}
+                                        {p.free_activity}
                                     </p>
+                                    {p.notes && (
+                                        <p className="mt-1 text-[11px] italic text-muted-foreground">
+                                            {p.notes}
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>
