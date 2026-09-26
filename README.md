@@ -1,0 +1,118 @@
+# PPAK UTHM Connect System — rebuild (Phase 0 scaffold)
+
+Modern rebuild of the legacy kindergarten-management platform on
+**Laravel 12 + Inertia + React (TypeScript) + Tailwind v4 + shadcn/ui**.
+
+Roles: **Admin · Teacher · Parent** (single login, role-based dashboards).
+Malay/English bilingual UI, PWA-ready, MySQL 8, Docker-based local DB.
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Backend | PHP 8.3+ · Laravel 12 |
+| Frontend | Inertia.js v2 · React 18 · TypeScript · Vite |
+| UI | Tailwind CSS v4 · shadcn/ui (New York, neutral) · Lucide |
+| DB | MySQL 8 (Docker) |
+| Realtime (later) | Pusher (Laravel Broadcasting) |
+| Payments (later) | Stripe Checkout + webhooks |
+| Receipts (later) | dompdf |
+| Quality | Pest + PHPUnit · Pint · GitHub Actions CI |
+
+---
+
+## Requirements
+
+- PHP **8.2+** (RECOMMEND 8.3), Composer
+- Node **20+** (RECOMMEND 22), npm
+- Docker (for MySQL; you can swap to any MySQL 8 for local dev)
+
+## Quick start
+
+```bash
+# 1. Start the database
+docker compose up -d mysql
+
+# 2. Install PHP + JS deps
+composer install
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# 4. Migrate + seed demo data
+php artisan migrate:fresh --seed
+
+# 5. Run
+php artisan serve        # terminal 1
+npm run dev              # terminal 2
+# open http://localhost:8000
+```
+
+phpMyAdmin runs at `http://localhost:8080` (root / root_secret) when you run
+`docker compose up -d`.
+
+> No Docker available? Point `.env` at a local MySQL 8, or for a quick
+> throwaway run set `DB_CONNECTION=sqlite` + `DB_DATABASE=/absolute/path.sqlite`.
+
+## Demo accounts (from `--seed`)
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@ppakuthm.com | password123 |
+| Teacher | teacher@ppakuthm.com | password123 |
+| Parent | parent@ppakuthm.com | password123 |
+
+## Registration / approval flow (current behaviour)
+
+- A new registration always creates a **parent** account with
+  `status = pending` and an `activation_token`.
+- Pending accounts **cannot log in** (`EnsureAccountIsActive` middleware +
+  login-time check). Admin approval UI is scheduled for Phase 2.
+- A user must have `status = active` to log in.
+
+## Where to look
+
+```
+routes/web.php              role dashboards, locale switch, auth groups
+app/Models/                 User (role/status enums), Student, FeeSetting
+app/Enums/UserRole.php      admin | teacher | parent + homeRoute()
+app/Enums/AccountStatus.php pending | awaiting | active | rejected
+app/Http/Middleware/        CheckRole, EnsureAccountIsActive, SetLocale
+resources/js/Pages/         Admin/Dashboard, Teacher/Dashboard, Parent/Dashboard
+resources/js/Layouts/       app-shell (brand header, language switcher, user menu)
+resources/js/lib/i18n.ts    frontend dictionary helper (keys from lang/*.json)
+lang/en.json, lang/ms.json  bilingual keys (Malay is default)
+docker-compose.yml          MySQL 8 + phpMyAdmin + Redis
+```
+
+## Tests & style
+
+```bash
+php artisan test          # Pest — 25 tests (auth, registration/approval, profile)
+vendor/bin/pint           # Laravel code style (auto-fix)
+npm run build             # tsc typecheck + vite production build (+ PWA sw)
+```
+
+CI (GitHub Actions) runs Pint, the Pest suite, and the frontend build on push/PR.
+
+## Roadmap (next phases)
+
+1. **Phase 1** – one-login UX polish, admin approval queue, verified-email flow
+2. **Phase 2** – admin: students/teachers/payments/memos CRUD + analytics + fee settings
+3. **Phase 3** – teacher activity/progress, parent daily updates & statements
+4. **Phase 4** – Stripe Checkout + webhooks, PDF receipts
+5. **Phase 5** – Pusher notifications + parent↔teacher chat
+6. **Phase 6** – legacy DB import (reversible, scrubbed) + bilingual polish
+7. **Phase 7** – deploy to Hostinger, backups, handover docs
+
+## Notes for contributors
+
+- `npm install` uses `legacy-peer-deps` (see `.npmrc`) — known good for this
+  Laravel/Vite dependency set.
+- Add PWA install icons (`public/pwa-512.png`, `public/pwa-maskable-512.png`)
+  before shipping — the manifest references them.
+- Keep secrets in `.env` only (`.env` is git-ignored, `.env.example` documents keys).
