@@ -23,10 +23,11 @@ import type { PageProps } from '@/types';
 type Props = {
     children: ReactNode;
     nav?: NavItem[];
+    bottomNav?: NavItem[];
     title?: string;
 };
 
-export default function AppShell({ children, nav = [], title }: Props) {
+export default function AppShell({ children, nav = [], bottomNav = [], title }: Props) {
     const { t } = useI18n();
     const page = usePage<PageProps>();
     const user = page.props.auth.user;
@@ -147,7 +148,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                             </div>
                         </div>
 
-                        {nav.length > 0 && (
+                        {nav.length > 0 && bottomNav.length === 0 && (
                             <nav className="flex gap-2 overflow-x-auto px-4 pb-2 lg:hidden">
                                 {nav.map((item) => (
                                     <Link
@@ -166,9 +167,40 @@ export default function AppShell({ children, nav = [], title }: Props) {
                         )}
                     </header>
 
-                    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+                    <main
+                        className={`flex-1 px-4 py-6 sm:px-6 lg:px-8 ${
+                            bottomNav.length > 0 ? 'pb-24 lg:pb-6' : ''
+                        }`}
+                    >
+                        {children}
+                    </main>
                 </div>
             </div>
+
+            {/* Mobile bottom tab bar */}
+            {bottomNav.length > 0 && (
+                <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card lg:hidden">
+                    <div className="mx-auto flex max-w-md items-stretch justify-around">
+                        {bottomNav.map((item) => {
+                            const Icon = item.icon;
+                            const active = isActive(item.href);
+
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
+                                        active ? 'text-primary' : 'text-muted-foreground'
+                                    }`}
+                                >
+                                    <Icon className="size-5" />
+                                    {t(item.label)}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </nav>
+            )}
         </div>
     );
 }

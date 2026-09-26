@@ -1,16 +1,16 @@
 import { router, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { CalendarCheck } from 'lucide-react';
 
+import PageHeader from '@/Components/page-header';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import type { PageProps } from '@/types';
 import { useI18n } from '@/lib/i18n';
-import PageHeader from '@/Components/page-header';
-import { parentNav } from '@/lib/navigation';
+import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Child = { id: number; name: string; class: string };
@@ -34,7 +34,6 @@ export default function ParentDailyUpdate() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
     const { children, selected, existing } = props;
-    const [selectedId, setSelectedId] = useState<number | null>(selected?.id ?? null);
 
     const form = useForm({
         student_id: selected?.id?.toString() ?? '',
@@ -46,98 +45,146 @@ export default function ParentDailyUpdate() {
         parent_notes: existing?.parent_notes ?? '',
     });
 
-    const chooseChild = (id: number) => {
-        setSelectedId(id);
+    const chooseChild = (id: number) =>
         router.get('/parent/daily-update', { student_id: id }, { preserveState: true });
-    };
 
-    const submit = () => {
-        form.post(route('parent.daily-update.store'));
-    };
+    const submit = () => form.post(route('parent.daily-update.store'));
 
-    const pill = (
-        name: 'sleep_status' | 'bath_status',
-        value: string,
-        label: string,
-        options: string[],
-    ) => (
-        <div className="space-y-1">
+    const Segmented = ({
+        label,
+        name,
+        options,
+    }: {
+        label: string;
+        name: 'sleep_status' | 'bath_status';
+        options: { value: string; label: string; tone: string }[];
+    }) => (
+        <div className="space-y-2">
             <Label>{label}</Label>
-            <div className="flex gap-2">
-                {options.map((option) => (
-                    <button
-                        key={option}
-                        type="button"
-                        onClick={() => form.setData(name, option)}
-                        className={`rounded-full border px-4 py-1.5 text-sm ${
-                            form.data[name] === option
-                                ? 'border-brand-blue bg-brand-blue text-white'
-                                : 'border-border bg-card hover:bg-accent'
-                        }`}
-                    >
-                        {option}
-                    </button>
-                ))}
+            <div className="grid grid-cols-2 gap-2">
+                {options.map((o) => {
+                    const active = form.data[name] === o.value;
+
+                    return (
+                        <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => form.setData(name, o.value)}
+                            className={`h-12 rounded-xl border text-sm font-semibold transition ${
+                                active
+                                    ? `${o.tone} border-transparent`
+                                    : 'border-input bg-card text-muted-foreground'
+                            }`}
+                        >
+                            {o.label}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );
 
     return (
-        <AppShell nav={parentNav} title={t('parent')}>
-            <PageHeader title={t('daily_update')} description="Let the teachers know how your child is today" />
+        <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
+            <PageHeader
+                title={t('daily_update')}
+                description="Let the teachers know how your child is today"
+            />
 
-            <div className="mb-4 flex flex-wrap gap-2">
-                {children.map((child) => (
-                    <Badge
-                        key={child.id}
-                        variant={selectedId === child.id ? 'default' : 'outline'}
-                        className="cursor-pointer py-1.5 text-sm"
-                        onClick={() => chooseChild(child.id)}
-                    >
-                        {child.name} · {child.class}
-                    </Badge>
-                ))}
-            </div>
+            {children.length > 1 && (
+                <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+                    {children.map((child) => (
+                        <button
+                            key={child.id}
+                            onClick={() => chooseChild(child.id)}
+                            className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium ${
+                                selected?.id === child.id
+                                    ? 'border-primary bg-primary text-primary-foreground'
+                                    : 'border-input bg-card text-muted-foreground'
+                            }`}
+                        >
+                            {child.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {existing && (
+                <Card className="mb-4 rounded-2xl border-0 bg-muted/50 p-4 shadow-none">
+                    <p className="text-xs text-muted-foreground">
+                        Last submitted {existing.date}
+                        {existing.health_status ? ` · health: ${existing.health_status}` : ''}
+                    </p>
+                </Card>
+            )}
 
             {selected ? (
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>{selected.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                <Card className="rounded-2xl border-0 shadow-sm">
+                    <CardContent className="space-y-5 pt-5">
+                        <div className="flex items-center gap-3">
+                            <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+                                <CalendarCheck className="size-5" />
+                            </span>
+                            <div>
+                                <p className="font-semibold">{selected.name}</p>
+                                <p className="text-xs text-muted-foreground">{selected.class}</p>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 <Label>{t('date')}</Label>
                                 <Input
                                     type="date"
+                                    className="h-11"
                                     value={form.data.date}
                                     onChange={(e) => form.setData('date', e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label>Arrival Time</Label>
+                            <div className="space-y-2">
+                                <Label>Arrival time</Label>
                                 <Input
                                     type="time"
+                                    className="h-11"
                                     value={form.data.arrival_time}
                                     onChange={(e) => form.setData('arrival_time', e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        {pill('sleep_status', 'sleep', 'Sleep', ['Good', 'Poor'])}
-                        {pill('bath_status', 'bath', 'Bath', ['Done', 'Not Done'])}
+                        <Segmented
+                            label="Sleeping status"
+                            name="sleep_status"
+                            options={[
+                                { value: 'Good', label: '😴 Good', tone: 'bg-emerald-100 text-emerald-700' },
+                                { value: 'Poor', label: '😟 Poor', tone: 'bg-rose-100 text-rose-700' },
+                            ]}
+                        />
 
-                        <div className="space-y-1">
-                            <Label>Health Status</Label>
+                        <Segmented
+                            label="Bath status"
+                            name="bath_status"
+                            options={[
+                                { value: 'Done', label: '🛁 Done', tone: 'bg-emerald-100 text-emerald-700' },
+                                { value: 'Not Done', label: '🚫 Not done', tone: 'bg-amber-100 text-amber-700' },
+                            ]}
+                        />
+
+                        <div className="space-y-2">
+                            <Label>Health status</Label>
                             <Input
+                                className="h-11"
+                                placeholder="e.g. Healthy, slight fever…"
                                 value={form.data.health_status}
                                 onChange={(e) => form.setData('health_status', e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
+
+                        <div className="space-y-2">
                             <Label>{t('notes')}</Label>
                             <Textarea
                                 rows={3}
+                                placeholder="Any instructions for the teachers…"
                                 value={form.data.parent_notes}
                                 onChange={(e) => form.setData('parent_notes', e.target.value)}
                             />
@@ -147,14 +194,18 @@ export default function ParentDailyUpdate() {
                             <p className="text-xs text-destructive">{form.errors.student_id}</p>
                         )}
 
-                        <Button onClick={submit} disabled={form.processing}>
-                            {t('save')}
+                        <Button
+                            onClick={submit}
+                            disabled={form.processing}
+                            className="h-12 w-full rounded-xl text-sm font-semibold"
+                        >
+                            {form.processing ? 'Saving…' : 'Submit update'}
                         </Button>
                     </CardContent>
                 </Card>
             ) : (
-                <Card>
-                    <CardContent className="py-10 text-center text-muted-foreground">
+                <Card className="rounded-2xl border-0 shadow-sm">
+                    <CardContent className="py-14 text-center text-sm text-muted-foreground">
                         {t('no_data')}
                     </CardContent>
                 </Card>

@@ -48,6 +48,15 @@ export const parentNav: NavItem[] = [
     { label: 'memos', href: '/parent/memos', icon: FileText },
 ];
 
+/** Mobile bottom tab bar for parents (max 5 items). */
+export const parentBottomNav: NavItem[] = [
+    { label: 'dashboard', href: '/parent', icon: LayoutDashboard },
+    { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },
+    { label: 'activities', href: '/parent/activities', icon: BookOpen },
+    { label: 'financials', href: '/parent/financials', icon: Wallet },
+    { label: 'messages', href: '/parent/messages', icon: MessageSquare },
+];
+
 /** Role-aware landing path (replaces the removed generic `dashboard` route). */
 export function homePathFor(user?: { role?: string } | null): string {
     switch (user?.role) {

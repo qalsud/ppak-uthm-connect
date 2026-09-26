@@ -1,5 +1,5 @@
 ﻿import { useForm } from '@inertiajs/react';
-import { MessageSquare, Send } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/Components/ui/badge';
@@ -52,6 +52,7 @@ type Props = {
     onSelect: (conversationId: number) => void;
     onStart: (studentId: number) => void;
     onSubmit: (body: string) => void;
+    onBack?: () => void;
     currentUserId: number;
 };
 
@@ -62,6 +63,7 @@ export default function ChatInbox({
     onSelect,
     onStart,
     onSubmit,
+    onBack,
     currentUserId,
 }: Props) {
     const { t } = useI18n();
@@ -89,7 +91,7 @@ export default function ChatInbox({
 
     return (
         <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="h-[520px] overflow-y-auto p-2">
+            <Card className={`h-[520px] overflow-y-auto p-2 ${open ? 'hidden lg:block' : 'block'}`}>
                 <div className="mb-2 flex items-center justify-between px-2 pt-2">
                     <p className="text-sm font-semibold">{t('messages')}</p>
                     {students.length > 0 && (
@@ -154,7 +156,7 @@ export default function ChatInbox({
                 ))}
             </Card>
 
-            <Card className="flex min-h-[320px] flex-col lg:col-span-2">
+            <Card className={`flex min-h-[320px] flex-col lg:col-span-2 ${open ? 'flex' : 'hidden lg:flex'}`}>
                 {!open ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-muted-foreground">
                         <MessageSquare className="size-8" />
@@ -162,7 +164,13 @@ export default function ChatInbox({
                     </div>
                 ) : (
                     <>
-                        <div className="border-b px-4 py-3">
+                        <div className="flex items-center gap-2 border-b px-4 py-3">
+                            <button
+                                onClick={onBack}
+                                className="flex size-8 items-center justify-center rounded-lg hover:bg-accent lg:hidden"
+                            >
+                                <ChevronLeft className="size-5" />
+                            </button>
                             <p className="font-semibold">{open.student.name}</p>
                         </div>
                         <div className="flex-1 space-y-2 overflow-y-auto p-4">

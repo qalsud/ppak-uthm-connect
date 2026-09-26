@@ -7,7 +7,7 @@ import ChatInbox, {
 import type { PageProps } from '@/types';
 import { useI18n } from '@/lib/i18n';
 import PageHeader from '@/Components/page-header';
-import { parentNav } from '@/lib/navigation';
+import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Page = PageProps<{
@@ -33,7 +33,7 @@ export default function ParentMessages() {
     };
 
     return (
-        <AppShell nav={parentNav} title={t('parent')}>
+        <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
             <PageHeader title={t('messages')} description="Chat with your child's teachers" />
             <ChatInbox
                 conversations={props.conversations}
@@ -41,6 +41,7 @@ export default function ParentMessages() {
                 onSelect={select}
                 onStart={() => {}}
                 onSubmit={submit}
+                onBack={() => router.get('/parent/messages')}
                 currentUserId={props.auth.user.id}
             />
         </AppShell>

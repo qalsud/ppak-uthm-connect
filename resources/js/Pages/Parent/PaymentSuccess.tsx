@@ -12,7 +12,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
-import { parentNav } from '@/lib/navigation';
+import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Payment = {
@@ -36,7 +36,7 @@ export default function PaymentSuccess({
     const paid = payment.status === 'paid';
 
     return (
-        <AppShell nav={parentNav} title={t('parent')}>
+        <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
             <div className="mx-auto max-w-2xl space-y-6">
                 <Card>
                     <CardHeader className="items-center text-center">
