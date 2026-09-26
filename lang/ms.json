@@ -189,5 +189,11 @@
     "example": "Contoh",
     "updated": "Dikemas kini",
     "view_more": "Lihat lagi",
-    "view_less": "Lihat kurang"
+    "view_less": "Lihat kurang",
+    "parents": "Ibu bapa",
+    "manage_parents": "Urus akaun ibu bapa",
+    "no_parents_title": "Tiada ibu bapa lagi",
+    "no_parents_desc": "Ibu bapa akan muncul di sini selepas mendaftar dan diluluskan.",
+    "view_receipt": "Resit",
+    "approval.parent_created": "Akaun ibu bapa dicipta."
 }

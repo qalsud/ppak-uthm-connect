@@ -70,6 +70,16 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 **Fees**
 - Live **example calculation** (monthly fee + 2h overtime) and a "last updated" line.
 
+**Parents (new page)**
+- Full parent management at `/admin/parents` (added to the admin sidebar):
+  - List with **children count** (child names on hover) and each child listed on mobile
+  - Status filter + per-status counts, search by name/email
+  - **Create / edit** parents (incl. **password reset**) and **delete** them — children are kept, only the parent link is cleared
+  - CSV export
+
+**Payments — receipts**
+- Admins can now **download a PDF receipt** for any paid fee record (new single-record receipt template that works for both Stripe-paid and manually-marked records; sets the `ReceiptGenerated` flag).
+
 **Shared**
 - New `ConfirmDialog` (replaces every native `confirm()`).
 - New `CsvImportDialog` (file picker + template download + errors).
@@ -79,9 +89,7 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 
 ## Still open (backlog)
 
-- **Parents management**: admins can't browse/manage active parent accounts (only approve/reject), nor reset a parent's password.
-- **Pagination**: students/teachers/payments load all rows — fine now, revisit at scale.
-- **Admin receipts**: parents can download PDF receipts; admins can't (no "view receipt" from Payments).
+- **Pagination**: students/teachers/parents/payments load all rows — fine now, revisit at scale.
 - **CSV import reporting**: invalid rows are silently skipped — a per-row error summary would help.
 - **Audit log**: no record of who changed what.
 - **Memos**: no edit; no audience targeting (all vs a class).
@@ -91,4 +99,4 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 
 ---
 
-*Verified with the browser on all admin pages (no console errors) and 70 Pest tests / 271 assertions.*
+*Verified with the browser on all admin pages (no console errors) and 75 Pest tests / 300 assertions.*

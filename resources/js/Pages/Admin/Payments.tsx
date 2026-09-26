@@ -225,6 +225,16 @@ export default function Payments({ records, months, classes, students, fee, summ
                                         />
                                     </div>
                                     <div className="mt-3 flex gap-2">
+                                        {record.status === 'paid' && (
+                                            <Button size="sm" variant="ghost" asChild title={t('view_receipt')}>
+                                                <a
+                                                    href={route('admin.payments.receipt', { record: record.id })}
+                                                    className="gap-1"
+                                                >
+                                                    <Receipt className="size-4" />
+                                                </a>
+                                            </Button>
+                                        )}
                                         <Button
                                             size="sm"
                                             variant="outline"
@@ -280,6 +290,22 @@ export default function Payments({ records, months, classes, students, fee, summ
                                             </TableCell>
                                             <TableCell>{record.paid_on ?? '—'}</TableCell>
                                             <TableCell className="text-right">
+                                                {record.status === 'paid' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        asChild
+                                                        title={t('view_receipt')}
+                                                    >
+                                                        <a
+                                                            href={route('admin.payments.receipt', {
+                                                                record: record.id,
+                                                            })}
+                                                        >
+                                                            <Receipt className="size-4" />
+                                                        </a>
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     size="sm"
                                                     variant="outline"

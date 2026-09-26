@@ -7,6 +7,7 @@ use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Student;
 use App\Notifications\FeeRecordAddedNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -169,5 +170,21 @@ class PaymentController extends Controller
         $record->delete();
 
         return back()->with('success', __('approval.deleted'));
+    }
+
+    /** Download a PDF receipt for a paid fee record. */
+    public function receipt(FinancialRecord $record)
+    {
+        abort_unless($record->status === 'paid', 404);
+
+        $record->load('student.parent');
+        $record->forceFill(['ReceiptGenerated' => true])->save();
+
+        $pdf = Pdf::loadView('pdf.financial-receipt', [
+            'record' => $record,
+            'issuedAt' => now(),
+        ]);
+
+        return $pdf->download('resit-ppak-uthm-'.$record->id.'.pdf');
     }
 }

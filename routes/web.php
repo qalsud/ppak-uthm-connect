@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
 use App\Http\Controllers\Admin\MemoController;
+use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
@@ -93,6 +94,12 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
 
+            Route::get('/parents', [ParentController::class, 'index'])->name('parents.index');
+            Route::get('/parents/export', [ParentController::class, 'export'])->name('parents.export');
+            Route::post('/parents', [ParentController::class, 'store'])->name('parents.store');
+            Route::put('/parents/{user}', [ParentController::class, 'update'])->name('parents.update');
+            Route::delete('/parents/{user}', [ParentController::class, 'destroy'])->name('parents.destroy');
+
             Route::get('/memos', [MemoController::class, 'index'])->name('memos.index');
             Route::post('/memos', [MemoController::class, 'store'])->name('memos.store');
             Route::delete('/memos/{memo}', [MemoController::class, 'destroy'])->name('memos.destroy');
@@ -101,6 +108,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::put('/fees', [FeeSettingController::class, 'update'])->name('fees.update');
 
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+            Route::get('/payments/{record}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
             Route::post('/payments/generate', [PaymentController::class, 'generate'])->name('payments.generate');
             Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
             Route::patch('/payments/{record}', [PaymentController::class, 'updateStatus'])->name('payments.status');

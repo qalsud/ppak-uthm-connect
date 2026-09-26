@@ -284,3 +284,91 @@ test('registrations can be filtered by status and role with counts', function ()
         ->get(route('admin.registrations.index', ['status' => 'all', 'role' => 'teacher']))
         ->assertInertia(fn (Assert $page) => $page->has('users', 2));
 });
+
+test('admin can manage parents', function () {
+    $this->actingAs(admin())->post(route('admin.parents.store'), [
+        'name' => 'Ibu Siti',
+        'email' => 'siti@ppakuthm.com',
+        'password' => 'password123',
+    ])->assertRedirect();
+
+    $parent = User::query()->where('email', 'siti@ppakuthm.com')->first();
+
+    expect($parent)->not->toBeNull()
+        ->and($parent->role)->toBe(UserRole::Parent)
+        ->and($parent->status)->toBe(AccountStatus::Active);
+
+    $this->actingAs(admin())->put(route('admin.parents.update', $parent), [
+        'name' => 'Ibu Siti Aminah',
+        'email' => 'siti@ppakuthm.com',
+        'status' => 'active',
+    ])->assertRedirect();
+
+    expect($parent->fresh()->name)->toBe('Ibu Siti Aminah');
+
+    $this->actingAs(admin())
+        ->delete(route('admin.parents.destroy', $parent))
+        ->assertRedirect();
+
+    expect(User::find($parent->id))->toBeNull();
+});
+
+test('a parent account cannot be managed through teacher endpoints', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+
+    $this->actingAs(admin())->put(route('admin.teachers.update', $parent), [
+        'name' => 'Nope',
+        'email' => $parent->email,
+        'status' => 'active',
+    ])->assertStatus(422);
+});
+
+test('parents list shows the number of children', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    Student::factory()->count(2)->create(['parent_id' => $parent->id]);
+
+    $this->actingAs(admin())
+        ->get(route('admin.parents.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Parents')
+            ->has('parents', 1)
+            ->where('parents.0.students_count', 2)
+        );
+});
+
+test('deleting a parent keeps the children but clears the link', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    $this->actingAs(admin())
+        ->delete(route('admin.parents.destroy', $parent))
+        ->assertRedirect();
+
+    $student = Student::find($student->id);
+
+    expect($student)->not->toBeNull()
+        ->and($student->parent_id)->toBeNull();
+});
+
+test('admin can download a receipt for a paid record but not an unpaid one', function () {
+    $student = Student::factory()->create();
+
+    $paid = FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'June',
+        'amount' => 300, 'overtime_hours' => 2, 'status' => 'paid', 'paid_on' => now(),
+    ]);
+    $unpaid = FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'July',
+        'amount' => 300, 'overtime_hours' => 0, 'status' => 'unpaid',
+    ]);
+
+    $response = $this->actingAs(admin())->get(route('admin.payments.receipt', $paid));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('pdf');
+    expect($paid->fresh()->ReceiptGenerated)->toBeTrue();
+
+    $this->actingAs(admin())
+        ->get(route('admin.payments.receipt', $unpaid))
+        ->assertNotFound();
+});

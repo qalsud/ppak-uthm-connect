@@ -189,5 +189,11 @@
     "example": "Example",
     "updated": "Updated",
     "view_more": "View more",
-    "view_less": "View less"
+    "view_less": "View less",
+    "parents": "Parents",
+    "manage_parents": "Manage parent accounts",
+    "no_parents_title": "No parents yet",
+    "no_parents_desc": "Parents appear here after they register and are approved.",
+    "view_receipt": "Receipt",
+    "approval.parent_created": "Parent account created."
 }
