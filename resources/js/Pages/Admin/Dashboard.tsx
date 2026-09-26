@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
+import DateChip from '@/Components/date-chip';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import { Badge } from '@/Components/ui/badge';
@@ -86,6 +87,7 @@ export default function AdminDashboard() {
                 title={`${t('welcome')}, ${props.auth.user.name.split(' ')[0]}`}
                 description="Here's what's happening at PPAK today"
             >
+                <DateChip />
                 {stats.pending > 0 && (
                     <Badge variant="destructive" className="gap-1">
                         <CalendarClock className="size-3" />

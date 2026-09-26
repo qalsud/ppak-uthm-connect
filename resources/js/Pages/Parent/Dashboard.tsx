@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
+import DateChip from '@/Components/date-chip';
 import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
@@ -60,7 +61,9 @@ export default function ParentDashboard() {
             <PageHeader
                 title={`${t('welcome')}, ${props.auth.user.name.split(' ')[0]}`}
                 description="Here's how your children are doing today"
-            />
+            >
+                <DateChip />
+            </PageHeader>
 
             {unpaidTotal > 0 && (
                 <Link href="/parent/financials">

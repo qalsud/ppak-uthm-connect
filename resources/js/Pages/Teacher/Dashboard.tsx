@@ -6,15 +6,26 @@ import {
     CheckCircle2,
     FileText,
     Plus,
+    Search,
     XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
+import DateChip from '@/Components/date-chip';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -65,12 +76,43 @@ export default function TeacherDashboard() {
         { label: t('memos'), href: '/teacher/memos', icon: FileText, tint: 'bg-emerald-100 text-emerald-600' },
     ];
 
+    const [classFilter, setClassFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [query, setQuery] = useState('');
+
+    const classFilters = [
+        { value: 'all', label: t('all') },
+        { value: '5tahun', label: '5 Tahun' },
+        { value: '6bintang', label: '6 Bintang' },
+    ];
+
+    const filteredStudents = students.filter((s) => {
+        if (classFilter !== 'all' && s.class !== classFilter) {
+            return false;
+        }
+
+        if (statusFilter === 'activity_pending' && s.activity_logged) {
+            return false;
+        }
+
+        if (statusFilter === 'update_pending' && s.update_received) {
+            return false;
+        }
+
+        if (query && !s.name.toLowerCase().includes(query.toLowerCase())) {
+            return false;
+        }
+
+        return true;
+    });
+
     return (
         <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
             <PageHeader
                 title={`${t('welcome')}, ${props.auth.user.name.split(' ')[0]}`}
                 description="Here's what's happening in class today"
             >
+                <DateChip />
                 <Link href="/teacher/activities" className="hidden sm:block">
                     <Button className="gap-1.5">
                         <Plus className="size-4" />
@@ -103,83 +145,142 @@ export default function TeacherDashboard() {
 
             {/* Students — cards on mobile, table on desktop */}
             <Card className="mb-4 rounded-2xl border-0 shadow-sm">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-base">{t('students')}</CardTitle>
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        {t('students')}
+                        <span className="text-xs font-normal text-muted-foreground">
+                            ({filteredStudents.length}/{students.length})
+                        </span>
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 lg:hidden">
-                    {students.map((s) => (
-                        <div key={s.id} className="rounded-xl border p-3">
-                            <div className="mb-2 flex items-center justify-between">
-                                <div>
-                                    <p className="font-medium">{s.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {classLabel(s.class)}
-                                    </p>
+
+                {/* Filter bar */}
+                <div className="flex flex-wrap items-center gap-2 border-y px-4 py-3">
+                    <div className="flex rounded-lg border p-0.5">
+                        {classFilters.map((f) => (
+                            <button
+                                key={f.value}
+                                type="button"
+                                onClick={() => setClassFilter(f.value)}
+                                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                                    classFilter === f.value
+                                        ? 'bg-brand-navy text-white'
+                                        : 'text-muted-foreground hover:bg-muted'
+                                }`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="h-9 w-44">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('all')}</SelectItem>
+                            <SelectItem value="activity_pending">{t('activity_pending')}</SelectItem>
+                            <SelectItem value="update_pending">{t('update_pending')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <div className="relative min-w-40 flex-1">
+                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder={t('search_name')}
+                            className="pl-9"
+                        />
+                    </div>
+                </div>
+
+                <CardContent className="space-y-3 pt-4 lg:hidden">
+                    {filteredStudents.length === 0 ? (
+                        <p className="py-8 text-center text-sm text-muted-foreground">
+                            {t('no_match')}
+                        </p>
+                    ) : (
+                        filteredStudents.map((s) => (
+                            <div key={s.id} className="rounded-xl border p-3">
+                                <div className="mb-2 flex items-center justify-between">
+                                    <div>
+                                        <p className="font-medium">{s.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {classLabel(s.class)}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <StatusBadge
+                                        status={s.activity_logged ? 'paid' : 'unpaid'}
+                                        label={s.activity_logged ? 'Activity logged' : 'Activity pending'}
+                                    />
+                                    <StatusBadge
+                                        status={s.update_received ? 'active' : 'neutral'}
+                                        label={s.update_received ? 'Update received' : 'No update'}
+                                    />
+                                </div>
+                                <div className="mt-3">
+                                    <AttendanceActions
+                                        studentId={s.id}
+                                        attendance={s.attendance}
+                                        role="teacher"
+                                    />
                                 </div>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                <StatusBadge
-                                    status={s.activity_logged ? 'paid' : 'unpaid'}
-                                    label={s.activity_logged ? 'Activity logged' : 'Activity pending'}
-                                />
-                                <StatusBadge
-                                    status={s.update_received ? 'active' : 'neutral'}
-                                    label={s.update_received ? 'Update received' : 'No update'}
-                                />
-                            </div>
-                            <div className="mt-3">
-                                <AttendanceActions
-                                    studentId={s.id}
-                                    attendance={s.attendance}
-                                    role="teacher"
-                                />
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </CardContent>
                 <CardContent className="hidden lg:block">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-muted/40">
-                                <TableHead>{t('name')}</TableHead>
-                                <TableHead>{t('class')}</TableHead>
-                                <TableHead>{t('daily_activities')}</TableHead>
-                                <TableHead>{t('daily_updates')}</TableHead>
-                                <TableHead>Attendance</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {students.map((s) => (
-                                <TableRow key={s.id}>
-                                    <TableCell className="font-medium">{s.name}</TableCell>
-                                    <TableCell>{classLabel(s.class)}</TableCell>
-                                    <TableCell>
-                                        {s.activity_logged ? (
-                                            <StatusBadge status="paid" label="Logged" />
-                                        ) : (
-                                            <StatusBadge status="neutral" label="Not logged" />
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {s.update_received ? (
-                                            <StatusBadge status="active" label="Received" />
-                                        ) : (
-                                            <StatusBadge status="neutral" label="Pending" />
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="min-w-[220px]">
-                                            <AttendanceActions
-                                                studentId={s.id}
-                                                attendance={s.attendance}
-                                                role="teacher"
-                                            />
-                                        </div>
-                                    </TableCell>
+                    {filteredStudents.length === 0 ? (
+                        <p className="py-8 text-center text-sm text-muted-foreground">
+                            {t('no_match')}
+                        </p>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/40">
+                                    <TableHead>{t('name')}</TableHead>
+                                    <TableHead>{t('class')}</TableHead>
+                                    <TableHead>{t('daily_activities')}</TableHead>
+                                    <TableHead>{t('daily_updates')}</TableHead>
+                                    <TableHead>{t('attendance')}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredStudents.map((s) => (
+                                    <TableRow key={s.id}>
+                                        <TableCell className="font-medium">{s.name}</TableCell>
+                                        <TableCell>{classLabel(s.class)}</TableCell>
+                                        <TableCell>
+                                            {s.activity_logged ? (
+                                                <StatusBadge status="paid" label="Logged" />
+                                            ) : (
+                                                <StatusBadge status="neutral" label="Not logged" />
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {s.update_received ? (
+                                                <StatusBadge status="active" label="Received" />
+                                            ) : (
+                                                <StatusBadge status="neutral" label="Pending" />
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="min-w-[220px]">
+                                                <AttendanceActions
+                                                    studentId={s.id}
+                                                    attendance={s.attendance}
+                                                    role="teacher"
+                                                />
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
 
