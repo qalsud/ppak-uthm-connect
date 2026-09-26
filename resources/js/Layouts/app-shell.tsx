@@ -1,8 +1,9 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { GraduationCap, LifeBuoy, LogOut, Search } from 'lucide-react';
+import { LifeBuoy, LogOut, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
+import Logo from '@/Components/logo';
 import NotificationBell from '@/Components/notification-bell';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
@@ -54,9 +55,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
                         {/* Brand */}
                         <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-5">
-                            <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                <GraduationCap className="size-5" />
-                            </span>
+                            <Logo chip className="size-9" />
                             <div className="leading-tight">
                                 <p className="text-sm font-bold text-white">PPAK UTHM</p>
                                 <p className="text-[11px] text-sidebar-foreground/70">
@@ -99,10 +98,8 @@ export default function AppShell({ children, nav = [], title }: Props) {
                         <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
                             <div className="flex min-w-0 items-center gap-3">
                                 {nav.length > 0 && (
-                                    <Link href="/" className="flex items-center gap-2 lg:hidden">
-                                        <span className="flex size-8 items-center justify-center rounded-lg bg-sidebar text-white">
-                                            <GraduationCap className="size-4" />
-                                        </span>
+                                    <Link href="/" className="lg:hidden">
+                                        <Logo chip className="size-8" />
                                     </Link>
                                 )}
                                 <h1 className="truncate text-lg font-semibold text-foreground">

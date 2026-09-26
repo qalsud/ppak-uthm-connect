@@ -5,13 +5,13 @@ import {
     BookOpen,
     CalendarCheck,
     CreditCard,
-    GraduationCap,
     MessagesSquare,
     ShieldCheck,
     Sparkles,
 } from 'lucide-react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
+import Logo from '@/Components/logo';
 import { Button } from '@/Components/ui/button';
 import { useI18n } from '@/lib/i18n';
 import { homePathFor } from '@/lib/navigation';
@@ -39,9 +39,7 @@ export default function Welcome({ auth }: PageProps) {
                 <header className="sticky top-0 z-40 bg-brand-navy">
                     <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
                         <Link href="/" className="flex items-center gap-2.5">
-                            <span className="flex size-9 items-center justify-center rounded-lg bg-brand-accent text-white">
-                                <GraduationCap className="size-5" />
-                            </span>
+                            <Logo chip className="size-9" />
                             <span className="text-sm font-bold text-white">PPAK UTHM</span>
                         </Link>
                         <nav className="hidden items-center gap-7 text-sm text-white/70 md:flex">
@@ -202,16 +200,17 @@ export default function Welcome({ auth }: PageProps) {
 
                 {/* About / footer */}
                 <footer id="about" className="bg-brand-navy py-14 text-white">
-                    <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center sm:px-6">
-                        <span className="flex size-11 items-center justify-center rounded-xl bg-brand-accent text-white">
-                            <GraduationCap className="size-6" />
-                        </span>
+                    <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6">
+                        <div className="flex flex-wrap items-center justify-center gap-4">
+                            <Logo chip className="size-14" />
+                            <Logo variant="uthm" chip className="h-14 w-48" />
+                        </div>
                         <p className="text-lg font-semibold">PPAK UTHM Connect System</p>
                         <p className="max-w-xl text-sm text-white/60">
                             Pusat Pendidikan Awal Kanak-Kanak, Universiti Tun Hussein Onn Malaysia.
                             Supporting Taska Hikmah UTHM and Tadika Khalifah Junior.
                         </p>
-                        <p className="mt-4 text-xs text-white/40">
+                        <p className="mt-2 text-xs text-white/40">
                             © {new Date().getFullYear()} PPAK UTHM. All rights reserved.
                         </p>
                     </div>

@@ -18,8 +18,22 @@
 </head>
 <body>
     <div class="brand">
-        <h1>PPAK <span style="color:#e3685b">UTHM</span> CONNECT</h1>
-        <p class="muted">Pusat Pendidikan Awal Kanak-Kanak, Universiti Tun Hussein Onn Malaysia</p>
+        @php
+            $ppakLogo = 'data:image/png;base64,'.base64_encode(file_get_contents(public_path('images/logo-ppak.png')));
+            $uthmLogo = 'data:image/png;base64,'.base64_encode(file_get_contents(public_path('images/logo-uthm.png')));
+        @endphp
+        <table style="width:100%;border-collapse:collapse;">
+            <tr>
+                <td style="border:none;padding:0;vertical-align:middle;">
+                    <img src="{{ $ppakLogo }}" style="height:52px;vertical-align:middle;" alt="PPAK">
+                    <span style="font-size:20px;font-weight:bold;color:#152259;margin-left:10px;vertical-align:middle;">PPAK UTHM CONNECT</span>
+                </td>
+                <td style="border:none;padding:0;text-align:right;vertical-align:middle;">
+                    <img src="{{ $uthmLogo }}" style="height:38px;" alt="UTHM">
+                </td>
+            </tr>
+        </table>
+        <p class="muted" style="margin:8px 0 0;">Pusat Pendidikan Awal Kanak-Kanak, Universiti Tun Hussein Onn Malaysia</p>
     </div>
 
     <div class="row"><span>Resit No. / Receipt No.</span><strong>PPAK-{{ $payment->id }}-{{ $payment->created_at->format('Y') }}</strong></div>
