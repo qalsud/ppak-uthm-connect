@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\FeeSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,8 @@ class FeeSettingController extends Controller
 
         $fee = FeeSetting::current();
         $fee->update($data);
+
+        ActivityLog::record('fees.updated', $fee, null, $data);
 
         return back()->with('success', __('approval.fee_updated'));
     }

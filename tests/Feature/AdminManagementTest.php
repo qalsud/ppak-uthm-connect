@@ -2,14 +2,15 @@
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\ActivityLog;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
-use App\Notifications\NewRegistrationNotification;
 use App\Notifications\MemoPostedNotification;
+use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
 use App\Services\Payments\PaymentCompletionService;
 use Illuminate\Http\UploadedFile;
@@ -155,7 +156,8 @@ test('admin can add a payment record that totals fee plus overtime', function ()
     expect($record->fresh()->paid_on)->not->toBeNull();
 });
 
-test('admin can import students from a csv and link parents by email', function () {    $parent = User::factory()->role(UserRole::Parent)->create(['email' => 'ibu@ppakuthm.com']);
+test('admin can import students from a csv and link parents by email', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create(['email' => 'ibu@ppakuthm.com']);
 
     $csv = "name,age,class,parent_email\n"
         ."Ali Ahmad,6,6 Bintang,ibu@ppakuthm.com\n"
@@ -511,5 +513,29 @@ test('parents only see memos addressed to them or their class', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Parent/Memos')
             ->has('memos', 2)
+        );
+});
+
+test('admin actions are recorded in the activity log', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $admin = admin();
+
+    $this->actingAs($admin)->delete(route('admin.teachers.destroy', $teacher));
+
+    $log = ActivityLog::where('action', 'teacher.deleted')->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->description)->toBe($teacher->name)
+        ->and($log->user_id)->toBe($admin->id);
+});
+
+test('the activity log page renders paginated entries', function () {
+    ActivityLog::record('student.created', null, 'Ali Ahmad');
+
+    $this->actingAs(admin())->get(route('admin.activity.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Activity')
+            ->has('logs.data', 1)
+            ->where('logs.data.0.action', 'student.created')
         );
 });

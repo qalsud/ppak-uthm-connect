@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,12 +54,14 @@ class TeacherController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
+        $teacher = User::create([
             ...$data,
             'role' => UserRole::Teacher,
             'status' => AccountStatus::Active,
             'email_verified_at' => now(),
         ]);
+
+        ActivityLog::record('teacher.created', $teacher, $teacher->name);
 
         return back()->with('success', __('approval.teacher_created'));
     }
@@ -81,6 +84,8 @@ class TeacherController extends Controller
         }
 
         $user->update($data);
+
+        ActivityLog::record('teacher.updated', $user, $user->name);
 
         return back()->with('success', __('approval.updated'));
     }
@@ -132,6 +137,11 @@ class TeacherController extends Controller
             $imported++;
         }
 
+        ActivityLog::record('teacher.imported', null, __('approval.imported', ['count' => $imported]), [
+            'imported' => $imported,
+            'skipped' => count($skipped),
+        ]);
+
         return back()
             ->with('success', $imported > 0
                 ? __('approval.imported', ['count' => $imported])
@@ -142,6 +152,8 @@ class TeacherController extends Controller
     public function destroy(Request $request, User $user): RedirectResponse
     {
         abort_if($user->role !== UserRole::Teacher, 422);
+
+        ActivityLog::record('teacher.deleted', null, $user->name);
 
         $user->delete();
 

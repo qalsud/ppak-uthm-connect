@@ -262,5 +262,11 @@
     "approval.nothing_imported": "No rows were imported.",
     "audience": "Audience",
     "audience_all": "Everyone",
-    "audience_class": "A specific class"
+    "audience_class": "A specific class",
+    "activity_log": "Activity log",
+    "activity_desc": "A record of who changed what",
+    "search_activity": "Search by user, action or detail…",
+    "no_activity": "No activity recorded yet",
+    "time": "Time",
+    "user": "User"
 }

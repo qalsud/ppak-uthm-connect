@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -34,7 +35,9 @@ class StudentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Student::create($this->validated($request));
+        $student = Student::create($this->validated($request));
+
+        ActivityLog::record('student.created', $student, $student->name);
 
         return back()->with('success', __('approval.student_created'));
     }
@@ -42,6 +45,8 @@ class StudentController extends Controller
     public function update(Request $request, Student $student): RedirectResponse
     {
         $student->update($this->validated($request));
+
+        ActivityLog::record('student.updated', $student, $student->name);
 
         return back()->with('success', __('approval.updated'));
     }
@@ -89,6 +94,11 @@ class StudentController extends Controller
             $imported++;
         }
 
+        ActivityLog::record('student.imported', null, __('approval.imported', ['count' => $imported]), [
+            'imported' => $imported,
+            'skipped' => count($skipped),
+        ]);
+
         return back()
             ->with('success', $imported > 0
                 ? __('approval.imported', ['count' => $imported])
@@ -119,6 +129,8 @@ class StudentController extends Controller
 
     public function destroy(Request $request, Student $student): RedirectResponse
     {
+        ActivityLog::record('student.deleted', null, $student->name);
+
         $student->delete();
 
         return back()->with('success', __('approval.deleted'));

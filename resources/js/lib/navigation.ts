@@ -6,6 +6,7 @@ import {
     ClipboardList,
     FileText,
     GraduationCap,
+    History,
     LayoutDashboard,
     MessageSquare,
     Settings,
@@ -32,6 +33,7 @@ export const adminNav: NavItem[] = [
     { label: 'parents', href: '/admin/parents', icon: UserRound },
     { label: 'payments', href: '/admin/payments', icon: Wallet },
     { label: 'memos', href: '/admin/memos', icon: FileText },
+    { label: 'activity_log', href: '/admin/activity', icon: History },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
 ];
 

@@ -262,5 +262,11 @@
     "approval.nothing_imported": "Tiada baris diimport.",
     "audience": "Sasaran",
     "audience_all": "Semua orang",
-    "audience_class": "Kelas tertentu"
+    "audience_class": "Kelas tertentu",
+    "activity_log": "Log aktiviti",
+    "activity_desc": "Rekod siapa mengubah apa",
+    "search_activity": "Cari mengikut pengguna, tindakan atau butiran…",
+    "no_activity": "Tiada aktiviti direkodkan lagi",
+    "time": "Masa",
+    "user": "Pengguna"
 }

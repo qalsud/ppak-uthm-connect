@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Student;
@@ -101,6 +102,10 @@ class PaymentController extends Controller
             Notification::send($student->parent, new FeeRecordAddedNotification($record));
         }
 
+        ActivityLog::record('payment.created', $record, ($student?->name ?? '—').' · '.$data['month'], [
+            'amount' => $record->amount,
+        ]);
+
         return back()->with('success', __('approval.payment_created'));
     }
 
@@ -141,6 +146,8 @@ class PaymentController extends Controller
             $created++;
         }
 
+        ActivityLog::record('payment.generated', null, $data['month'], ['created' => $created]);
+
         return back()->with(
             'success',
             $created > 0
@@ -162,11 +169,15 @@ class PaymentController extends Controller
             'paid_on' => $newStatus === 'paid' ? now() : null,
         ]);
 
+        ActivityLog::record('payment.status', $record, $record->student?->name.' · '.$newStatus);
+
         return back()->with('success', __('approval.updated'));
     }
 
     public function destroy(Request $request, FinancialRecord $record): RedirectResponse
     {
+        ActivityLog::record('payment.deleted', null, $record->student?->name.' · '.$record->month);
+
         $record->delete();
 
         return back()->with('success', __('approval.deleted'));

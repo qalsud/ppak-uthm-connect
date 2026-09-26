@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendancePhoto;
 use App\Models\Conversation;
@@ -149,6 +150,11 @@ class AttendanceController extends Controller
         }
 
         $this->postCheckoutMessage($attendance, $student, $photo, $userId);
+
+        ActivityLog::record('attendance.checkout', $student, $student->name, [
+            'photo' => $photo !== null,
+            'override' => $attendance->checkout_photo_override,
+        ]);
 
         if ($student->parent) {
             Notification::send(

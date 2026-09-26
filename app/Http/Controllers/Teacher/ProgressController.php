@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Conversation;
 use App\Models\ProgressPhoto;
 use App\Models\ProgressRecord;
@@ -155,6 +156,10 @@ class ProgressController extends Controller
         if ($photo && $student) {
             $this->postProgressMessage($record, $student, $photo, $request->user()->id);
         }
+
+        ActivityLog::record('progress.recorded', $record, $student?->name, [
+            'photo' => $photo !== null,
+        ]);
 
         return back()->with('success', __('approval.progress_saved'));
     }

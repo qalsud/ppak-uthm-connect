@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
@@ -44,6 +45,8 @@ class MemoController extends Controller
 
         Notification::send($this->recipients($memo), new MemoPostedNotification($memo));
 
+        ActivityLog::record('memo.created', $memo, $memo->title, ['audience' => $memo->audience]);
+
         return back()->with('success', __('approval.memo_created'));
     }
 
@@ -51,11 +54,15 @@ class MemoController extends Controller
     {
         $memo->update($this->validated($request));
 
+        ActivityLog::record('memo.updated', $memo, $memo->title, ['audience' => $memo->audience]);
+
         return back()->with('success', __('approval.updated'));
     }
 
     public function destroy(Request $request, Memo $memo): RedirectResponse
     {
+        ActivityLog::record('memo.deleted', null, $memo->title);
+
         $memo->delete();
 
         return back()->with('success', __('approval.deleted'));

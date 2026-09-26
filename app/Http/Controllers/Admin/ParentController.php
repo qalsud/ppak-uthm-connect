@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,12 +56,14 @@ class ParentController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
+        $parent = User::create([
             ...$data,
             'role' => UserRole::Parent,
             'status' => AccountStatus::Active,
             'email_verified_at' => now(),
         ]);
+
+        ActivityLog::record('parent.created', $parent, $parent->name);
 
         return back()->with('success', __('approval.parent_created'));
     }
@@ -84,6 +87,8 @@ class ParentController extends Controller
 
         $user->update($data);
 
+        ActivityLog::record('parent.updated', $user, $user->name);
+
         return back()->with('success', __('approval.updated'));
     }
 
@@ -92,6 +97,8 @@ class ParentController extends Controller
         abort_if($user->role !== UserRole::Parent, 422);
 
         // Students are kept; their parent link is cleared by the FK (nullOnDelete).
+        ActivityLog::record('parent.deleted', null, $user->name);
+
         $user->delete();
 
         return back()->with('success', __('approval.deleted'));

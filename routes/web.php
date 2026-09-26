@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
 use App\Http\Controllers\Admin\MemoController;
@@ -86,6 +87,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/registrations', [RegistrationController::class, 'index'])->name('registrations.index');
             Route::post('/users/{user}/approve', [RegistrationController::class, 'approve'])->name('users.approve');
             Route::post('/users/{user}/reject', [RegistrationController::class, 'reject'])->name('users.reject');
+
+            Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

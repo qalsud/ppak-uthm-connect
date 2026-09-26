@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,6 +71,8 @@ class RegistrationController extends Controller
             $user->forceFill(['email_verified_at' => now()])->save();
         }
 
+        ActivityLog::record('user.approved', $user, $user->name);
+
         return back()->with('success', __('approval.approved', ['name' => $user->name]));
     }
 
@@ -82,6 +85,8 @@ class RegistrationController extends Controller
             'status' => AccountStatus::Rejected,
             'activation_token' => null,
         ]);
+
+        ActivityLog::record('user.rejected', $user, $user->name);
 
         return back()->with('success', __('approval.rejected', ['name' => $user->name]));
     }
