@@ -237,3 +237,44 @@ test('attendance is scoped to the parent\'s children and keeps one row per day',
 
     expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
 });
+
+test('a parent cannot re-check-in after the child is marked home', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
+    $this->actingAs($parent)
+        ->post(route('parent.attendance.store', $child), ['action' => 'arrive'])
+        ->assertSessionHas('error');
+
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
+});
+
+test('a teacher can override a closed day', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
+
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), [
+        'action' => 'arrive',
+        'date' => today()->toDateString(),
+    ]);
+
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
+});
+
+test('attendance history pages render', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
+
+    $this->actingAs($parent)->get(route('parent.attendance.index'))->assertOk();
+    $this->actingAs($parent)->get(route('parent.children.show', $child))->assertOk();
+    $this->actingAs($teacher)->get(route('teacher.attendance.index'))->assertOk();
+});

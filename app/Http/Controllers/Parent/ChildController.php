@@ -38,6 +38,9 @@ class ChildController extends Controller
                 ->latest('date')
                 ->limit(7)
                 ->get(),
+            'attendanceHistory' => Attendance::historyFor($student->id, 14)
+                ->map(fn (Attendance $a) => $a->historyRow())
+                ->values(),
             'fields' => DailyActivity::FIELDS,
         ]);
     }

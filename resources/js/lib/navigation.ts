@@ -2,6 +2,7 @@ import {
     BellRing,
     BookOpen,
     CalendarCheck,
+    CalendarClock,
     ClipboardList,
     FileText,
     GraduationCap,
@@ -41,6 +42,7 @@ export const adminBottomNav: NavItem[] = [
 
 export const teacherNav: NavItem[] = [
     { label: 'dashboard', href: '/teacher', icon: LayoutDashboard },
+    { label: 'attendance', href: '/teacher/attendance', icon: CalendarClock },
     { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },
     { label: 'progress', href: '/teacher/progress', icon: BookOpen },
     { label: 'daily_updates', href: '/teacher/daily-updates', icon: BellRing },
@@ -51,14 +53,15 @@ export const teacherNav: NavItem[] = [
 /** Mobile bottom tab bar for teachers (max 5 items). */
 export const teacherBottomNav: NavItem[] = [
     { label: 'dashboard', href: '/teacher', icon: LayoutDashboard },
+    { label: 'attendance', href: '/teacher/attendance', icon: CalendarClock },
     { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },
-    { label: 'progress', href: '/teacher/progress', icon: BookOpen },
     { label: 'daily_updates', href: '/teacher/daily-updates', icon: BellRing },
     { label: 'messages', href: '/teacher/messages', icon: MessageSquare },
 ];
 
 export const parentNav: NavItem[] = [
     { label: 'dashboard', href: '/parent', icon: LayoutDashboard },
+    { label: 'attendance', href: '/parent/attendance', icon: CalendarClock },
     { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },
     { label: 'activities', href: '/parent/activities', icon: BookOpen },
     { label: 'financials', href: '/parent/financials', icon: Wallet },
@@ -70,8 +73,8 @@ export const parentNav: NavItem[] = [
 /** Mobile bottom tab bar for parents (max 5 items). */
 export const parentBottomNav: NavItem[] = [
     { label: 'dashboard', href: '/parent', icon: LayoutDashboard },
+    { label: 'attendance', href: '/parent/attendance', icon: CalendarClock },
     { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },
-    { label: 'activities', href: '/parent/activities', icon: BookOpen },
     { label: 'financials', href: '/parent/financials', icon: Wallet },
     { label: 'messages', href: '/parent/messages', icon: MessageSquare },
 ];

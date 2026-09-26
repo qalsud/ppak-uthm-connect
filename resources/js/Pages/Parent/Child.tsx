@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, MessagesSquare } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -8,6 +8,7 @@ import AttendanceActions, { type AttendanceSummary } from '@/Components/attendan
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
+import { formatDate } from '@/lib/date';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -37,19 +38,28 @@ type Progress = {
     permata_activity: string;
     development_proficiency: string;
 };
+type HistoryRow = {
+    id: number;
+    date: string;
+    day: string;
+    status: 'none' | 'school' | 'home';
+    arrived_at: string | null;
+    departed_at: string | null;
+};
 
 type Page = PageProps<{
     child: Child;
     updates: Update[];
     activities: Activity[];
     progress: Progress[];
+    attendanceHistory: HistoryRow[];
     fields: Record<string, string>;
 }>;
 
 export default function ParentChild() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { child, updates, activities, progress, fields } = props;
+    const { child, updates, activities, progress, attendanceHistory, fields } = props;
     const [paying, setPaying] = useState(false);
 
     const checkout = () => {
@@ -122,6 +132,52 @@ export default function ParentChild() {
                             </Button>
                         </Link>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Attendance history */}
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <History className="size-4 text-primary" />
+                        {t('attendance_history')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {attendanceHistory.length === 0 ? (
+                        <p className="py-6 text-center text-sm text-muted-foreground">{t('no_data')}</p>
+                    ) : (
+                        <div className="space-y-1.5">
+                            {attendanceHistory.map((row) => {
+                                const meta =
+                                    row.status === 'school'
+                                        ? { label: t('at_school'), cls: 'bg-sky-100 text-sky-700' }
+                                        : row.status === 'home'
+                                          ? { label: t('back_home'), cls: 'bg-emerald-100 text-emerald-700' }
+                                          : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
+
+                                return (
+                                    <div
+                                        key={row.id}
+                                        className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="truncate text-xs font-medium">{formatDate(row.date)}</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {t('arrived_at')}: {row.arrived_at ?? '—'} ·{' '}
+                                                {t('departed_at')}: {row.departed_at ?? '—'}
+                                            </p>
+                                        </div>
+                                        <span
+                                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.cls}`}
+                                        >
+                                            {meta.label}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

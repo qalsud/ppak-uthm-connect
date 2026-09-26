@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, Lock } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/Components/ui/button';
@@ -17,10 +17,16 @@ export default function AttendanceActions({
     studentId,
     attendance = empty,
     role,
+    date,
+    showChip = true,
 }: {
     studentId: number;
     attendance?: AttendanceSummary;
     role: 'parent' | 'teacher';
+    /** Register date (teachers only). Defaults to today server-side. */
+    date?: string;
+    /** Render the status chip above the buttons (set false when the caller shows its own). */
+    showChip?: boolean;
 }) {
     const { t } = useI18n();
     const [busy, setBusy] = useState<'arrive' | 'depart' | null>(null);
@@ -32,7 +38,7 @@ export default function AttendanceActions({
                 role === 'parent' ? 'parent.attendance.store' : 'teacher.attendance.store',
                 { student: studentId },
             ),
-            { action },
+            date ? { action, date } : { action },
             { preserveScroll: true, onFinish: () => setBusy(null) },
         );
     };
@@ -49,17 +55,22 @@ export default function AttendanceActions({
     const arriveLabel = role === 'parent' ? t('send_to_school') : t('at_school');
     const departLabel = role === 'parent' ? t('bring_home') : t('back_home');
 
+    // Parents are locked once the child is back home — it resets the next day.
+    const parentLocked = role === 'parent' && status === 'home';
+
     return (
         <div className="space-y-2">
-            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${chip.cls}`}>
-                {chip.label}
-            </span>
+            {showChip && (
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${chip.cls}`}>
+                    {chip.label}
+                </span>
+            )}
             <div className="grid grid-cols-2 gap-2">
                 <Button
                     type="button"
                     variant="outline"
                     className="h-10 gap-1.5 rounded-xl text-xs"
-                    disabled={busy !== null || status === 'school'}
+                    disabled={busy !== null || status === 'school' || parentLocked}
                     onClick={() => post('arrive')}
                 >
                     <LogIn className="size-4" />
@@ -76,6 +87,12 @@ export default function AttendanceActions({
                     {departLabel}
                 </Button>
             </div>
+            {parentLocked && (
+                <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Lock className="size-3" />
+                    {t('locked_until_tomorrow')}
+                </p>
+            )}
         </div>
     );
 }
