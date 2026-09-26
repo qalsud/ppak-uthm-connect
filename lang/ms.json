@@ -259,5 +259,8 @@
     "reason_invalid_class": "Kelas tidak sah",
     "reason_missing_email": "Tiada e-mel",
     "reason_duplicate_email": "E-mel sudah wujud",
-    "approval.nothing_imported": "Tiada baris diimport."
+    "approval.nothing_imported": "Tiada baris diimport.",
+    "audience": "Sasaran",
+    "audience_all": "Semua orang",
+    "audience_class": "Kelas tertentu"
 }

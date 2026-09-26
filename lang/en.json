@@ -259,5 +259,8 @@
     "reason_invalid_class": "Invalid class",
     "reason_missing_email": "Missing email",
     "reason_duplicate_email": "Email already exists",
-    "approval.nothing_imported": "No rows were imported."
+    "approval.nothing_imported": "No rows were imported.",
+    "audience": "Audience",
+    "audience_all": "Everyone",
+    "audience_class": "A specific class"
 }

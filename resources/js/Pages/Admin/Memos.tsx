@@ -1,10 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
-import { ChevronDown, FileText, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -16,6 +17,13 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
@@ -26,25 +34,60 @@ type Memo = {
     id: number;
     title: string;
     description: string;
+    audience: 'all' | 'parents' | 'teachers' | 'class';
+    class: string | null;
     created_at: string;
     author: { id: number; name: string } | null;
 };
 
-export default function Memos({ memos }: { memos: Memo[] }) {
+const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
+
+export default function Memos({ memos, classes }: { memos: Memo[]; classes: string[] }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
+    const [editing, setEditing] = useState<Memo | null>(null);
     const [expanded, setExpanded] = useState<number[]>([]);
     const [deleteTarget, setDeleteTarget] = useState<Memo | null>(null);
 
-    const form = useForm({ title: '', description: '' });
+    const form = useForm({ title: '', description: '', audience: 'all', class: '' });
 
-    const submit = () =>
-        form.post(route('admin.memos.store'), {
-            onSuccess: () => {
-                setOpen(false);
-                form.reset();
-            },
+    const audienceLabel = (memo: Memo) =>
+        memo.audience === 'class'
+            ? classLabel(memo.class ?? '')
+            : memo.audience === 'parents'
+              ? t('parents')
+              : memo.audience === 'teachers'
+                ? t('teachers')
+                : t('audience_all');
+
+    const openCreate = () => {
+        setEditing(null);
+        form.setData({ title: '', description: '', audience: 'all', class: '' });
+        form.clearErrors();
+        setOpen(true);
+    };
+
+    const openEdit = (memo: Memo) => {
+        setEditing(memo);
+        form.setData({
+            title: memo.title,
+            description: memo.description,
+            audience: memo.audience,
+            class: memo.class ?? '',
         });
+        form.clearErrors();
+        setOpen(true);
+    };
+
+    const submit = () => {
+        if (editing) {
+            form.put(route('admin.memos.update', { memo: editing.id }), {
+                onSuccess: () => setOpen(false),
+            });
+        } else {
+            form.post(route('admin.memos.store'), { onSuccess: () => setOpen(false) });
+        }
+    };
 
     const confirmRemove = () => {
         if (!deleteTarget) {
@@ -63,7 +106,7 @@ export default function Memos({ memos }: { memos: Memo[] }) {
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('memos')} description={t('announcements_desc')}>
-                <Button onClick={() => setOpen(true)} className="gap-1.5">
+                <Button onClick={openCreate} className="gap-1.5">
                     <Plus className="size-4" />
                     {t('add')} {t('memo')}
                 </Button>
@@ -85,20 +128,32 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                         return (
                             <Card key={memo.id} className="rounded-2xl border-0 shadow-sm">
                                 <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
-                                    <div>
+                                    <div className="min-w-0">
                                         <CardTitle className="text-base">{memo.title}</CardTitle>
                                         <p className="mt-0.5 text-xs text-muted-foreground">
                                             {memo.author?.name} · {formatDate(memo.created_at)}
                                         </p>
+                                        <Badge variant="secondary" className="mt-1.5">
+                                            {audienceLabel(memo)}
+                                        </Badge>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="text-destructive"
-                                        onClick={() => setDeleteTarget(memo)}
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Button>
+                                    <div className="flex shrink-0">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => openEdit(memo)}
+                                        >
+                                            <Pencil className="size-4" />
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="text-destructive"
+                                            onClick={() => setDeleteTarget(memo)}
+                                        >
+                                            <Trash2 className="size-4" />
+                                        </Button>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     <p
@@ -131,7 +186,7 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {t('add')} {t('memo')}
+                            {editing ? `${t('edit')} ${t('memo')}` : `${t('add')} ${t('memo')}`}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
@@ -145,6 +200,46 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                                 <p className="text-xs text-destructive">{form.errors.title}</p>
                             )}
                         </div>
+                        <div className="space-y-1">
+                            <Label>{t('audience')}</Label>
+                            <Select
+                                value={form.data.audience}
+                                onValueChange={(v) => form.setData('audience', v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('audience_all')}</SelectItem>
+                                    <SelectItem value="parents">{t('parents')}</SelectItem>
+                                    <SelectItem value="teachers">{t('teachers')}</SelectItem>
+                                    <SelectItem value="class">{t('audience_class')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {form.data.audience === 'class' && (
+                            <div className="space-y-1">
+                                <Label>{t('class')}</Label>
+                                <Select
+                                    value={form.data.class}
+                                    onValueChange={(v) => form.setData('class', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('class')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {classes.map((c) => (
+                                            <SelectItem key={c} value={c}>
+                                                {classLabel(c)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {form.errors.class && (
+                                    <p className="text-xs text-destructive">{form.errors.class}</p>
+                                )}
+                            </div>
+                        )}
                         <div className="space-y-1">
                             <Label>{t('description')}</Label>
                             <Textarea
@@ -162,7 +257,7 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                             {t('cancel')}
                         </Button>
                         <Button onClick={submit} disabled={form.processing}>
-                            {t('create')}
+                            {editing ? t('save') : t('create')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

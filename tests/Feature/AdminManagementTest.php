@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\NewRegistrationNotification;
+use App\Notifications\MemoPostedNotification;
 use App\Notifications\PaymentReceivedNotification;
 use App\Services\Payments\PaymentCompletionService;
 use Illuminate\Http\UploadedFile;
@@ -447,4 +448,68 @@ test('admins are notified when a payment completes', function () {
     app(PaymentCompletionService::class)->complete($payment);
 
     Notification::assertSentTo($admin, PaymentReceivedNotification::class);
+});
+
+test('admin can edit a memo and change its audience', function () {
+    $author = admin();
+    $memo = Memo::create([
+        'author_id' => $author->id, 'title' => 'A', 'description' => 'B', 'audience' => 'all',
+    ]);
+
+    $this->actingAs($author)->put(route('admin.memos.update', $memo), [
+        'title' => 'A2',
+        'description' => 'B2',
+        'audience' => 'parents',
+    ])->assertRedirect();
+
+    $memo->refresh();
+
+    expect($memo->title)->toBe('A2')
+        ->and($memo->audience)->toBe('parents')
+        ->and($memo->class)->toBeNull();
+});
+
+test('a class memo requires a class and only notifies that class', function () {
+    Notification::fake();
+
+    $parent5 = User::factory()->role(UserRole::Parent)->create();
+    Student::factory()->create(['parent_id' => $parent5->id, 'class' => '5tahun']);
+    $parent6 = User::factory()->role(UserRole::Parent)->create();
+    Student::factory()->create(['parent_id' => $parent6->id, 'class' => '6bintang']);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    // Missing class → validation error.
+    $this->actingAs(admin())->post(route('admin.memos.store'), [
+        'title' => 'Oops', 'description' => 'x', 'audience' => 'class',
+    ])->assertSessionHasErrors('class');
+
+    $this->actingAs(admin())->post(route('admin.memos.store'), [
+        'title' => 'Kelas 5 sahaja',
+        'description' => 'Untuk kelas 5 tahun.',
+        'audience' => 'class',
+        'class' => '5tahun',
+    ])->assertRedirect();
+
+    Notification::assertSentTo($parent5, MemoPostedNotification::class);
+    Notification::assertSentTo($teacher, MemoPostedNotification::class);
+    Notification::assertNotSentTo($parent6, MemoPostedNotification::class);
+});
+
+test('parents only see memos addressed to them or their class', function () {
+    $author = admin();
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    Student::factory()->create(['parent_id' => $parent->id, 'class' => '5tahun']);
+
+    $make = fn (array $attrs) => Memo::create([...$attrs, 'author_id' => $author->id, 'description' => 'x']);
+
+    $make(['title' => 'For parents', 'audience' => 'parents']);
+    $make(['title' => 'For teachers', 'audience' => 'teachers']);
+    $make(['title' => 'For class 5', 'audience' => 'class', 'class' => '5tahun']);
+    $make(['title' => 'For class 6', 'audience' => 'class', 'class' => '6bintang']);
+
+    $this->actingAs($parent)->get(route('parent.memos.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Parent/Memos')
+            ->has('memos', 2)
+        );
 });

@@ -13,6 +13,7 @@ class MemoController extends Controller
     {
         $memos = Memo::query()
             ->with('author:id,name')
+            ->whereIn('audience', ['all', 'teachers', 'class'])
             ->orderBy('created_at', 'desc')
             ->get();
 
