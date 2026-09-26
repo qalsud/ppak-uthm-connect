@@ -38,8 +38,45 @@ class DashboardController extends Controller
                 ->sum('amount'),
         ];
 
+        // Monthly income bars (Jan – Dec), from paid records by displayed month.
+        $months = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        $incomeByMonth = FinancialRecord::query()
+            ->where('status', 'paid')
+            ->get()
+            ->groupBy(fn ($r) => $r->Month ?? $r->month)
+            ->map(fn ($rows) => (float) $rows->sum('amount'));
+
+        $monthlyChart = array_map(
+            fn ($month) => ['month' => substr($month, 0, 3), 'value' => round($incomeByMonth->get($month, 0), 2)],
+            $months
+        );
+
+        $classDistribution = [
+            ['label' => '5 Tahun', 'value' => Student::query()->where('class', '5tahun')->count()],
+            ['label' => '6 Bintang', 'value' => Student::query()->where('class', '6bintang')->count()],
+        ];
+
+        $recentPayments = FinancialRecord::query()
+            ->with('student:id,name,class')
+            ->latest('created_at')
+            ->limit(8)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'student' => $r->student?->name ?? '—',
+                'month' => $r->month,
+                'amount' => (float) $r->amount,
+                'status' => $r->status,
+                'paid_on' => $r->paid_on?->format('d M Y'),
+            ]);
+
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
+            'monthlyChart' => $monthlyChart,
+            'classDistribution' => $classDistribution,
+            'recentPayments' => $recentPayments,
         ]);
     }
 }

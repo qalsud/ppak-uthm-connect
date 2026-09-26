@@ -62,15 +62,15 @@ export default function AppShell({ children, nav = [], title }: Props) {
                 {nav.length > 0 && (
                     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
                         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
-                            <span className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
                                 <GraduationCap className="size-5" />
                             </span>
                             <div className="leading-tight">
                                 <p className="text-sm font-bold">
                                     <span className="text-brand-red-strong">PPAK</span>{' '}
-                                    <span className="text-[#9ec5ff]">UTHM</span>
+                                    <span className="text-brand-blue">UTHM</span>
                                 </p>
-                                <p className="text-[11px] text-sidebar-foreground/60">Connect</p>
+                                <p className="text-[11px] text-muted-foreground">Connect</p>
                             </div>
                         </div>
                         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
@@ -83,7 +83,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                             ))}
                         </nav>
                         <div className="border-t border-sidebar-border p-3">
-                            <p className="truncate px-2 py-1 text-xs text-sidebar-foreground/60">
+                            <p className="truncate px-2 py-1 text-xs text-muted-foreground">
                                 {user?.email}
                             </p>
                         </div>
@@ -184,8 +184,8 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
             href={item.href}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                    : 'text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             }`}
         >
             <Icon className="size-4 shrink-0" />
