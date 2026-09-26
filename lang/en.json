@@ -63,6 +63,8 @@
     "no_match": "No students match the filter.",
     "all": "All",
     "search_name": "Search name…",
+    "update": "Update",
+    "updates": "Updates",
     "activity_pending": "Activity pending",
     "update_pending": "Update pending",
     "student_id": "Student ID",

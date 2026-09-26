@@ -207,7 +207,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                             {unreadMessages > 9 ? '9+' : unreadMessages}
                                         </span>
                                     )}
-                                    {t(item.label)}
+                                    {t(item.shortLabel ?? item.label)}
                                 </Link>
                             );
                         })}

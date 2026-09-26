@@ -17,6 +17,8 @@ import {
 export type NavItem = {
     /** i18n key */
     label: string;
+    /** Optional shorter i18n key used only in the mobile bottom bar. */
+    shortLabel?: string;
     href: string;
     icon: LucideIcon;
 };
@@ -54,8 +56,8 @@ export const teacherNav: NavItem[] = [
 export const teacherBottomNav: NavItem[] = [
     { label: 'dashboard', href: '/teacher', icon: LayoutDashboard },
     { label: 'attendance', href: '/teacher/attendance', icon: CalendarClock },
-    { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },
-    { label: 'daily_updates', href: '/teacher/daily-updates', icon: BellRing },
+    { label: 'daily_activities', shortLabel: 'activities', href: '/teacher/activities', icon: CalendarCheck },
+    { label: 'daily_updates', shortLabel: 'updates', href: '/teacher/daily-updates', icon: BellRing },
     { label: 'messages', href: '/teacher/messages', icon: MessageSquare },
 ];
 
@@ -74,7 +76,7 @@ export const parentNav: NavItem[] = [
 export const parentBottomNav: NavItem[] = [
     { label: 'dashboard', href: '/parent', icon: LayoutDashboard },
     { label: 'attendance', href: '/parent/attendance', icon: CalendarClock },
-    { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },
+    { label: 'daily_update', shortLabel: 'update', href: '/parent/daily-update', icon: CalendarCheck },
     { label: 'financials', href: '/parent/financials', icon: Wallet },
     { label: 'messages', href: '/parent/messages', icon: MessageSquare },
 ];
