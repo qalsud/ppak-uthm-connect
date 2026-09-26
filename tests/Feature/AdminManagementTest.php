@@ -7,10 +7,21 @@ use App\Models\FinancialRecord;
 use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function admin(): User
 {
     return User::factory()->role(UserRole::Admin)->create();
+}
+
+function csvUpload(string $name, string $content): UploadedFile
+{
+    $path = tempnam(sys_get_temp_dir(), 'csv');
+    file_put_contents($path, $content);
+
+    return new UploadedFile($path, $name, 'text/csv', null, true);
 }
 
 test('guest is redirected from admin pages to login', function () {
@@ -136,4 +147,140 @@ test('admin can add a payment record that totals fee plus overtime', function ()
 
     expect($record->fresh()->status)->toBe('paid');
     expect($record->fresh()->paid_on)->not->toBeNull();
+});
+
+test('admin can import students from a csv and link parents by email', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create(['email' => 'ibu@ppakuthm.com']);
+
+    $csv = "name,age,class,parent_email\n"
+        ."Ali Ahmad,6,6 Bintang,ibu@ppakuthm.com\n"
+        ."Siti Aminah,5,5tahun,\n"
+        .",7,5tahun,ibu@ppakuthm.com\n";
+
+    $this->actingAs(admin())
+        ->post(route('admin.students.import'), ['file' => csvUpload('students.csv', $csv)])
+        ->assertRedirect();
+
+    $ali = Student::query()->where('name', 'Ali Ahmad')->first();
+
+    expect($ali)->not->toBeNull()
+        ->and($ali->class)->toBe('6bintang')
+        ->and($ali->parent_id)->toBe($parent->id);
+
+    expect(Student::query()->where('name', 'Siti Aminah')->exists())->toBeTrue();
+    expect(Student::count())->toBe(2);
+});
+
+test('a student cannot be linked to a non-parent account', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs(admin())->post(route('admin.students.store'), [
+        'name' => 'Ali Ahmad',
+        'age' => 6,
+        'class' => '6bintang',
+        'parent_id' => $teacher->id,
+    ])->assertSessionHasErrors('parent_id');
+
+    expect(Student::count())->toBe(0);
+});
+
+test('admin can import teachers from a csv with a default password', function () {
+    $csv = "name,email,ic_number,phone\n"
+        ."Cikgu Nurin,nurin@ppakuthm.com,900101-01-1234,0123456789\n";
+
+    $this->actingAs(admin())
+        ->post(route('admin.teachers.import'), ['file' => csvUpload('teachers.csv', $csv)])
+        ->assertRedirect();
+
+    $teacher = User::query()->where('email', 'nurin@ppakuthm.com')->first();
+
+    expect($teacher)->not->toBeNull()
+        ->and($teacher->role)->toBe(UserRole::Teacher)
+        ->and($teacher->status)->toBe(AccountStatus::Active);
+
+    expect(Hash::check('password123', $teacher->password))->toBeTrue();
+});
+
+test('admin can reset a teacher password', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['password' => 'oldpassword']);
+
+    $this->actingAs(admin())->put(route('admin.teachers.update', $teacher), [
+        'name' => $teacher->name,
+        'email' => $teacher->email,
+        'status' => 'active',
+        'password' => 'newpassword',
+    ])->assertRedirect();
+
+    expect(Hash::check('newpassword', $teacher->fresh()->password))->toBeTrue();
+});
+
+test('admin can generate monthly fees for every student', function () {
+    FeeSetting::create(['monthly_fee' => 310.00, 'overtime_rate' => 6.00]);
+
+    $existing = Student::factory()->create();
+    $fresh = Student::factory()->create();
+
+    FinancialRecord::create([
+        'student_id' => $existing->id,
+        'month' => 'July',
+        'amount' => 310,
+        'overtime_hours' => 0,
+        'status' => 'unpaid',
+    ]);
+
+    $this->actingAs(admin())
+        ->post(route('admin.payments.generate'), ['month' => 'July'])
+        ->assertRedirect();
+
+    // The pre-existing record is skipped; the other student gets one.
+    expect(FinancialRecord::query()->where('month', 'July')->count())->toBe(2);
+
+    $record = FinancialRecord::query()
+        ->where('student_id', $fresh->id)
+        ->where('month', 'July')
+        ->first();
+
+    expect($record)->not->toBeNull()
+        ->and($record->amount)->toBe('310.00')
+        ->and($record->status)->toBe('unpaid');
+});
+
+test('payment records can be filtered by status', function () {
+    $student = Student::factory()->create();
+
+    FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'June',
+        'amount' => 300, 'overtime_hours' => 0, 'status' => 'paid', 'paid_on' => now(),
+    ]);
+    FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'July',
+        'amount' => 300, 'overtime_hours' => 0, 'status' => 'unpaid',
+    ]);
+
+    $this->actingAs(admin())
+        ->get(route('admin.payments.index', ['status' => 'unpaid']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Payments')
+            ->has('records', 1)
+            ->where('records.0.status', 'unpaid')
+        );
+});
+
+test('registrations can be filtered by status and role with counts', function () {
+    User::factory()->role(UserRole::Parent)->pending()->create();
+    User::factory()->role(UserRole::Teacher)->create();
+    User::factory()->role(UserRole::Teacher)->pending()->create();
+
+    $this->actingAs(admin())
+        ->get(route('admin.registrations.index', ['status' => 'pending']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Registrations')
+            ->has('users', 2)
+            ->where('counts.pending', 2)
+            ->where('counts.active', 1)
+        );
+
+    $this->actingAs(admin())
+        ->get(route('admin.registrations.index', ['status' => 'all', 'role' => 'teacher']))
+        ->assertInertia(fn (Assert $page) => $page->has('users', 2));
 });

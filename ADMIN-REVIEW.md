@@ -1,0 +1,94 @@
+# Admin Site Review & Improvements
+
+A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, and consistent with the parent/teacher portals. Everything below is implemented and covered by tests unless noted under **Still open**.
+
+---
+
+## What was broken or rough
+
+| # | Issue | Where |
+|---|---|---|
+| 1 | Literal placeholder copy `"A sub copy here"` shipped in the UI | Dashboard |
+| 2 | Pending-registrations badge looked clickable but wasn't | Dashboard |
+| 3 | "Add student" quick action opened the list, not the form | Dashboard |
+| 4 | Monthly income chart had no amounts/tooltips | Dashboard |
+| 5 | Hardcoded English (not localised) labels | Dashboard, all pages |
+| 6 | Student **Parent ID** was a raw number text box (you had to know the id) | Students |
+| 7 | No class filter; count of results unclear | Students |
+| 8 | CSV import tab was a disabled "coming soon" placeholder | Students, Teachers |
+| 9 | `parent_id` validated only `exists:users,id` — a **teacher id was accepted** as a parent | Students |
+| 10 | Age input allowed 2–12 but the server enforced 3–10 | Students |
+| 11 | No status filter; deletes used the native `confirm()` popup | Teachers |
+| 12 | Admin could not reset a teacher's password | Teachers |
+| 13 | Payment **Student ID** was a raw number text box | Payments |
+| 14 | No paid/unpaid filter; no fee totals; `paid_on` hidden; one record at a time only | Payments |
+| 15 | Approve/reject list showed **only pending** users — no way to see active/rejected accounts | Registrations |
+| 16 | Native `confirm()` popups everywhere (inconsistent, unstylesable) | Students/Teachers/Payments/Memos |
+| 17 | Memos truncated at 4 lines with no way to expand | Memos |
+| 18 | Fee page gave no feedback about what the numbers mean | Fees |
+
+## What changed
+
+**Dashboard**
+- Removed the placeholder; real localised subtitle + chart caption.
+- Pending badge is now a **link to Registrations**.
+- "Add student" opens the create dialog directly (`/admin/students?create=1`).
+- Chart bars show the amount on hover.
+- All labels localised (EN/BM).
+
+**Students**
+- **Parent dropdown** (name · email) replaces the raw ID box, incl. "Unassigned".
+- **Class filter** + live `shown/total` count.
+- **Real CSV import** (columns: `name, age, class, parent_email`) with a downloadable template; links parents by email; skips blank/invalid rows.
+- `parent_id` now validated to be an actual **parent** account.
+- Age aligned to 3–10.
+- Delete uses a proper **ConfirmDialog**.
+
+**Teachers**
+- **Real CSV import** (columns: `name, email, ic_number, phone, password`) with template; defaults password to `password123` when omitted.
+- **Status filter** (Pending / Active / Awaiting / Rejected) with per-status counts.
+- **Password reset** when editing (leave blank to keep).
+- ConfirmDialog for delete; localised.
+
+**Payments**
+- **Student dropdown** (name · class) replaces the raw ID box.
+- **Paid/Unpaid filter** (plus existing month + class filters).
+- **Summary cards**: collected this month, total outstanding, unpaid-record count.
+- `Paid on` column; localised Paid/Unpaid/Mark paid buttons.
+- **Generate monthly fees** — one click creates an unpaid record for every student for a chosen month, skipping those who already have one (and notifies parents). No more adding records one-by-one.
+- ConfirmDialog for delete.
+
+**Registrations** → now a proper **user manager**
+- **Pending / Active / Rejected / All tabs** with live counts.
+- **Role filter** (All / Parent / Teacher) + **debounced search** by name/email.
+- Status badges + formatted dates; approve/reject only on pending rows.
+
+**Memos**
+- "View more / view less" expansion for long announcements.
+- ConfirmDialog; localised empty states.
+
+**Fees**
+- Live **example calculation** (monthly fee + 2h overtime) and a "last updated" line.
+
+**Shared**
+- New `ConfirmDialog` (replaces every native `confirm()`).
+- New `CsvImportDialog` (file picker + template download + errors).
+- ~60 new bilingual i18n keys.
+
+---
+
+## Still open (backlog)
+
+- **Parents management**: admins can't browse/manage active parent accounts (only approve/reject), nor reset a parent's password.
+- **Pagination**: students/teachers/payments load all rows — fine now, revisit at scale.
+- **Admin receipts**: parents can download PDF receipts; admins can't (no "view receipt" from Payments).
+- **CSV import reporting**: invalid rows are silently skipped — a per-row error summary would help.
+- **Audit log**: no record of who changed what.
+- **Memos**: no edit; no audience targeting (all vs a class).
+- **Admin notifications**: new registrations surface only as a dashboard count (no notification/email).
+- **Admin student detail page**: could reuse the parent child page to view attendance/updates/progress.
+- **Bulk actions**: no multi-select delete/approve.
+
+---
+
+*Verified with the browser on all admin pages (no console errors) and 70 Pest tests / 271 assertions.*

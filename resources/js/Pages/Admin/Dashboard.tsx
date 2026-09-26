@@ -75,7 +75,7 @@ export default function AdminDashboard() {
     const donut = classDistribution.map((c) => (c.value / totalStudents) * 100);
 
     const actions = [
-        { label: t('add') + ' ' + t('student'), href: '/admin/students', icon: GraduationCap, tint: 'bg-sky-100 text-sky-600' },
+        { label: t('add') + ' ' + t('student'), href: '/admin/students?create=1', icon: GraduationCap, tint: 'bg-sky-100 text-sky-600' },
         { label: t('registrations'), href: '/admin/registrations', icon: ClipboardList, tint: 'bg-violet-100 text-violet-600' },
         { label: t('memos'), href: '/admin/memos', icon: FileText, tint: 'bg-amber-100 text-amber-600' },
         { label: t('fee_settings'), href: '/admin/fees', icon: Settings, tint: 'bg-emerald-100 text-emerald-600' },
@@ -85,16 +85,18 @@ export default function AdminDashboard() {
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader
                 title={`${t('welcome')}, ${props.auth.user.name.split(' ')[0]}`}
-                description="Here's what's happening at PPAK today"
+                description={t('dashboard_subtitle')}
             >
                 <DateChip />
                 {stats.pending > 0 && (
-                    <Badge variant="destructive" className="gap-1">
-                        <CalendarClock className="size-3" />
-                        {t('pending')}: {stats.pending}
-                    </Badge>
+                    <Link href="/admin/registrations">
+                        <Badge variant="destructive" className="cursor-pointer gap-1">
+                            <CalendarClock className="size-3" />
+                            {t('pending')}: {stats.pending}
+                        </Badge>
+                    </Link>
                 )}
-                <Link href="/admin/students" className="hidden sm:block">
+                <Link href="/admin/students?create=1" className="hidden sm:block">
                     <Button className="gap-1.5">
                         <Plus className="size-4" />
                         {t('add')} {t('student')}
@@ -123,7 +125,7 @@ export default function AdminDashboard() {
                 <StatCard label={t('parent')} value={stats.parents} icon={UserCheck} />
                 <StatCard label={t('pending')} value={stats.pending} icon={CalendarClock} />
                 <StatCard
-                    label="Income (month)"
+                    label={t('income_month')}
                     value={`RM ${Number(stats.monthly_income).toFixed(0)}`}
                     icon={Wallet}
                 />
@@ -135,17 +137,18 @@ export default function AdminDashboard() {
                     <CardHeader className="pb-0">
                         <CardTitle className="flex items-center gap-2 text-base">
                             <TrendingUp className="size-4 text-primary" />
-                            Monthly income
+                            {t('monthly_income')}
                         </CardTitle>
-                        <CardDescription>A sub copy here</CardDescription>
+                        <CardDescription>{t('chart_subtitle')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex h-44 items-end gap-1.5 pt-4">
                             {monthlyChart.map((m) => (
                                 <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
                                     <div
-                                        className="w-full rounded-t-md bg-primary"
+                                        className="w-full rounded-t-md bg-primary transition-all hover:bg-primary/80"
                                         style={{ height: `${Math.max((m.value / maxBar) * 100, 2)}%` }}
+                                        title={`RM ${m.value.toFixed(2)}`}
                                     />
                                     <span className="text-[9px] text-muted-foreground">{m.month}</span>
                                 </div>
@@ -156,7 +159,7 @@ export default function AdminDashboard() {
 
                 <Card className="rounded-2xl border-0 shadow-sm">
                     <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Class distribution</CardTitle>
+                        <CardTitle className="text-base">{t('class_distribution')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center justify-around pt-4">
                         <div
@@ -188,7 +191,7 @@ export default function AdminDashboard() {
             {/* Recent payments */}
             <Card className="rounded-2xl border-0 shadow-sm">
                 <CardHeader className="flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-base">Recent payments</CardTitle>
+                    <CardTitle className="text-base">{t('recent_payments')}</CardTitle>
                     <Link href="/admin/payments" className="text-sm font-medium text-primary">
                         {t('view_all')}
                     </Link>
@@ -242,7 +245,7 @@ export default function AdminDashboard() {
                                         <TableCell>
                                             <StatusBadge
                                                 status={p.status === 'paid' ? 'paid' : 'unpaid'}
-                                                label={p.status}
+                                                label={p.status === 'paid' ? t('paid') : t('unpaid')}
                                             />
                                         </TableCell>
                                         <TableCell>{p.paid_on ?? '—'}</TableCell>

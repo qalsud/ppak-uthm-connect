@@ -2,11 +2,12 @@ import { router, useForm } from '@inertiajs/react';
 import { Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import ConfirmDialog from '@/Components/confirm-dialog';
+import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
 import StatusBadge from '@/Components/status-badge';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import {
@@ -47,12 +48,23 @@ type Teacher = {
     created_at: string;
 };
 
-export default function Teachers({ teachers }: { teachers: Teacher[] }) {
+const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
+
+export default function Teachers({
+    teachers,
+    counts,
+    filters,
+}: {
+    teachers: Teacher[];
+    counts: Record<string, number>;
+    filters: { status: string };
+}) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
-    const [tab, setTab] = useState<'manual' | 'csv'>('manual');
     const [editing, setEditing] = useState<Teacher | null>(null);
     const [query, setQuery] = useState('');
+    const [importing, setImporting] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Teacher | null>(null);
 
     const form = useForm({
         name: '',
@@ -73,10 +85,17 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
         [teachers, query],
     );
 
+    const applyStatus = (status: string) =>
+        router.get(
+            '/admin/teachers',
+            status && status !== 'all' ? { status } : {},
+            { preserveState: true, preserveScroll: true },
+        );
+
     const openCreate = () => {
         setEditing(null);
         form.setData({ name: '', email: '', ic_number: '', phone: '', password: '', status: 'active' });
-        setTab('manual');
+        form.clearErrors();
         setOpen(true);
     };
 
@@ -90,7 +109,7 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
             password: '',
             status: teacher.status,
         });
-        setTab('manual');
+        form.clearErrors();
         setOpen(true);
     };
 
@@ -104,22 +123,29 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
         }
     };
 
-    const remove = (teacher: Teacher) => {
-        if (confirm(`${t('delete')} ${teacher.name}?`)) {
-            router.delete(route('admin.teachers.destroy', { user: teacher.id }), {
-                preserveScroll: true,
-            });
+    const confirmRemove = () => {
+        if (!deleteTarget) {
+            return;
         }
+
+        router.delete(route('admin.teachers.destroy', { user: deleteTarget.id }), {
+            preserveScroll: true,
+            onFinish: () => setDeleteTarget(null),
+        });
     };
 
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
-            <PageHeader title={t('teachers')} description="Manage teaching staff">
+            <PageHeader title={t('teachers')} description={t('manage_staff')}>
                 <Button variant="outline" className="gap-1.5" asChild>
                     <a href={route('admin.teachers.export')}>
                         <Download className="size-4" />
-                        Export CSV
+                        {t('export_csv')}
                     </a>
+                </Button>
+                <Button variant="outline" className="gap-1.5" onClick={() => setImporting(true)}>
+                    <Upload className="size-4" />
+                    {t('import_csv')}
                 </Button>
                 <Button onClick={openCreate} className="gap-1.5">
                     <Plus className="size-4" />
@@ -131,13 +157,35 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                 <ListToolbar
                     search={query}
                     onSearch={setQuery}
-                    placeholder="Search for a teacher by name or email"
+                    placeholder={t('search_teachers')}
+                    filters={
+                        <Select
+                            value={filters.status || 'all'}
+                            onValueChange={applyStatus}
+                        >
+                            <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{t('all')} ({counts.all ?? 0})</SelectItem>
+                                {STATUSES.map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                        {t(s)} ({counts[s] ?? 0})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    }
                 />
+                <div className="border-b px-4 py-2 text-xs text-muted-foreground">
+                    {t('teachers')}: {filtered.length}/{teachers.length}
+                </div>
+
                 {filtered.length === 0 ? (
                     <EmptyState
                         icon={Users}
-                        title="No teachers at this time"
-                        description="Teachers will appear here after they register and are approved."
+                        title={t('teachers_empty_title')}
+                        description={t('teachers_empty_desc')}
                     />
                 ) : (
                     <>
@@ -163,7 +211,7 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="text-destructive"
-                                                onClick={() => remove(teacher)}
+                                                onClick={() => setDeleteTarget(teacher)}
                                             >
                                                 <Trash2 className="size-4" />
                                             </Button>
@@ -174,49 +222,49 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                         </div>
 
                         <div className="hidden overflow-x-auto lg:block">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/40">
-                                    <TableHead>{t('name')}</TableHead>
-                                    <TableHead>IC</TableHead>
-                                    <TableHead>{t('email')}</TableHead>
-                                    <TableHead>{t('phone')}</TableHead>
-                                    <TableHead>{t('status')}</TableHead>
-                                    <TableHead className="text-right">{t('actions')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filtered.map((teacher) => (
-                                    <TableRow key={teacher.id}>
-                                        <TableCell className="font-medium">{teacher.name}</TableCell>
-                                        <TableCell>{teacher.ic_number ?? '—'}</TableCell>
-                                        <TableCell>{teacher.email}</TableCell>
-                                        <TableCell>{teacher.phone ?? '—'}</TableCell>
-                                        <TableCell>
-                                            <StatusBadge status={teacher.status} label={t(teacher.status)} />
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="mr-1"
-                                                onClick={() => openEdit(teacher)}
-                                            >
-                                                <Pencil className="size-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-destructive"
-                                                onClick={() => remove(teacher)}
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </Button>
-                                        </TableCell>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/40">
+                                        <TableHead>{t('name')}</TableHead>
+                                        <TableHead>{t('ic')}</TableHead>
+                                        <TableHead>{t('email')}</TableHead>
+                                        <TableHead>{t('phone')}</TableHead>
+                                        <TableHead>{t('status')}</TableHead>
+                                        <TableHead className="text-right">{t('actions')}</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {filtered.map((teacher) => (
+                                        <TableRow key={teacher.id}>
+                                            <TableCell className="font-medium">{teacher.name}</TableCell>
+                                            <TableCell>{teacher.ic_number ?? '—'}</TableCell>
+                                            <TableCell>{teacher.email}</TableCell>
+                                            <TableCell>{teacher.phone ?? '—'}</TableCell>
+                                            <TableCell>
+                                                <StatusBadge status={teacher.status} label={t(teacher.status)} />
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="mr-1"
+                                                    onClick={() => openEdit(teacher)}
+                                                >
+                                                    <Pencil className="size-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="text-destructive"
+                                                    onClick={() => setDeleteTarget(teacher)}
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
                     </>
                 )}
@@ -226,123 +274,110 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
-                            {editing ? `${t('edit')} ${t('teacher')}` : `${t('add')} ${t('teachers')}`}
+                            {editing ? `${t('edit')} ${t('teacher')}` : `${t('add')} ${t('teacher')}`}
                         </DialogTitle>
                     </DialogHeader>
 
-                    <div className="flex gap-6 border-b">
-                        {(['manual', 'csv'] as const).map((key) => (
-                            <button
-                                key={key}
-                                onClick={() => setTab(key)}
-                                className={`-mb-px border-b-2 pb-2 text-sm font-medium transition-colors ${
-                                    tab === key
-                                        ? 'border-primary text-primary'
-                                        : 'border-transparent text-muted-foreground'
-                                }`}
-                            >
-                                {key === 'manual' ? 'Manually' : 'Import CSV'}
-                            </button>
-                        ))}
-                    </div>
-
-                    {tab === 'manual' ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-1">
-                                <Label>{t('name')}</Label>
-                                <Input
-                                    value={form.data.name}
-                                    onChange={(e) => form.setData('name', e.target.value)}
-                                />
-                                {form.errors.name && (
-                                    <p className="text-xs text-destructive">{form.errors.name}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label>IC</Label>
-                                <Input
-                                    value={form.data.ic_number}
-                                    onChange={(e) => form.setData('ic_number', e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label>{t('email')}</Label>
-                                <Input
-                                    type="email"
-                                    value={form.data.email}
-                                    onChange={(e) => form.setData('email', e.target.value)}
-                                />
-                                {form.errors.email && (
-                                    <p className="text-xs text-destructive">{form.errors.email}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label>{t('phone')}</Label>
-                                <Input
-                                    value={form.data.phone}
-                                    onChange={(e) => form.setData('phone', e.target.value)}
-                                />
-                            </div>
-                            {!editing ? (
-                                <div className="space-y-1 sm:col-span-2">
-                                    <Label>{t('password')}</Label>
-                                    <Input
-                                        type="password"
-                                        value={form.data.password}
-                                        onChange={(e) => form.setData('password', e.target.value)}
-                                    />
-                                    {form.errors.password && (
-                                        <p className="text-xs text-destructive">
-                                            {form.errors.password}
-                                        </p>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-1 sm:col-span-2">
-                                    <Label>{t('status')}</Label>
-                                    <Select
-                                        value={form.data.status}
-                                        onValueChange={(v) => form.setData('status', v)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {['active', 'pending', 'rejected', 'awaiting'].map((s) => (
-                                                <SelectItem key={s} value={s}>
-                                                    {t(s)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1">
+                            <Label>{t('name')}</Label>
+                            <Input
+                                value={form.data.name}
+                                onChange={(e) => form.setData('name', e.target.value)}
+                            />
+                            {form.errors.name && (
+                                <p className="text-xs text-destructive">{form.errors.name}</p>
                             )}
                         </div>
-                    ) : (
-                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
-                            <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                                <Upload className="size-5" />
-                            </span>
-                            <p className="text-sm font-medium">Import teachers from CSV</p>
-                            <p className="max-w-sm text-xs text-muted-foreground">
-                                Upload a CSV with columns: name, ic_number, phone, email.
-                            </p>
-                            <Input type="file" accept=".csv" disabled className="max-w-xs" />
+                        <div className="space-y-1">
+                            <Label>{t('ic')}</Label>
+                            <Input
+                                value={form.data.ic_number}
+                                onChange={(e) => form.setData('ic_number', e.target.value)}
+                            />
                         </div>
-                    )}
+                        <div className="space-y-1">
+                            <Label>{t('email')}</Label>
+                            <Input
+                                type="email"
+                                value={form.data.email}
+                                onChange={(e) => form.setData('email', e.target.value)}
+                            />
+                            {form.errors.email && (
+                                <p className="text-xs text-destructive">{form.errors.email}</p>
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('phone')}</Label>
+                            <Input
+                                value={form.data.phone}
+                                onChange={(e) => form.setData('phone', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('password')}</Label>
+                            <Input
+                                type="password"
+                                value={form.data.password}
+                                onChange={(e) => form.setData('password', e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {editing ? t('leave_blank_password') : ''}
+                            </p>
+                            {form.errors.password && (
+                                <p className="text-xs text-destructive">{form.errors.password}</p>
+                            )}
+                        </div>
+                        {editing && (
+                            <div className="space-y-1 sm:col-span-2">
+                                <Label>{t('status')}</Label>
+                                <Select
+                                    value={form.data.status}
+                                    onValueChange={(v) => form.setData('status', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {STATUSES.map((s) => (
+                                            <SelectItem key={s} value={s}>
+                                                {t(s)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                    </div>
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setOpen(false)}>
                             {t('cancel')}
                         </Button>
-                        {tab === 'manual' && (
-                            <Button onClick={submit} disabled={form.processing}>
-                                {editing ? t('save') : `${t('add')} ${t('teacher')}`}
-                            </Button>
-                        )}
+                        <Button onClick={submit} disabled={form.processing}>
+                            {editing ? t('save') : `${t('add')} ${t('teacher')}`}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <CsvImportDialog
+                open={importing}
+                onOpenChange={setImporting}
+                action={route('admin.teachers.import')}
+                hint={t('import_hint_teachers')}
+                templateColumns={['name', 'email', 'ic_number', 'phone', 'password']}
+                templateName="teachers-template.csv"
+            />
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(v) => !v && setDeleteTarget(null)}
+                title={`${t('delete')} ${deleteTarget?.name ?? ''}?`}
+                description={t('cannot_be_undone')}
+                confirmLabel={t('delete')}
+                onConfirm={confirmRemove}
+            />
         </AppShell>
     );
 }

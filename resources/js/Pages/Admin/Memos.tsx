@@ -1,7 +1,8 @@
 import { router, useForm } from '@inertiajs/react';
-import { FileText, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, FileText, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
 import { Button } from '@/Components/ui/button';
@@ -16,6 +17,7 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
@@ -31,6 +33,8 @@ type Memo = {
 export default function Memos({ memos }: { memos: Memo[] }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
+    const [expanded, setExpanded] = useState<number[]>([]);
+    const [deleteTarget, setDeleteTarget] = useState<Memo | null>(null);
 
     const form = useForm({ title: '', description: '' });
 
@@ -42,15 +46,23 @@ export default function Memos({ memos }: { memos: Memo[] }) {
             },
         });
 
-    const remove = (memo: Memo) => {
-        if (confirm(`${t('delete')}: ${memo.title}?`)) {
-            router.delete(route('admin.memos.destroy', { memo: memo.id }), { preserveScroll: true });
+    const confirmRemove = () => {
+        if (!deleteTarget) {
+            return;
         }
+
+        router.delete(route('admin.memos.destroy', { memo: deleteTarget.id }), {
+            preserveScroll: true,
+            onFinish: () => setDeleteTarget(null),
+        });
     };
+
+    const toggle = (id: number) =>
+        setExpanded((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
-            <PageHeader title={t('memos')} description="Publish announcements to parents & teachers">
+            <PageHeader title={t('memos')} description={t('announcements_desc')}>
                 <Button onClick={() => setOpen(true)} className="gap-1.5">
                     <Plus className="size-4" />
                     {t('add')} {t('memo')}
@@ -61,45 +73,66 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                 <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                     <EmptyState
                         icon={FileText}
-                        title="No memos yet"
-                        description="Publish your first announcement for parents and teachers."
+                        title={t('memos_empty_title')}
+                        description={t('memos_empty_desc')}
                     />
                 </Card>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2">
-                    {memos.map((memo) => (
-                        <Card key={memo.id} className="rounded-2xl border-0 shadow-sm">
-                            <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
-                                <div>
-                                    <CardTitle className="text-base">{memo.title}</CardTitle>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                        {memo.author?.name} ·{' '}
-                                        {new Date(memo.created_at).toLocaleDateString()}
+                    {memos.map((memo) => {
+                        const isExpanded = expanded.includes(memo.id);
+
+                        return (
+                            <Card key={memo.id} className="rounded-2xl border-0 shadow-sm">
+                                <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
+                                    <div>
+                                        <CardTitle className="text-base">{memo.title}</CardTitle>
+                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                            {memo.author?.name} · {formatDate(memo.created_at)}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="text-destructive"
+                                        onClick={() => setDeleteTarget(memo)}
+                                    >
+                                        <Trash2 className="size-4" />
+                                    </Button>
+                                </CardHeader>
+                                <CardContent>
+                                    <p
+                                        className={`whitespace-pre-wrap text-sm text-muted-foreground ${
+                                            isExpanded ? '' : 'line-clamp-4'
+                                        }`}
+                                    >
+                                        {memo.description}
                                     </p>
-                                </div>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-destructive"
-                                    onClick={() => remove(memo)}
-                                >
-                                    <Trash2 className="size-4" />
-                                </Button>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted-foreground">
-                                    {memo.description}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    {memo.description.length > 180 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => toggle(memo.id)}
+                                            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary"
+                                        >
+                                            <ChevronDown
+                                                className={`size-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                            />
+                                            {isExpanded ? t('view_less') : t('view_more')}
+                                        </button>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{t('add')} {t('memo')}</DialogTitle>
+                        <DialogTitle>
+                            {t('add')} {t('memo')}
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
                         <div className="space-y-1">
@@ -120,9 +153,7 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                                 onChange={(e) => form.setData('description', e.target.value)}
                             />
                             {form.errors.description && (
-                                <p className="text-xs text-destructive">
-                                    {form.errors.description}
-                                </p>
+                                <p className="text-xs text-destructive">{form.errors.description}</p>
                             )}
                         </div>
                     </div>
@@ -136,6 +167,15 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(v) => !v && setDeleteTarget(null)}
+                title={`${t('delete')}: ${deleteTarget?.title ?? ''}?`}
+                description={t('cannot_be_undone')}
+                confirmLabel={t('delete')}
+                onConfirm={confirmRemove}
+            />
         </AppShell>
     );
 }

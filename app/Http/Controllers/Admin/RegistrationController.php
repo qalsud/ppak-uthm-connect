@@ -13,16 +13,45 @@ use Inertia\Response;
 
 class RegistrationController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $pendingUsers = User::query()
-            ->whereIn('role', [UserRole::Parent, UserRole::Teacher])
-            ->where('status', AccountStatus::Pending)
+        $status = $request->query('status', 'pending');
+        $role = $request->query('role', 'all');
+        $search = trim((string) $request->query('search', ''));
+
+        $base = User::query()->whereIn('role', [UserRole::Parent, UserRole::Teacher]);
+
+        $users = (clone $base)
+            ->when(
+                in_array($status, AccountStatus::values(), true),
+                fn ($q) => $q->where('status', $status)
+            )
+            ->when(
+                in_array($role, [UserRole::Parent->value, UserRole::Teacher->value], true),
+                fn ($q) => $q->where('role', $role)
+            )
+            ->when($search !== '', fn ($q) => $q->where(
+                fn ($w) => $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+            ))
             ->orderBy('created_at', 'desc')
-            ->get(['id', 'name', 'email', 'phone', 'role', 'created_at']);
+            ->get(['id', 'name', 'email', 'phone', 'role', 'status', 'created_at']);
+
+        $counts = [
+            'all' => (clone $base)->count(),
+            ...AccountStatus::valuesMap(
+                fn ($value) => (clone $base)->where('status', $value)->count()
+            ),
+        ];
 
         return Inertia::render('Admin/Registrations', [
-            'users' => $pendingUsers,
+            'users' => $users,
+            'counts' => $counts,
+            'filters' => [
+                'status' => $status,
+                'role' => $role,
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -36,7 +65,7 @@ class RegistrationController extends Controller
             'activation_token' => null,
         ]);
 
-        // A teacher account also needs a verified email for our middleware chain.
+        // Teacher accounts also need a verified email for our middleware chain.
         if ($user->email_verified_at === null) {
             $user->forceFill(['email_verified_at' => now()])->save();
         }

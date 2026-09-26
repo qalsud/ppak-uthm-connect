@@ -14,15 +14,32 @@ use Inertia\Response;
 
 class TeacherController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $status = $request->query('status');
+
         $teachers = User::query()
             ->where('role', UserRole::Teacher)
-            ->orderBy('created_at', 'desc')
+            ->when(
+                in_array($status, AccountStatus::values(), true),
+                fn ($q) => $q->where('status', $status)
+            )
+            ->orderBy('name')
             ->get(['id', 'name', 'email', 'ic_number', 'phone', 'status', 'created_at']);
+
+        $counts = User::query()
+            ->where('role', UserRole::Teacher)
+            ->get(['status'])
+            ->groupBy('status')
+            ->map->count();
 
         return Inertia::render('Admin/Teachers', [
             'teachers' => $teachers,
+            'counts' => [
+                'all' => User::query()->where('role', UserRole::Teacher)->count(),
+                ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
+            ],
+            'filters' => ['status' => $status ?? ''],
         ]);
     }
 
@@ -56,11 +73,50 @@ class TeacherController extends Controller
             'ic_number' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
             'status' => ['required', Rule::enum(AccountStatus::class)],
+            'password' => 'nullable|string|min:8',
         ]);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
 
         $user->update($data);
 
         return back()->with('success', __('approval.updated'));
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $rows = $this->readCsv($request->file('file')->getRealPath());
+        $created = 0;
+
+        foreach ($rows as $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            $email = trim((string) ($row['email'] ?? ''));
+
+            if ($name === '' || $email === '' || User::query()->where('email', $email)->exists()) {
+                continue;
+            }
+
+            User::create([
+                'name' => $name,
+                'email' => $email,
+                'ic_number' => trim((string) ($row['ic_number'] ?? '')) ?: null,
+                'phone' => trim((string) ($row['phone'] ?? '')) ?: null,
+                'password' => trim((string) ($row['password'] ?? '')) ?: 'password123',
+                'role' => UserRole::Teacher,
+                'status' => AccountStatus::Active,
+                'email_verified_at' => now(),
+            ]);
+
+            $created++;
+        }
+
+        return back()->with('success', __('approval.imported', ['count' => $created]));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -95,5 +151,40 @@ class TeacherController extends Controller
 
             fclose($out);
         }, 'teachers.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /** @return array<int, array<string, string|null>> */
+    private function readCsv(string $path): array
+    {
+        $handle = fopen($path, 'r');
+
+        if ($handle === false) {
+            return [];
+        }
+
+        $header = fgetcsv($handle);
+
+        if ($header === false) {
+            fclose($handle);
+
+            return [];
+        }
+
+        $header = array_map(fn ($h) => strtolower(trim((string) $h)), $header);
+
+        $rows = [];
+
+        while (($values = fgetcsv($handle)) !== false) {
+            if (count(array_filter($values, fn ($v) => trim((string) $v) !== '')) === 0) {
+                continue;
+            }
+
+            $padded = array_pad(array_slice($values, 0, count($header)), count($header), null);
+            $rows[] = array_combine($header, $padded);
+        }
+
+        fclose($handle);
+
+        return $rows;
     }
 }

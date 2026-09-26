@@ -81,12 +81,14 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');
+            Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
             Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
             Route::put('/teachers/{user}', [TeacherController::class, 'update'])->name('teachers.update');
             Route::delete('/teachers/{user}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
 
             Route::get('/students', [StudentController::class, 'index'])->name('students.index');
             Route::get('/students/export', [StudentController::class, 'export'])->name('students.export');
+            Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::post('/students', [StudentController::class, 'store'])->name('students.store');
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
@@ -99,6 +101,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::put('/fees', [FeeSettingController::class, 'update'])->name('fees.update');
 
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+            Route::post('/payments/generate', [PaymentController::class, 'generate'])->name('payments.generate');
             Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
             Route::patch('/payments/{record}', [PaymentController::class, 'updateStatus'])->name('payments.status');
             Route::delete('/payments/{record}', [PaymentController::class, 'destroy'])->name('payments.destroy');
