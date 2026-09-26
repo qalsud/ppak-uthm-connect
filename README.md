@@ -77,17 +77,30 @@ phpMyAdmin runs at `http://localhost:8080` (root / root_secret) when you run
 ## Where to look
 
 ```
-routes/web.php              role dashboards, locale switch, auth groups
-app/Models/                 User (role/status enums), Student, FeeSetting
+routes/web.php              role dashboards, locale switch, admin area, auth groups
+app/Models/                 User (role/status enums), Student, FeeSetting, Memo, FinancialRecord
 app/Enums/UserRole.php      admin | teacher | parent + homeRoute()
 app/Enums/AccountStatus.php pending | awaiting | active | rejected
 app/Http/Middleware/        CheckRole, EnsureAccountIsActive, SetLocale
-resources/js/Pages/         Admin/Dashboard, Teacher/Dashboard, Parent/Dashboard
-resources/js/Layouts/       app-shell (brand header, language switcher, user menu)
+app/Http/Controllers/Admin/ dashboard, registrations/approval, teachers, students, memos, fees, payments
+resources/js/Pages/Admin/   Dashboard, Registrations, Teachers, Students, Payments, Memos, Fees
+resources/js/Layouts/       app-shell (brand header, role sidebar, language switcher, user menu)
 resources/js/lib/i18n.ts    frontend dictionary helper (keys from lang/*.json)
 lang/en.json, lang/ms.json  bilingual keys (Malay is default)
 docker-compose.yml          MySQL 8 + phpMyAdmin + Redis
 ```
+
+## Admin area (what's implemented)
+
+| Page | Route | What it does |
+|---|---|---|
+| Dashboard | `/admin` | Student/teacher/parent/monthly-income stats + pending badge |
+| Registrations | `/admin/registrations` | **Approve / Reject** pending parent & teacher accounts |
+| Teachers | `/admin/teachers` | List, add, edit, delete teachers |
+| Students | `/admin/students` | List, add, edit, delete students (link to parent) |
+| Payments | `/admin/payments` | Filter by month/class; add records (fee + overtime from settings); mark Paid/Unpaid; delete |
+| Memos | `/admin/memos` | Publish/delete announcements |
+| Fee settings | `/admin/fees` | Edit monthly fee + overtime rate (applies to new payment records) |
 
 ## Tests & style
 

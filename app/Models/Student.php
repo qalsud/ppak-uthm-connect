@@ -22,6 +22,11 @@ class Student extends Model
         return $this->belongsTo(User::class, 'parent_id');
     }
 
+    public function financialRecords(): HasMany
+    {
+        return $this->hasMany(FinancialRecord::class);
+    }
+
     // Future modules attach here:
     // public function dailyActivities(): HasMany ...
     // public function progressRecords(): HasMany ...

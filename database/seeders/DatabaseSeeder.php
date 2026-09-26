@@ -5,9 +5,12 @@ namespace Database\Seeders;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\FeeSetting;
+use App\Models\FinancialRecord;
+use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -36,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'password123',
             'role' => UserRole::Teacher,
             'status' => AccountStatus::Active,
+            'email_verified_at' => now(),
         ]);
 
         $parent = User::create([
@@ -46,9 +50,21 @@ class DatabaseSeeder extends Seeder
             'password' => 'password123',
             'role' => UserRole::Parent,
             'status' => AccountStatus::Active,
+            'email_verified_at' => now(),
         ]);
 
-        Student::create([
+        // A freshly-registered parent, waiting for admin approval
+        User::create([
+            'name' => 'Ibu Bapa Baharu',
+            'email' => 'pending@ppakuthm.com',
+            'phone' => '0145556677',
+            'password' => 'password123',
+            'role' => UserRole::Parent,
+            'status' => AccountStatus::Pending,
+            'activation_token' => Str::random(64),
+        ]);
+
+        $studentA = Student::create([
             'parent_id' => $parent->id,
             'name' => 'Anak Demo',
             'age' => 6,
@@ -68,6 +84,51 @@ class DatabaseSeeder extends Seeder
             'class' => '6bintang',
         ]);
 
-        $this->command?->info('Seeded admin/teacher/parent (password123), students and fee settings.');
+        Student::create([
+            'name' => 'Khali Rashid',
+            'age' => 6,
+            'class' => '6bintang',
+        ]);
+
+        Student::create([
+            'name' => 'Aidan Rahman',
+            'age' => 5,
+            'class' => '5tahun',
+        ]);
+
+        // Memos — real event notices in Malay, mirroring the legacy data
+        Memo::create([
+            'author_id' => $admin->id,
+            'title' => 'Sambutan Hari Kanak-Kanak — "Bintang Kecil Bersinar"',
+            'description' => "Tarikh: 23 Oktober 2025 (Khamis)\nMasa: 8:30 pagi – 12:00 tengah hari\nTempat: Dewan Serbaguna, PPAK UTHM\n\nAcara ini bertujuan meraikan setiap kanak-kanak. Program dimulakan dengan perarakan kostum, persembahan nyanyian dan tarian, sukaneka ringan, serta sesi bercerita.",
+        ]);
+
+        Memo::create([
+            'author_id' => $admin->id,
+            'title' => 'Karnival Mini Merdeka — "Saya Sayang Malaysia"',
+            'description' => "Tarikh: 28 Ogos 2025 (Khamis)\nMasa: 9:00 pagi – 11:30 pagi\nTempat: PPAK UTHM\n\nPerarakan dengan bendera kecil, nyanyian lagu patriotik, bengkel kraf dan kuiz mudah untuk menyemai semangat patriotik.",
+        ]);
+
+        // Financial records for the demo student
+        $records = [
+            ['month' => 'January', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
+            ['month' => 'February', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
+            ['month' => 'March', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'paid'],
+            ['month' => 'June', 'overtime' => 1.0, 'amount' => 316.00, 'status' => 'paid'],
+            ['month' => 'July', 'overtime' => 0.0, 'amount' => 310.00, 'status' => 'unpaid'],
+        ];
+
+        foreach ($records as $record) {
+            FinancialRecord::create([
+                'student_id' => $studentA->id,
+                'month' => $record['month'],
+                'overtime_hours' => $record['overtime'],
+                'amount' => $record['amount'],
+                'status' => $record['status'],
+                'paid_on' => $record['status'] === 'paid' ? now()->subDays(random_int(3, 30)) : null,
+            ]);
+        }
+
+        $this->command?->info('Seeded demo data (admin/teacher/parent/pending, students, memos, payments).');
     }
 }
