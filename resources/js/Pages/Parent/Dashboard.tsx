@@ -14,7 +14,6 @@ import {
 
 import PageHeader from '@/Components/page-header';
 import DateChip from '@/Components/date-chip';
-import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -97,7 +96,7 @@ export default function ParentDashboard() {
             </div>
 
             {/* Children */}
-            <h2 className="mb-3 text-sm font-semibold text-foreground">{t('students')}</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">{t('children')}</h2>
             <div className="space-y-3">
                 {children.map((child) => (
                     <Card key={child.id} className="rounded-2xl border-0 shadow-sm">
@@ -113,10 +112,6 @@ export default function ParentDashboard() {
                                         {child.age ? ` · ${child.age} thn` : ''}
                                     </p>
                                 </div>
-                                <StatusBadge
-                                    status={child.unpaid > 0 ? 'unpaid' : 'paid'}
-                                    label={child.unpaid > 0 ? `RM ${child.unpaid.toFixed(0)}` : 'Paid up'}
-                                />
                             </div>
                             <AttendanceActions
                                 studentId={child.id}
