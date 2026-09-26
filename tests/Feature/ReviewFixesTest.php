@@ -238,7 +238,7 @@ test('attendance is scoped to the parent\'s children and keeps one row per day',
     expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
 });
 
-test('a parent cannot re-check-in after the child is marked home', function () {
+test('a parent can re-check-in after the child is marked home', function () {
     [$parent, $children] = reviewParent();
     $child = $children->first();
 
@@ -246,9 +246,9 @@ test('a parent cannot re-check-in after the child is marked home', function () {
     $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
     $this->actingAs($parent)
         ->post(route('parent.attendance.store', $child), ['action' => 'arrive'])
-        ->assertSessionHas('error');
+        ->assertSessionHas('success');
 
-    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
 });
 
 test('a teacher can override a closed day', function () {

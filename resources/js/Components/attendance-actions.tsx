@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { LogIn, LogOut, Lock } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/Components/ui/button';
@@ -55,9 +55,6 @@ export default function AttendanceActions({
     const arriveLabel = role === 'parent' ? t('send_to_school') : t('at_school');
     const departLabel = role === 'parent' ? t('bring_home') : t('back_home');
 
-    // Parents are locked once the child is back home — it resets the next day.
-    const parentLocked = role === 'parent' && status === 'home';
-
     return (
         <div className="space-y-2">
             {showChip && (
@@ -70,7 +67,7 @@ export default function AttendanceActions({
                     type="button"
                     variant="outline"
                     className="h-10 gap-1.5 rounded-xl text-xs"
-                    disabled={busy !== null || status === 'school' || parentLocked}
+                    disabled={busy !== null || status === 'school'}
                     onClick={() => post('arrive')}
                 >
                     <LogIn className="size-4" />
@@ -87,12 +84,6 @@ export default function AttendanceActions({
                     {departLabel}
                 </Button>
             </div>
-            {parentLocked && (
-                <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Lock className="size-3" />
-                    {t('locked_until_tomorrow')}
-                </p>
-            )}
         </div>
     );
 }

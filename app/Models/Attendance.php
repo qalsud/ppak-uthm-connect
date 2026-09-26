@@ -73,34 +73,22 @@ class Attendance extends Model
     }
 
     /**
-     * Mark the child as arrived. Returns false when the day is already closed
-     * (departed) and the caller may not override — it resets the next day.
+     * Mark the child as arrived. Re-opens the day if they had already been
+     * marked as gone home (no same-day lock).
      */
-    public function markArrival(int $userId, bool $force = false): bool
+    public function markArrival(int $userId): void
     {
-        if ($this->departed_at) {
-            if (! $force) {
-                return false;
-            }
-
-            // Staff override: reopen the day.
-            $this->departed_at = null;
-            $this->departed_by = null;
-        }
-
-        if (! $this->arrived_at) {
-            $this->arrived_at = now();
-            $this->arrived_by = $userId;
-        }
-
-        return true;
+        $this->arrived_at = now();
+        $this->arrived_by = $userId;
+        $this->departed_at = null;
+        $this->departed_by = null;
     }
 
     /** Mark the child as departed (auto-fills arrival if it was never set). */
-    public function markDeparture(int $userId): bool
+    public function markDeparture(int $userId): void
     {
         if ($this->departed_at) {
-            return false;
+            return;
         }
 
         $this->departed_at = now();
@@ -110,8 +98,6 @@ class Attendance extends Model
             $this->arrived_at = now();
             $this->arrived_by = $userId;
         }
-
-        return true;
     }
 
     /** Today's attendance keyed by student id. */

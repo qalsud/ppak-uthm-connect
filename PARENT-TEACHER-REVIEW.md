@@ -159,7 +159,7 @@ These existed in the legacy system / the paper but aren't in the rebuild:
 - Unread badge + N+1 fixes; progress "Select" validation; teacher activities filtering; daily-update prefill; teacher history view; parent history view; parent "Teachers/Contact" page; align age validation.
 
 **Later (P3):**
-- ~~Attendance module~~ — **done**: per-child daily drop-off/pick-up; parents mark "Send to school" / "Bring home", teachers set/correct "At school" / "Back home" (dashboard + daily-updates), status chip with times. Migration `attendance`, model `App\Models\Attendance`, controllers `Parent\AttendanceController` / `Teacher\AttendanceController`. Includes a **parent lock** (no re-check-in after "Back home" until the next day) and **attendance history** (parent page `/parent/attendance` + child page; teacher daily register `/teacher/attendance` with class + date).
+- ~~Attendance module~~ — **done**: per-child daily drop-off/pick-up; parents mark "Send to school" / "Bring home", teachers set/correct "At school" / "Back home" (dashboard + daily-updates), status chip with times. Migration `attendance`, model `App\Models\Attendance`, controllers `Parent\AttendanceController` / `Teacher\AttendanceController`. Includes **attendance history** (parent page `/parent/attendance` + child page; teacher daily register `/teacher/attendance` with class + date).
 - reports/CSV export; message pagination; notify admin on payment; queue notifications; raw class labels.
 
 ---

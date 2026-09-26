@@ -49,9 +49,7 @@ class AttendanceController extends Controller
         $userId = $request->user()->id;
 
         if ($action === 'arrive') {
-            if (! $attendance->markArrival($userId)) {
-                return back()->with('error', __('approval.attendance_locked'));
-            }
+            $attendance->markArrival($userId);
         } else {
             $attendance->markDeparture($userId);
         }

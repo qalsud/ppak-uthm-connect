@@ -63,8 +63,7 @@ class AttendanceController extends Controller
         $userId = $request->user()->id;
 
         if ($data['action'] === 'arrive') {
-            // Staff may correct/reopen a closed day.
-            $attendance->markArrival($userId, force: true);
+            $attendance->markArrival($userId);
         } else {
             $attendance->markDeparture($userId);
         }
