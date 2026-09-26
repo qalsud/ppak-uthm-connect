@@ -166,6 +166,28 @@ class TeacherController extends Controller
         return back()->with('success', __('approval.deleted'));
     }
 
+    /** Bulk delete selected teachers. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', Rule::in(['delete'])],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $teachers = User::query()
+            ->whereIn('id', $data['ids'])
+            ->where('role', UserRole::Teacher)
+            ->get();
+
+        foreach ($teachers as $teacher) {
+            ActivityLog::record('teacher.deleted', null, $teacher->name, ['bulk' => true]);
+            $teacher->delete();
+        }
+
+        return back()->with('success', __('approval.bulk_deleted', ['count' => $teachers->count()]));
+    }
+
     public function export()
     {
         $teachers = User::query()

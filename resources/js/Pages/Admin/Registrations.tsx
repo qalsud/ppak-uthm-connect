@@ -59,6 +59,25 @@ export default function Registrations({
 
     const rows = users.data;
 
+    const [selected, setSelected] = useState<number[]>([]);
+
+    useEffect(() => {
+        setSelected([]);
+    }, [users.current_page, filters.status, filters.role, filters.search]);
+
+    const toggle = (id: number) =>
+        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
+    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
+
+    const runBulk = (action: 'approve' | 'reject') =>
+        router.post(
+            route('admin.users.bulk'),
+            { action, ids: selected },
+            { preserveScroll: true, onFinish: () => setSelected([]) },
+        );
+
     const visit = (next: Partial<Filters>) =>
         router.get(
             '/admin/registrations',
@@ -165,6 +184,30 @@ export default function Registrations({
                     </div>
                 </div>
 
+                {selected.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
+                        <span className="text-xs font-medium">
+                            {selected.length} {t('selected')}
+                        </span>
+                        <Button size="sm" className="gap-1.5" onClick={() => runBulk('approve')}>
+                            <Check className="size-4" />
+                            {t('approve_selected')}
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => runBulk('reject')}
+                        >
+                            <X className="size-4" />
+                            {t('reject_selected')}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                            {t('clear_selection')}
+                        </Button>
+                    </div>
+                )}
+
                 {rows.length === 0 ? (
                     <EmptyState
                         icon={Inbox}
@@ -179,7 +222,15 @@ export default function Registrations({
                                 <div key={user.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="truncate font-medium">{user.name}</p>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 shrink-0 accent-primary"
+                                                    checked={selected.includes(user.id)}
+                                                    onChange={() => toggle(user.id)}
+                                                />
+                                                <span className="truncate font-medium">{user.name}</span>
+                                            </label>
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {user.email}
                                             </p>
@@ -220,6 +271,15 @@ export default function Registrations({
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/40">
+                                        <TableHead className="w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="size-4 accent-primary"
+                                                checked={allSelected}
+                                                onChange={toggleAll}
+                                                aria-label={t('select_all')}
+                                            />
+                                        </TableHead>
                                         <TableHead>{t('name')}</TableHead>
                                         <TableHead>{t('email')}</TableHead>
                                         <TableHead>{t('role')}</TableHead>
@@ -231,6 +291,14 @@ export default function Registrations({
                                 <TableBody>
                                     {rows.map((user) => (
                                         <TableRow key={user.id}>
+                                            <TableCell>
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 accent-primary"
+                                                    checked={selected.includes(user.id)}
+                                                    onChange={() => toggle(user.id)}
+                                                />
+                                            </TableCell>
                                             <TableCell className="font-medium">{user.name}</TableCell>
                                             <TableCell>{user.email}</TableCell>
                                             <TableCell>

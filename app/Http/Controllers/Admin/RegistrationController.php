@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -90,5 +91,43 @@ class RegistrationController extends Controller
         ActivityLog::record('user.rejected', $user, $user->name);
 
         return back()->with('success', __('approval.rejected', ['name' => $user->name]));
+    }
+
+    /** Bulk approve/reject pending accounts. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', Rule::in(['approve', 'reject'])],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $users = User::query()
+            ->whereIn('id', $data['ids'])
+            ->whereIn('role', [UserRole::Parent, UserRole::Teacher])
+            ->where('status', AccountStatus::Pending)
+            ->get();
+
+        $approving = $data['action'] === 'approve';
+
+        foreach ($users as $user) {
+            $user->update([
+                'status' => $approving ? AccountStatus::Active : AccountStatus::Rejected,
+                'activation_token' => null,
+            ]);
+
+            if ($approving && $user->email_verified_at === null) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+            }
+
+            ActivityLog::record(
+                $approving ? 'user.approved' : 'user.rejected',
+                $user,
+                $user->name,
+                ['bulk' => true]
+            );
+        }
+
+        return back()->with('success', __('approval.bulk_updated', ['count' => $users->count()]));
     }
 }

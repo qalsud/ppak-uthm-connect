@@ -87,16 +87,22 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 
 ---
 
+## Backlog — completed this session
+
+- **Pagination + server-side search** on Students, Teachers, Parents, Payments and Registrations (shared `Pagination` component; searching after pagination now searches the whole set, not just the page).
+- **CSV import reporting** — imports return an `import_report` flash; a dismissible panel shows the imported count and a **per-row reason** for every skipped line (missing name, invalid class, missing/duplicate email).
+- **Audit log** — new `activity_logs` table + `/admin/activity` page (search + pagination). Records who changed what across users/teachers/students/parents, memos, fees, payments, and teacher attendance/progress.
+- **Memos** — **editing** + **audience targeting** (Everyone / Parents / Teachers / a specific class), with notification + visibility filtered per portal.
+- **Admin notifications** — admins are notified (bell) of new registrations and completed online payments.
+- **Admin student detail page** — `/admin/students/{id}` shows attendance (with checkout photos), progress (with photos), daily updates, activities and payments.
+- **Bulk actions** — multi-select delete for Students/Teachers and bulk approve/reject for Registrations.
+
 ## Still open (backlog)
 
-- **Pagination**: students/teachers/parents/payments load all rows — fine now, revisit at scale.
-- **CSV import reporting**: invalid rows are silently skipped — a per-row error summary would help.
-- **Audit log**: no record of who changed what.
-- **Memos**: no edit; no audience targeting (all vs a class).
-- **Admin notifications**: new registrations surface only as a dashboard count (no notification/email).
-- **Admin student detail page**: could reuse the parent child page to view attendance/updates/progress.
-- **Bulk actions**: no multi-select delete/approve.
+- **Email/SMS notifications** — everything is in-app (database + broadcast); add mail/SMS channels.
+- **Further audit coverage** — logins, exports and profile changes aren't logged yet.
+- **Admin attendance register** — admins can view a child's attendance but not a whole-class register.
 
 ---
 
-*Verified with the browser on all admin pages (no console errors) and 75 Pest tests / 300 assertions.*
+*Verified with the browser on all admin pages (no console errors) and 104 Pest tests / 491 assertions.*

@@ -75,6 +75,32 @@ export default function Students({
 
     const rows = students.data;
 
+    const [selected, setSelected] = useState<number[]>([]);
+    const [bulkOpen, setBulkOpen] = useState(false);
+
+    useEffect(() => {
+        setSelected([]);
+    }, [students.current_page, filters.search, filters.class]);
+
+    const toggle = (id: number) =>
+        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
+    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
+
+    const runBulk = () =>
+        router.post(
+            route('admin.students.bulk'),
+            { action: 'delete', ids: selected },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setBulkOpen(false);
+                    setSelected([]);
+                },
+            },
+        );
+
     const visit = (params: Partial<{ search: string; class: string }>) =>
         router.get(
             '/admin/students',
@@ -206,6 +232,26 @@ export default function Students({
                     {t('students')}: {students.from ?? 0}–{students.to ?? 0} / {students.total}
                 </div>
 
+                {selected.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
+                        <span className="text-xs font-medium">
+                            {selected.length} {t('selected')}
+                        </span>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            className="gap-1.5"
+                            onClick={() => setBulkOpen(true)}
+                        >
+                            <Trash2 className="size-4" />
+                            {t('delete_selected')}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                            {t('clear_selection')}
+                        </Button>
+                    </div>
+                )}
+
                 {rows.length === 0 ? (
                     <EmptyState
                         icon={GraduationCap}
@@ -220,7 +266,15 @@ export default function Students({
                                 <div key={student.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="truncate font-medium">{student.name}</p>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 shrink-0 accent-primary"
+                                                    checked={selected.includes(student.id)}
+                                                    onChange={() => toggle(student.id)}
+                                                />
+                                                <span className="truncate font-medium">{student.name}</span>
+                                            </label>
                                             <p className="text-xs text-muted-foreground">
                                                 {classLabel(student.class)}
                                                 {student.age ? ` · ${student.age} ${t('age').toLowerCase()}` : ''}
@@ -256,6 +310,15 @@ export default function Students({
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/40">
+                                        <TableHead className="w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="size-4 accent-primary"
+                                                checked={allSelected}
+                                                onChange={toggleAll}
+                                                aria-label={t('select_all')}
+                                            />
+                                        </TableHead>
                                         <TableHead>{t('name')}</TableHead>
                                         <TableHead>{t('age')}</TableHead>
                                         <TableHead>{t('class')}</TableHead>
@@ -266,6 +329,14 @@ export default function Students({
                                 <TableBody>
                                     {rows.map((student) => (
                                         <TableRow key={student.id}>
+                                            <TableCell>
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 accent-primary"
+                                                    checked={selected.includes(student.id)}
+                                                    onChange={() => toggle(student.id)}
+                                                />
+                                            </TableCell>
                                             <TableCell className="font-medium">{student.name}</TableCell>
                                             <TableCell>{student.age ?? '—'}</TableCell>
                                             <TableCell>
@@ -415,6 +486,15 @@ export default function Students({
                 description={t('cannot_be_undone')}
                 confirmLabel={t('delete')}
                 onConfirm={confirmRemove}
+            />
+
+            <ConfirmDialog
+                open={bulkOpen}
+                onOpenChange={setBulkOpen}
+                title={`${t('delete_selected')} (${selected.length})?`}
+                description={t('cannot_be_undone')}
+                confirmLabel={t('delete')}
+                onConfirm={runBulk}
             />
         </AppShell>
     );

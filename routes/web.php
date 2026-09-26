@@ -87,12 +87,14 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/registrations', [RegistrationController::class, 'index'])->name('registrations.index');
             Route::post('/users/{user}/approve', [RegistrationController::class, 'approve'])->name('users.approve');
             Route::post('/users/{user}/reject', [RegistrationController::class, 'reject'])->name('users.reject');
+            Route::post('/registrations/bulk', [RegistrationController::class, 'bulk'])->name('users.bulk');
 
             Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');
             Route::post('/teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
+            Route::post('/teachers/bulk', [TeacherController::class, 'bulk'])->name('teachers.bulk');
             Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
             Route::put('/teachers/{user}', [TeacherController::class, 'update'])->name('teachers.update');
             Route::delete('/teachers/{user}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
@@ -100,6 +102,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/students', [StudentController::class, 'index'])->name('students.index');
             Route::get('/students/export', [StudentController::class, 'export'])->name('students.export');
             Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
+            Route::post('/students/bulk', [StudentController::class, 'bulk'])->name('students.bulk');
             Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::post('/students', [StudentController::class, 'store'])->name('students.store');
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');

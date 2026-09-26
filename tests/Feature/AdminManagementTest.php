@@ -571,3 +571,40 @@ test('admin can open a student detail page', function () {
             ->has('payments')
         );
 });
+
+test('admin can bulk delete students', function () {
+    $a = Student::factory()->create();
+    $b = Student::factory()->create();
+
+    $this->actingAs(admin())->post(route('admin.students.bulk'), [
+        'action' => 'delete',
+        'ids' => [$a->id, $b->id],
+    ])->assertRedirect();
+
+    expect(Student::count())->toBe(0);
+});
+
+test('admin can bulk approve registrations', function () {
+    $parent = User::factory()->role(UserRole::Parent)->pending()->create();
+    $teacher = User::factory()->role(UserRole::Teacher)->pending()->create();
+
+    $this->actingAs(admin())->post(route('admin.users.bulk'), [
+        'action' => 'approve',
+        'ids' => [$parent->id, $teacher->id],
+    ])->assertRedirect();
+
+    expect($parent->fresh()->status)->toBe(AccountStatus::Active)
+        ->and($teacher->fresh()->status)->toBe(AccountStatus::Active);
+});
+
+test('bulk endpoints do not touch accounts of another type', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+
+    // Parents are not teachers, so the teacher bulk delete must ignore them.
+    $this->actingAs(admin())->post(route('admin.teachers.bulk'), [
+        'action' => 'delete',
+        'ids' => [$parent->id],
+    ])->assertRedirect();
+
+    expect(User::find($parent->id))->not->toBeNull();
+});

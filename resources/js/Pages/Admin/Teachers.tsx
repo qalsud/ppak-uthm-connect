@@ -81,6 +81,32 @@ export default function Teachers({
 
     const rows = teachers.data;
 
+    const [selected, setSelected] = useState<number[]>([]);
+    const [bulkOpen, setBulkOpen] = useState(false);
+
+    useEffect(() => {
+        setSelected([]);
+    }, [teachers.current_page, filters.search, filters.status]);
+
+    const toggle = (id: number) =>
+        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
+    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
+
+    const runBulk = () =>
+        router.post(
+            route('admin.teachers.bulk'),
+            { action: 'delete', ids: selected },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setBulkOpen(false);
+                    setSelected([]);
+                },
+            },
+        );
+
     const visit = (params: Partial<{ search: string; status: string }>) =>
         router.get(
             '/admin/teachers',
@@ -196,6 +222,26 @@ export default function Teachers({
                     {t('teachers')}: {teachers.from ?? 0}–{teachers.to ?? 0} / {teachers.total}
                 </div>
 
+                {selected.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
+                        <span className="text-xs font-medium">
+                            {selected.length} {t('selected')}
+                        </span>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            className="gap-1.5"
+                            onClick={() => setBulkOpen(true)}
+                        >
+                            <Trash2 className="size-4" />
+                            {t('delete_selected')}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                            {t('clear_selection')}
+                        </Button>
+                    </div>
+                )}
+
                 {rows.length === 0 ? (
                     <EmptyState
                         icon={Users}
@@ -210,7 +256,15 @@ export default function Teachers({
                                 <div key={teacher.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="truncate font-medium">{teacher.name}</p>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 shrink-0 accent-primary"
+                                                    checked={selected.includes(teacher.id)}
+                                                    onChange={() => toggle(teacher.id)}
+                                                />
+                                                <span className="truncate font-medium">{teacher.name}</span>
+                                            </label>
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {teacher.email}
                                             </p>
@@ -240,6 +294,15 @@ export default function Teachers({
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/40">
+                                        <TableHead className="w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="size-4 accent-primary"
+                                                checked={allSelected}
+                                                onChange={toggleAll}
+                                                aria-label={t('select_all')}
+                                            />
+                                        </TableHead>
                                         <TableHead>{t('name')}</TableHead>
                                         <TableHead>{t('ic')}</TableHead>
                                         <TableHead>{t('email')}</TableHead>
@@ -251,6 +314,14 @@ export default function Teachers({
                                 <TableBody>
                                     {rows.map((teacher) => (
                                         <TableRow key={teacher.id}>
+                                            <TableCell>
+                                                <input
+                                                    type="checkbox"
+                                                    className="size-4 accent-primary"
+                                                    checked={selected.includes(teacher.id)}
+                                                    onChange={() => toggle(teacher.id)}
+                                                />
+                                            </TableCell>
                                             <TableCell className="font-medium">{teacher.name}</TableCell>
                                             <TableCell>{teacher.ic_number ?? '—'}</TableCell>
                                             <TableCell>{teacher.email}</TableCell>
@@ -399,6 +470,15 @@ export default function Teachers({
                 description={t('cannot_be_undone')}
                 confirmLabel={t('delete')}
                 onConfirm={confirmRemove}
+            />
+
+            <ConfirmDialog
+                open={bulkOpen}
+                onOpenChange={setBulkOpen}
+                title={`${t('delete_selected')} (${selected.length})?`}
+                description={t('cannot_be_undone')}
+                confirmLabel={t('delete')}
+                onConfirm={runBulk}
             />
         </AppShell>
     );
