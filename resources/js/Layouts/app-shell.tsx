@@ -33,9 +33,15 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
     const user = page.props.auth.user;
     const activeUrl = page.url;
 
-    const activeNav = nav.find(
-        (item) => activeUrl === item.href || activeUrl.startsWith(`${item.href}/`),
+    const allNav = [...nav, ...bottomNav];
+    const matchScore = (href: string) =>
+        activeUrl === href ? href.length + 1000 : activeUrl.startsWith(`${href}/`) ? href.length : -1;
+    const activeHref = allNav.reduce(
+        (best, item) => (matchScore(item.href) > matchScore(best) ? item.href : best),
+        '',
     );
+
+    const activeNav = allNav.find((item) => item.href === activeHref);
     const heading = title ?? (activeNav ? t(activeNav.label) : t('dashboard'));
 
     const initials = (user?.name ?? 'U')
@@ -47,7 +53,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
     const handleLogout = () => router.post(route('logout'));
 
-    const isActive = (href: string) => activeUrl === href || activeUrl.startsWith(`${href}/`);
+    const isActive = (href: string) => href === activeHref;
 
     return (
         <div className="min-h-screen bg-background">
