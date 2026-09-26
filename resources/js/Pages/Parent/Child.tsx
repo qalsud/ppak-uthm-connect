@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
 import StatusBadge from '@/Components/status-badge';
+import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
@@ -11,7 +12,7 @@ import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
-type Child = { id: number; name: string; age: number | null; class: string; unpaid: number };
+type Child = { id: number; name: string; age: number | null; class: string; unpaid: number; attendance?: AttendanceSummary };
 type Update = {
     id: number;
     date: string;
@@ -100,6 +101,12 @@ export default function ParentChild() {
                             {paying ? 'Redirecting…' : `Pay RM ${child.unpaid.toFixed(2)}`}
                         </Button>
                     )}
+
+                    <AttendanceActions
+                        studentId={child.id}
+                        attendance={child.attendance}
+                        role="parent"
+                    />
 
                     <div className="grid grid-cols-2 gap-2">
                         <Link href={`/parent/daily-update?student_id=${child.id}`}>

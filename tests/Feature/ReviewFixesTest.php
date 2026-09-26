@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\Attendance;
 use App\Models\Conversation;
 use App\Models\DailyUpdate;
 use App\Models\FinancialRecord;
@@ -200,4 +201,39 @@ test('progress cannot be saved with placeholder Select values', function () {
         'free_activity' => 'Learning',
         'development_proficiency' => 'Social Skills',
     ])->assertSessionHasErrors('activity_done');
+});
+
+test('a parent marks attendance and a teacher can override it', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+
+    $this->actingAs($parent)
+        ->post(route('parent.attendance.store', $child), ['action' => 'arrive'])
+        ->assertRedirect();
+
+    $record = Attendance::where('student_id', $child->id)->first();
+    expect($record)->not->toBeNull()
+        ->and($record->status())->toBe('school');
+
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.store', $child), ['action' => 'depart'])
+        ->assertRedirect();
+
+    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
+});
+
+test('attendance is scoped to the parent\'s children and keeps one row per day', function () {
+    [$parent, $children] = reviewParent();
+    $child = $children->first();
+
+    $other = Student::factory()->create();
+    $this->actingAs($parent)
+        ->post(route('parent.attendance.store', $other), ['action' => 'arrive'])
+        ->assertForbidden();
+
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'arrive']);
+    $this->actingAs($parent)->post(route('parent.attendance.store', $child), ['action' => 'depart']);
+
+    expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
 });

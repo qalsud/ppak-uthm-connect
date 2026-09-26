@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\DailyActivity;
 use App\Models\DailyUpdate;
 use App\Models\Memo;
@@ -34,6 +35,11 @@ class DashboardController extends Controller
             $student->update_received = $todayUpdates->has($student->id);
 
             return $student;
+        });
+
+        $attendance = Attendance::todayFor($students->pluck('id'));
+        $students->each(function (Student $student) use ($attendance) {
+            $student->attendance = $attendance->get($student->id)?->summary() ?? Attendance::emptySummary();
         });
 
         $recentActivities = DailyActivity::query()

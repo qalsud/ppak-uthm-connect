@@ -14,6 +14,7 @@ import {
 
 import PageHeader from '@/Components/page-header';
 import StatusBadge from '@/Components/status-badge';
+import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
@@ -27,6 +28,7 @@ type Child = {
     age: number | null;
     class: string;
     unpaid: number;
+    attendance?: AttendanceSummary;
 };
 
 type Page = PageProps<{
@@ -113,6 +115,12 @@ export default function ParentDashboard() {
                                     label={child.unpaid > 0 ? `RM ${child.unpaid.toFixed(0)}` : 'Paid up'}
                                 />
                             </div>
+                            <AttendanceActions
+                                studentId={child.id}
+                                attendance={child.attendance}
+                                role="parent"
+                            />
+
                             <Link href={route('parent.children.show', { student: child.id })}>
                                 <Button variant="outline" className="h-10 w-full gap-1.5 rounded-xl">
                                     <Eye className="size-4" />

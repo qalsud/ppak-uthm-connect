@@ -12,6 +12,7 @@ import {
 import PageHeader from '@/Components/page-header';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
+import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -33,6 +34,7 @@ type Student = {
     class: string;
     activity_logged: boolean;
     update_received: boolean;
+    attendance?: AttendanceSummary;
 };
 
 type Page = PageProps<{
@@ -125,6 +127,13 @@ export default function TeacherDashboard() {
                                     label={s.update_received ? 'Update received' : 'No update'}
                                 />
                             </div>
+                            <div className="mt-3">
+                                <AttendanceActions
+                                    studentId={s.id}
+                                    attendance={s.attendance}
+                                    role="teacher"
+                                />
+                            </div>
                         </div>
                     ))}
                 </CardContent>
@@ -136,6 +145,7 @@ export default function TeacherDashboard() {
                                 <TableHead>{t('class')}</TableHead>
                                 <TableHead>{t('daily_activities')}</TableHead>
                                 <TableHead>{t('daily_updates')}</TableHead>
+                                <TableHead>Attendance</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -156,6 +166,15 @@ export default function TeacherDashboard() {
                                         ) : (
                                             <StatusBadge status="neutral" label="Pending" />
                                         )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="min-w-[220px]">
+                                            <AttendanceActions
+                                                studentId={s.id}
+                                                attendance={s.attendance}
+                                                role="teacher"
+                                            />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

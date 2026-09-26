@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\DailyActivity;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class ChildController extends Controller
                 'age' => $student->age,
                 'class' => $student->classLabel,
                 'unpaid' => (float) $student->financialRecords()->where('status', 'unpaid')->sum('amount'),
+                'attendance' => Attendance::todayFor([$student->id])->get($student->id)?->summary() ?? Attendance::emptySummary(),
             ],
             'updates' => $student->dailyUpdates()
                 ->latest('date')

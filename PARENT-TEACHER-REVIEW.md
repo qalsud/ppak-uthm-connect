@@ -107,7 +107,7 @@ These existed in the legacy system / the paper but aren't in the rebuild:
 1. **Parent → Teacher contact / profiles** — legacy had `parent/contact.php` (view teacher profiles & contact). No route/page now. Add a read-only "Teachers" page for parents.
 2. **History / timeline** — parents see only the **latest** activity and **latest** progress; teachers see only the **latest** daily update per child. No way to look back over days/weeks.
    - Add per-child history (date list) for parents (activity + progress) and for teachers (daily updates).
-3. **Attendance** — only a parent-declared `arrival_time`. No teacher-side attendance / pickup log. (Larger feature; flag.)
+3. ~~**Attendance** — only a parent-declared `arrival_time`. No teacher-side attendance / pickup log.~~ **(Resolved — see the attendance module: daily arrive/depart log with parent + teacher control.)**
 4. **Health records** — only a free-text `health_status`; no structured medical/immunisation records.
 5. **Reports/exports** — none (the admin "Export CSV" buttons are UI-only placeholders).
 
@@ -159,7 +159,8 @@ These existed in the legacy system / the paper but aren't in the rebuild:
 - Unread badge + N+1 fixes; progress "Select" validation; teacher activities filtering; daily-update prefill; teacher history view; parent history view; parent "Teachers/Contact" page; align age validation.
 
 **Later (P3):**
-- Attendance module; reports/CSV export; message pagination; notify admin on payment; queue notifications; raw class labels.
+- ~~Attendance module~~ — **done**: per-child daily drop-off/pick-up; parents mark "Send to school" / "Bring home", teachers set/correct "At school" / "Back home" (dashboard + daily-updates), status chip with times. Migration `attendance`, model `App\Models\Attendance`, controllers `Parent\AttendanceController` / `Teacher\AttendanceController`.
+- reports/CSV export; message pagination; notify admin on payment; queue notifications; raw class labels.
 
 ---
 

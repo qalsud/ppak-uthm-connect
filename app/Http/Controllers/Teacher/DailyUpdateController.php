@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\DailyUpdate;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -39,6 +40,11 @@ class DailyUpdateController extends Controller
             ])->values();
 
             return $student;
+        });
+
+        $attendance = Attendance::todayFor($students->pluck('id'));
+        $students->each(function (Student $student) use ($attendance) {
+            $student->attendance = $attendance->get($student->id)?->summary() ?? Attendance::emptySummary();
         });
 
         return Inertia::render('Teacher/DailyUpdates', [

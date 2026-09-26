@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
+import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -29,6 +30,7 @@ type Student = {
         parent_notes: string | null;
     } | null;
     history: Array<{ date: string; sleep: string; bath: string; health: string | null }>;
+    attendance?: AttendanceSummary;
 };
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
@@ -138,6 +140,14 @@ export default function DailyUpdates({
                                     </div>
                                 </div>
                             )}
+
+                            <div className="mt-3 border-t pt-3">
+                                <AttendanceActions
+                                    studentId={student.id}
+                                    attendance={student.attendance}
+                                    role="teacher"
+                                />
+                            </div>
                         </CardContent>
                     </Card>
                 ))}

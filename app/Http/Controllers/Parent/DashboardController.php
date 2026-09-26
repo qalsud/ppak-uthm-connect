@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\Conversation;
 use App\Models\Memo;
 use Illuminate\Http\Request;
@@ -20,6 +21,11 @@ class DashboardController extends Controller
         $children->each(function ($child) {
             $unpaid = $child->financialRecords()->where('status', 'unpaid')->sum('amount');
             $child->unpaid = (float) $unpaid;
+        });
+
+        $attendance = Attendance::todayFor($children->pluck('id'));
+        $children->each(function ($child) use ($attendance) {
+            $child->attendance = $attendance->get($child->id)?->summary() ?? Attendance::emptySummary();
         });
 
         $studentIds = $children->pluck('id');
