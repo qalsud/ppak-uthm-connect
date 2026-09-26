@@ -1,5 +1,11 @@
 # Parent ↔ Teacher Functional Review
 
+> **Status: historical audit (kept for reference).** Most P1/P2 items below were fixed in the
+> rebuild, and the attendance/progress modules have since been overhauled. For the current feature
+> set see [`README.md`](README.md); for the admin area see [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md); for
+> photos see [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md); for the competitive view see
+> [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md).
+
 Deep review of every parent/teacher flow (controllers, models, migrations, routes, UI).
 Scope: daily updates, daily activities, progress, payments, messaging, notifications, data integrity.
 
@@ -159,8 +165,15 @@ These existed in the legacy system / the paper but aren't in the rebuild:
 - Unread badge + N+1 fixes; progress "Select" validation; teacher activities filtering; daily-update prefill; teacher history view; parent history view; parent "Teachers/Contact" page; align age validation.
 
 **Later (P3):**
-- ~~Attendance module~~ — **done**: per-child daily drop-off/pick-up; parents mark "Send to school" / "Bring home", teachers set/correct "At school" / "Back home" (dashboard + daily-updates), status chip with times. Migration `attendance`, model `App\Models\Attendance`, controllers `Parent\AttendanceController` / `Teacher\AttendanceController`. Includes **attendance history** (parent page `/parent/attendance` + child page; teacher daily register `/teacher/attendance` with class + date).
-- reports/CSV export; message pagination; notify admin on payment; queue notifications; raw class labels.
+- ~~Attendance module~~ — **done**: per-child daily drop-off/pick-up. **Attendance is teacher-only**
+  (parents are read-only): teachers mark "At school" on the register (`/teacher/attendance`) and
+  **check out with a photo** at `/teacher/attendance` (see `CHECKOUT-PHOTOS-PLAN.md`). Migration
+  `attendance` + `attendance_photos`, model `App\Models\Attendance`, controller
+  `Teacher\AttendanceController`. Includes **attendance history** (parent `/parent/attendance` + child
+  page) and a class/date register.
+- **Done since:** CSV export (students/teachers/parents), **notify admin on completed payments**,
+  class-label consistency, audit log, pagination.
+- **Still open:** message pagination, queued notifications, staff attendance/scheduling.
 
 ---
 
