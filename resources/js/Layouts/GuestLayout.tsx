@@ -1,18 +1,36 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
-import { PropsWithChildren } from 'react';
+import { GraduationCap } from 'lucide-react';
+import type { PropsWithChildren } from 'react';
 
-export default function Guest({ children }: PropsWithChildren) {
+export default function GuestLayout({ children }: PropsWithChildren) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
+        <div className="flex min-h-screen bg-background">
+            {/* Brand panel */}
+            <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-brand-navy p-10 text-white lg:flex">
+                <div className="pointer-events-none absolute -right-24 top-10 size-96 rounded-full bg-brand-accent/20 blur-3xl" />
+                <div className="pointer-events-none absolute -left-24 bottom-0 size-96 rounded-full bg-indigo-500/20 blur-3xl" />
+                <div className="relative flex items-center gap-2.5">
+                    <span className="flex size-9 items-center justify-center rounded-lg bg-brand-accent text-white">
+                        <GraduationCap className="size-5" />
+                    </span>
+                    <span className="text-sm font-bold">PPAK UTHM Connect</span>
+                </div>
+                <div className="relative">
+                    <h2 className="max-w-md text-3xl font-extrabold leading-tight">
+                        One platform for parents, teachers and administrators.
+                    </h2>
+                    <p className="mt-4 max-w-md text-sm text-white/60">
+                        Track daily activities, manage fees, share progress and stay connected —
+                        all in one place.
+                    </p>
+                </div>
+                <p className="relative text-xs text-white/40">
+                    © {new Date().getFullYear()} Pusat Pendidikan Awal Kanak-Kanak UTHM
+                </p>
             </div>
 
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
-                {children}
+            {/* Form panel */}
+            <div className="flex w-full flex-col items-center justify-center px-6 py-10 lg:w-1/2">
+                <div className="w-full max-w-sm">{children}</div>
             </div>
         </div>
     );

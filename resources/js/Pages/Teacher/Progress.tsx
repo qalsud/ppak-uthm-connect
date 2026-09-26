@@ -21,6 +21,7 @@ import {
 } from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -90,7 +91,7 @@ export default function Progress({
 
     return (
         <AppShell nav={teacherNav} title={t('teacher')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('progress')}</h1>
+            <PageHeader title={t('progress')} description="Record each child's learning progress" />
 
             <Card className="mb-6">
                 <CardHeader>

@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -46,8 +47,7 @@ export default function DailyUpdates({
 
     return (
         <AppShell nav={teacherNav} title={t('teacher')}>
-            <div className="mb-6 flex items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold">{t('daily_updates')}</h1>
+            <PageHeader title={t('daily_updates')} description="Morning updates received from parents">
                 <div className="w-48">
                     <Select value={selectedClass} onValueChange={changeClass}>
                         <SelectTrigger>
@@ -59,7 +59,7 @@ export default function DailyUpdates({
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </PageHeader>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {students.map((student) => (

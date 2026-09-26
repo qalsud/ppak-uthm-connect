@@ -3,6 +3,7 @@ import { BookOpen, CalendarCheck } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -53,7 +54,7 @@ export default function ParentActivities({
 
     return (
         <AppShell nav={parentNav} title={t('parent')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('activities')}</h1>
+            <PageHeader title={t('activities')} description="Latest activity and progress for each child" />
 
             <div className="space-y-6">
                 {children.map((child) => (

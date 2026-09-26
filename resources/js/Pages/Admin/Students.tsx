@@ -1,15 +1,13 @@
 import { router, useForm } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Download, GraduationCap, Pencil, Plus, Trash2, Upload } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import EmptyState from '@/Components/empty-state';
+import ListToolbar from '@/Components/list-toolbar';
+import PageHeader from '@/Components/page-header';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -52,18 +50,26 @@ const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 export default function Students({ students }: { students: Student[] }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
+    const [tab, setTab] = useState<'manual' | 'csv'>('manual');
     const [editing, setEditing] = useState<Student | null>(null);
+    const [query, setQuery] = useState('');
 
-    const form = useForm({
-        name: '',
-        age: '',
-        class: '5tahun',
-        parent_id: '',
-    });
+    const form = useForm({ name: '', age: '', class: '5tahun', parent_id: '' });
+
+    const filtered = useMemo(
+        () =>
+            students.filter(
+                (s) =>
+                    s.name.toLowerCase().includes(query.toLowerCase()) ||
+                    (s.parent?.name ?? '').toLowerCase().includes(query.toLowerCase()),
+            ),
+        [students, query],
+    );
 
     const openCreate = () => {
         setEditing(null);
         form.reset();
+        setTab('manual');
         setOpen(true);
     };
 
@@ -75,6 +81,7 @@ export default function Students({ students }: { students: Student[] }) {
             class: student.class,
             parent_id: student.parent?.id?.toString() ?? '',
         });
+        setTab('manual');
         setOpen(true);
     };
 
@@ -84,9 +91,7 @@ export default function Students({ students }: { students: Student[] }) {
                 onSuccess: () => setOpen(false),
             });
         } else {
-            form.post(route('admin.students.store'), {
-                onSuccess: () => setOpen(false),
-            });
+            form.post(route('admin.students.store'), { onSuccess: () => setOpen(false) });
         }
     };
 
@@ -100,25 +105,34 @@ export default function Students({ students }: { students: Student[] }) {
 
     return (
         <AppShell nav={adminNav} title={t('admin')}>
-            <div className="mb-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('students')}</h1>
-                <Button onClick={openCreate} className="gap-1">
-                    <Plus className="size-4" />
-                    {t('add')}
+            <PageHeader title={t('students')} description="Manage enrolled children">
+                <Button variant="outline" className="gap-1.5">
+                    <Download className="size-4" />
+                    Export CSV
                 </Button>
-            </div>
+                <Button onClick={openCreate} className="gap-1.5">
+                    <Plus className="size-4" />
+                    {t('add')} {t('student')}
+                </Button>
+            </PageHeader>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('students')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {students.length === 0 ? (
-                        <p className="py-8 text-center text-muted-foreground">{t('no_data')}</p>
-                    ) : (
+            <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
+                <ListToolbar
+                    search={query}
+                    onSearch={setQuery}
+                    placeholder="Search for a student by name or parent"
+                />
+                {filtered.length === 0 ? (
+                    <EmptyState
+                        icon={GraduationCap}
+                        title="No students at this time"
+                        description="Students will appear here after they enroll in your school."
+                    />
+                ) : (
+                    <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="bg-muted/40">
                                     <TableHead>{t('name')}</TableHead>
                                     <TableHead>Age</TableHead>
                                     <TableHead>{t('class')}</TableHead>
@@ -127,12 +141,14 @@ export default function Students({ students }: { students: Student[] }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {students.map((student) => (
+                                {filtered.map((student) => (
                                     <TableRow key={student.id}>
                                         <TableCell className="font-medium">{student.name}</TableCell>
                                         <TableCell>{student.age ?? '—'}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">{classLabel(student.class)}</Badge>
+                                            <Badge variant="secondary">
+                                                {classLabel(student.class)}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>{student.parent?.name ?? '—'}</TableCell>
                                         <TableCell className="text-right">
@@ -157,34 +173,51 @@ export default function Students({ students }: { students: Student[] }) {
                                 ))}
                             </TableBody>
                         </Table>
-                    )}
-                </CardContent>
+                    </div>
+                )}
             </Card>
 
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>
-                            {editing ? `${t('edit')} ${t('student')}` : `${t('add')} ${t('student')}`}
+                            {editing ? `${t('edit')} ${t('student')}` : `${t('add')} ${t('students')}`}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-3">
-                        <div className="space-y-1">
-                            <Label htmlFor="sname">{t('name')}</Label>
-                            <Input
-                                id="sname"
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                            />
-                            {form.errors.name && (
-                                <p className="text-xs text-destructive">{form.errors.name}</p>
-                            )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <Label htmlFor="age">Age</Label>
+
+                    {/* Tabs */}
+                    <div className="flex gap-6 border-b">
+                        {(['manual', 'csv'] as const).map((key) => (
+                            <button
+                                key={key}
+                                onClick={() => setTab(key)}
+                                className={`-mb-px border-b-2 pb-2 text-sm font-medium transition-colors ${
+                                    tab === key
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-muted-foreground'
+                                }`}
+                            >
+                                {key === 'manual' ? 'Manually' : 'Import CSV'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {tab === 'manual' ? (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-1 sm:col-span-2">
+                                <Label>{t('name')}</Label>
                                 <Input
-                                    id="age"
+                                    value={form.data.name}
+                                    onChange={(e) => form.setData('name', e.target.value)}
+                                    placeholder="Student full name"
+                                />
+                                {form.errors.name && (
+                                    <p className="text-xs text-destructive">{form.errors.name}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label>Age</Label>
+                                <Input
                                     type="number"
                                     min={2}
                                     max={12}
@@ -210,24 +243,38 @@ export default function Students({ students }: { students: Student[] }) {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div className="space-y-1 sm:col-span-2">
+                                <Label>Parent ID</Label>
+                                <Input
+                                    value={form.data.parent_id}
+                                    onChange={(e) => form.setData('parent_id', e.target.value)}
+                                    placeholder="Optional — link to a parent account"
+                                />
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="parent">{t('parent')}</Label>
-                            <Input
-                                id="parent"
-                                placeholder={t('parent_id') ?? 'Parent ID'}
-                                value={form.data.parent_id}
-                                onChange={(e) => form.setData('parent_id', e.target.value)}
-                            />
+                    ) : (
+                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-8 text-center">
+                            <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                                <Upload className="size-5" />
+                            </span>
+                            <p className="text-sm font-medium">Import students from CSV</p>
+                            <p className="max-w-sm text-xs text-muted-foreground">
+                                Upload a CSV with columns: name, age, class, parent_email.
+                                (Import is coming soon — add students manually for now.)
+                            </p>
+                            <Input type="file" accept=".csv" disabled className="max-w-xs" />
                         </div>
-                    </div>
+                    )}
+
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setOpen(false)}>
                             {t('cancel')}
                         </Button>
-                        <Button onClick={submit} disabled={form.processing}>
-                            {t('save')}
-                        </Button>
+                        {tab === 'manual' && (
+                            <Button onClick={submit} disabled={form.processing}>
+                                {editing ? t('save') : `${t('add')} ${t('student')}`}
+                            </Button>
+                        )}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

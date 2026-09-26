@@ -3,86 +3,83 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* PPAK UTHM brand accents (logo) */
+/*
+ * Palette extracted from the reference screens (Udemy Inter.school):
+ * - Sidebar: deep navy #152259, light-blue accent #509CDB
+ * - Landing/marketing: deep indigo #0E0D4F
+ * - Content: soft #F7F8FA, white cards
+ */
 :root {
+    --brand-navy: #0e0d4f;
+    --brand-navy-soft: #152259;
+    --brand-accent: #509cdb;
     --brand-red: #e3685b;
     --brand-red-strong: #ff6b6b;
     --brand-blue: #2d6abb;
     --brand-blue-soft: #7796b6;
     --brand-dark: #344658;
-}
 
-/*
- * Exact palette from the Figma export (design-tokens page).
- * Light theme, blue primary #437EF7, neutral surfaces, gray text.
- */
-:root {
-    --radius: 0.625rem;
-    --background: #f8f9fb;
-    --foreground: #252d3c;
+    --radius: 0.75rem;
+    --background: #f7f8fa;
+    --foreground: #1b1f27;
     --card: #ffffff;
-    --card-foreground: #252d3c;
+    --card-foreground: #1b1f27;
     --popover: #ffffff;
-    --popover-foreground: #252d3c;
-    --primary: #437ef7;
+    --popover-foreground: #1b1f27;
+    --primary: #509cdb;
     --primary-foreground: #ffffff;
-    --secondary: #eaecf0;
-    --secondary-foreground: #252d3c;
-    --muted: #f5f5f5;
-    --muted-foreground: #878d97;
-    --accent: #e8effd; /* blue-100 */
-    --accent-foreground: #2b63d9; /* blue-900 */
+    --secondary: #eef1f5;
+    --secondary-foreground: #33415c;
+    --muted: #f1f3f6;
+    --muted-foreground: #6b7280;
+    --accent: #eaf3fb;
+    --accent-foreground: #2f6fa8;
     --destructive: #f04438;
-    --border: #eaecf0;
-    --input: #eaecf0;
-    --ring: #437ef7;
-    --chart-1: #437ef7;
-    --chart-2: #648ef7;
-    --chart-3: #aec9fe;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #509cdb;
+    --chart-1: #509cdb;
+    --chart-2: #152259;
+    --chart-3: #a9c9e6;
     --chart-4: #f79009;
     --chart-5: #12b76a;
-    --sidebar: #ffffff;
-    --sidebar-foreground: #252d3c;
-    --sidebar-primary: #e8effd;
-    --sidebar-primary-foreground: #2b63d9;
-    --sidebar-accent: #f8f9fb;
-    --sidebar-accent-foreground: #252d3c;
-    --sidebar-border: #eaecf0;
-    --sidebar-ring: #437ef7;
+    --sidebar: #152259;
+    --sidebar-foreground: #d6e3ed;
+    --sidebar-primary: #509cdb;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #1e2f6b;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #24346e;
+    --sidebar-ring: #509cdb;
 }
 
 .dark {
-    --background: #1c2534;
-    --foreground: #f8f9fb;
-    --card: #252d3c;
-    --card-foreground: #f8f9fb;
-    --popover: #252d3c;
-    --popover-foreground: #f8f9fb;
-    --primary: #5390f8;
-    --primary-foreground: #1c2534;
-    --secondary: #333b48;
-    --secondary-foreground: #f8f9fb;
-    --muted: #333b48;
-    --muted-foreground: #a5acba;
-    --accent: #2e3646;
-    --accent-foreground: #f8f9fb;
+    --background: #101322;
+    --foreground: #f4f6fb;
+    --card: #1a1f34;
+    --card-foreground: #f4f6fb;
+    --popover: #1a1f34;
+    --popover-foreground: #f4f6fb;
+    --primary: #509cdb;
+    --primary-foreground: #0b1020;
+    --secondary: #262c44;
+    --secondary-foreground: #f4f6fb;
+    --muted: #262c44;
+    --muted-foreground: #9aa4bf;
+    --accent: #22305c;
+    --accent-foreground: #dbe7f7;
     --destructive: #f04438;
-    --border: #333b48;
-    --input: #333b48;
-    --ring: #5390f8;
-    --chart-1: #5390f8;
-    --chart-2: #648ef7;
-    --chart-3: #aec9fe;
-    --chart-4: #f79009;
-    --chart-5: #12b76a;
-    --sidebar: #252d3c;
-    --sidebar-foreground: #f8f9fb;
-    --sidebar-primary: #2b63d9;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #333b48;
-    --sidebar-accent-foreground: #f8f9fb;
-    --sidebar-border: #333b48;
-    --sidebar-ring: #5390f8;
+    --border: #2b3250;
+    --input: #2b3250;
+    --ring: #509cdb;
+    --sidebar: #101934;
+    --sidebar-foreground: #d6e3ed;
+    --sidebar-primary: #509cdb;
+    --sidebar-primary-foreground: #0b1020;
+    --sidebar-accent: #1c2a55;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #22305c;
+    --sidebar-ring: #509cdb;
 }
 
 @theme inline {
@@ -122,6 +119,9 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
+    --color-brand-navy: var(--brand-navy);
+    --color-brand-navy-soft: var(--brand-navy-soft);
+    --color-brand-accent: var(--brand-accent);
     --color-brand-red: var(--brand-red);
     --color-brand-red-strong: var(--brand-red-strong);
     --color-brand-blue: var(--brand-blue);
@@ -137,6 +137,6 @@
         @apply border-border outline-ring/50;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
     }
 }

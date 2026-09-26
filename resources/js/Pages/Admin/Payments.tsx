@@ -1,15 +1,19 @@
 import { router, useForm } from '@inertiajs/react';
-import { Check, Plus, Trash2, X } from 'lucide-react';
+import { Plus, Receipt, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { Badge } from '@/Components/ui/badge';
+import EmptyState from '@/Components/empty-state';
+import PageHeader from '@/Components/page-header';
+import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
+import { Card } from '@/Components/ui/card';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import {
@@ -55,28 +59,22 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
 
-    const addForm = useForm({
-        student_id: '',
-        month: '',
-        overtime_hours: '0',
-    });
+    const addForm = useForm({ student_id: '', month: '', overtime_hours: '0' });
 
-    const submit = () => {
+    const submit = () =>
         addForm.post(route('admin.payments.store'), {
             onSuccess: () => {
                 setOpen(false);
                 addForm.reset();
             },
         });
-    };
 
-    const setStatus = (record: Record, status: 'paid' | 'unpaid') => {
+    const setStatus = (record: Record, status: 'paid' | 'unpaid') =>
         router.patch(
             route('admin.payments.status', { record: record.id }),
             { status },
             { preserveScroll: true },
         );
-    };
 
     const remove = (record: Record) => {
         if (confirm(`${t('delete')} ${record.month}?`)) {
@@ -86,78 +84,67 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
         }
     };
 
-    const applyFilter = (key: 'month' | 'class', value: string) => {
+    const applyFilter = (key: 'month' | 'class', value: string) =>
         router.get(
             '/admin/payments',
-            value ? { ...filters, [key]: value } : { ...filters, [key]: '' },
+            { ...filters, [key]: value === '__all' ? '' : value },
             { preserveState: true },
         );
-    };
-
-    const displayAmount = (amount: string) => Number(amount).toFixed(2);
 
     return (
         <AppShell nav={adminNav} title={t('admin')}>
-            <div className="mb-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('payments')}</h1>
-                <Button onClick={() => setOpen(true)} className="gap-1">
+            <PageHeader title={t('payments')} description="Track fees, overtime and receipts">
+                <Button onClick={() => setOpen(true)} className="gap-1.5">
                     <Plus className="size-4" />
-                    {t('add')}
+                    {t('add')} {t('payment')}
                 </Button>
-            </div>
+            </PageHeader>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('payments')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-3">
-                        <div className="w-44">
-                            <Label className="mb-1 block text-xs">{t('month')}</Label>
-                            <Select
-                                value={filters.month}
-                                onValueChange={(v) => applyFilter('month', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('month')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__all">—</SelectItem>
-                                    {months.map((m) => (
-                                        <SelectItem key={m} value={m}>
-                                            {m}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="w-44">
-                            <Label className="mb-1 block text-xs">{t('class')}</Label>
-                            <Select
-                                value={filters.class}
-                                onValueChange={(v) => applyFilter('class', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('class')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__all">—</SelectItem>
-                                    {classes.map((c) => (
-                                        <SelectItem key={c} value={c}>
-                                            {classLabel(c)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+            <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
+                    <Select value={filters.month || '__all'} onValueChange={(v) => applyFilter('month', v)}>
+                        <SelectTrigger className="w-44">
+                            <SelectValue placeholder={t('month')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__all">All months</SelectItem>
+                            {months.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={filters.class || '__all'} onValueChange={(v) => applyFilter('class', v)}>
+                        <SelectTrigger className="w-44">
+                            <SelectValue placeholder={t('class')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__all">All classes</SelectItem>
+                            {classes.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                    {classLabel(c)}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                        {t('monthly_fee')}: RM {Number(fee.monthly_fee).toFixed(2)} ·{' '}
+                        {t('overtime_rate')}: RM {Number(fee.overtime_rate).toFixed(2)}/h
+                    </span>
+                </div>
 
-                    {records.length === 0 ? (
-                        <p className="py-8 text-center text-muted-foreground">{t('no_data')}</p>
-                    ) : (
+                {records.length === 0 ? (
+                    <EmptyState
+                        icon={Receipt}
+                        title="No payment records"
+                        description="Add a payment record to start tracking fees."
+                    />
+                ) : (
+                    <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="bg-muted/40">
                                     <TableHead>{t('student')}</TableHead>
                                     <TableHead>{t('class')}</TableHead>
                                     <TableHead>{t('month')}</TableHead>
@@ -176,37 +163,27 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
                                         <TableCell>{classLabel(record.student.class)}</TableCell>
                                         <TableCell>{record.month}</TableCell>
                                         <TableCell>{Number(record.overtime_hours)}h</TableCell>
-                                        <TableCell>RM {displayAmount(record.amount)}</TableCell>
+                                        <TableCell>RM {Number(record.amount).toFixed(2)}</TableCell>
                                         <TableCell>
-                                            <Badge
-                                                variant={record.status === 'paid' ? 'default' : 'secondary'}
-                                                className={record.status === 'paid' ? 'bg-emerald-600' : ''}
-                                            >
-                                                {record.status === 'paid' ? 'Paid' : 'Unpaid'}
-                                            </Badge>
+                                            <StatusBadge
+                                                status={record.status}
+                                                label={record.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                            />
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {record.status === 'unpaid' ? (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="mr-1 gap-1"
-                                                    onClick={() => setStatus(record, 'paid')}
-                                                >
-                                                    <Check className="size-3" />
-                                                    Paid
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="mr-1 gap-1"
-                                                    onClick={() => setStatus(record, 'unpaid')}
-                                                >
-                                                    <X className="size-3" />
-                                                    Unpaid
-                                                </Button>
-                                            )}
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="mr-1"
+                                                onClick={() =>
+                                                    setStatus(
+                                                        record,
+                                                        record.status === 'unpaid' ? 'paid' : 'unpaid',
+                                                    )
+                                                }
+                                            >
+                                                {record.status === 'unpaid' ? 'Mark paid' : 'Mark unpaid'}
+                                            </Button>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
@@ -220,71 +197,66 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
                                 ))}
                             </TableBody>
                         </Table>
-                    )}
-                </CardContent>
+                    </div>
+                )}
             </Card>
 
-            {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader>
-                            <CardTitle>{t('add')} {t('payment')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="space-y-1">
-                                <Label>{t('student')}</Label>
-                                <Input
-                                    list="students"
-                                    placeholder={t('student_id')}
-                                    value={addForm.data.student_id}
-                                    onChange={(e) => addForm.setData('student_id', e.target.value)}
-                                />
-                                <datalist id="students" />
-                            </div>
-                            <div className="space-y-1">
-                                <Label>{t('month')}</Label>
-                                <Select
-                                    value={addForm.data.month}
-                                    onValueChange={(v) => addForm.setData('month', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('month')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {months.map((m) => (
-                                            <SelectItem key={m} value={m}>
-                                                {m}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-1">
-                                <Label>{t('overtime')}</Label>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={addForm.data.overtime_hours}
-                                    onChange={(e) => addForm.setData('overtime_hours', e.target.value)}
-                                />
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                {t('monthly_fee')}: RM {displayAmount(fee.monthly_fee)} ·{' '}
-                                {t('overtime_rate')}: RM {displayAmount(fee.overtime_rate)}/h
-                            </p>
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={() => setOpen(false)}>
-                                    {t('cancel')}
-                                </Button>
-                                <Button onClick={submit} disabled={addForm.processing}>
-                                    {t('create')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('add')} {t('payment')}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div className="space-y-1">
+                            <Label>{t('student')} ID</Label>
+                            <Input
+                                value={addForm.data.student_id}
+                                onChange={(e) => addForm.setData('student_id', e.target.value)}
+                                placeholder="e.g. 1"
+                            />
+                            {addForm.errors.student_id && (
+                                <p className="text-xs text-destructive">{addForm.errors.student_id}</p>
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('month')}</Label>
+                            <Select
+                                value={addForm.data.month}
+                                onValueChange={(v) => addForm.setData('month', v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t('month')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {months.map((m) => (
+                                        <SelectItem key={m} value={m}>
+                                            {m}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('overtime')}</Label>
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={addForm.data.overtime_hours}
+                                onChange={(e) => addForm.setData('overtime_hours', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpen(false)}>
+                            {t('cancel')}
+                        </Button>
+                        <Button onClick={submit} disabled={addForm.processing}>
+                            {t('create')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppShell>
     );
 }

@@ -1,23 +1,16 @@
 import { useForm } from '@inertiajs/react';
+import { Save } from 'lucide-react';
 
+import PageHeader from '@/Components/page-header';
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
 import { adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
-type Fee = {
-    monthly_fee: string;
-    overtime_rate: string;
-};
+type Fee = { monthly_fee: string; overtime_rate: string };
 
 export default function Fees({ fee }: { fee: Fee }) {
     const { t } = useI18n();
@@ -27,22 +20,16 @@ export default function Fees({ fee }: { fee: Fee }) {
         overtime_rate: parseFloat(fee.overtime_rate).toString(),
     });
 
-    const submit = () => {
-        form.put(route('admin.fees.update'));
-    };
+    const submit = () => form.put(route('admin.fees.update'));
 
     return (
         <AppShell nav={adminNav} title={t('admin')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('fee_settings')}</h1>
+            <PageHeader title={t('fee_settings')} description="Set the monthly fee and overtime rate" />
 
-            <Card className="max-w-lg">
-                <CardHeader>
-                    <CardTitle>{t('fee_settings')}</CardTitle>
-                    <CardDescription>RM310 / RM6</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="fee">{t('monthly_fee')}</Label>
+            <Card className="max-w-xl rounded-2xl border-0 shadow-sm">
+                <CardContent className="space-y-4 pt-6">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="fee">{t('monthly_fee')} (RM)</Label>
                         <Input
                             id="fee"
                             type="number"
@@ -55,8 +42,8 @@ export default function Fees({ fee }: { fee: Fee }) {
                             <p className="text-xs text-destructive">{form.errors.monthly_fee}</p>
                         )}
                     </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="ot">{t('overtime_rate')}</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="ot">{t('overtime_rate')} (RM / hour)</Label>
                         <Input
                             id="ot"
                             type="number"
@@ -66,10 +53,13 @@ export default function Fees({ fee }: { fee: Fee }) {
                             onChange={(e) => form.setData('overtime_rate', e.target.value)}
                         />
                         {form.errors.overtime_rate && (
-                            <p className="text-xs text-destructive">{form.errors.overtime_rate}</p>
+                            <p className="text-xs text-destructive">
+                                {form.errors.overtime_rate}
+                            </p>
                         )}
                     </div>
-                    <Button onClick={submit} disabled={form.processing}>
+                    <Button onClick={submit} disabled={form.processing} className="gap-1.5">
+                        <Save className="size-4" />
                         {t('save')}
                     </Button>
                 </CardContent>

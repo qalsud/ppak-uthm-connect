@@ -9,6 +9,7 @@ import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import type { PageProps } from '@/types';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -83,7 +84,7 @@ export default function ParentDailyUpdate() {
 
     return (
         <AppShell nav={parentNav} title={t('parent')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('daily_update')}</h1>
+            <PageHeader title={t('daily_update')} description="Let the teachers know how your child is today" />
 
             <div className="mb-4 flex flex-wrap gap-2">
                 {children.map((child) => (

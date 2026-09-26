@@ -1,12 +1,11 @@
 ﻿import { Link, usePage } from '@inertiajs/react';
 import {
+    CalendarClock,
     GraduationCap,
     Plus,
     Users,
     UserCheck,
     Wallet,
-    CalendarClock,
-    FileText,
 } from 'lucide-react';
 
 import { Badge } from '@/Components/ui/badge';
@@ -18,6 +17,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/Components/ui/card';
+import StatCard from '@/Components/stat-card';
 import {
     Table,
     TableBody,
@@ -112,27 +112,14 @@ export default function AdminDashboard() {
 
             {/* KPI stat cards */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-                {kpis.map((kpi) => {
-                    const Icon = kpi.icon;
-
-                    return (
-                        <Card key={kpi.label} className="rounded-2xl">
-                            <CardContent className="flex items-center gap-3 py-4">
-                                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                                    <Icon className="size-5" />
-                                </span>
-                                <div className="min-w-0">
-                                    <p className="truncate text-xs text-muted-foreground">
-                                        {kpi.label}
-                                    </p>
-                                    <p className="text-xl font-bold text-foreground">
-                                        {kpi.value}
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                {kpis.map((kpi) => (
+                    <StatCard
+                        key={kpi.label}
+                        label={kpi.label}
+                        value={kpi.value}
+                        icon={kpi.icon}
+                    />
+                ))}
             </div>
 
             {/* Chart row */}

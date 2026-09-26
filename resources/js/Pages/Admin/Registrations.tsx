@@ -1,15 +1,11 @@
 import { router } from '@inertiajs/react';
-import { Check, X } from 'lucide-react';
+import { Check, Inbox, X } from 'lucide-react';
 
-import { Badge } from '@/Components/ui/badge';
+import EmptyState from '@/Components/empty-state';
+import PageHeader from '@/Components/page-header';
+import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card } from '@/Components/ui/card';
 import {
     Table,
     TableBody,
@@ -36,10 +32,9 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
 
     const act = (user: PendingUser, action: 'approve' | 'reject') => {
         router.post(
-            route(
-                action === 'approve' ? 'admin.users.approve' : 'admin.users.reject',
-                { user: user.id },
-            ),
+            route(action === 'approve' ? 'admin.users.approve' : 'admin.users.reject', {
+                user: user.id,
+            }),
             {},
             { preserveScroll: true },
         );
@@ -47,24 +42,24 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
 
     return (
         <AppShell nav={adminNav} title={t('admin')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('registrations')}</h1>
+            <PageHeader title={t('registrations')} description="Approve or reject new accounts" />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('registrations')}</CardTitle>
-                    <CardDescription>{t('pending_approval')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {users.length === 0 ? (
-                        <p className="py-8 text-center text-muted-foreground">{t('no_data')}</p>
-                    ) : (
+            <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
+                {users.length === 0 ? (
+                    <EmptyState
+                        icon={Inbox}
+                        title="No pending registrations"
+                        description="New parent and teacher sign-ups will appear here for approval."
+                    />
+                ) : (
+                    <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="bg-muted/40">
                                     <TableHead>{t('name')}</TableHead>
                                     <TableHead>{t('email')}</TableHead>
-                                    <TableHead>{t('class')}</TableHead>
-                                    <TableHead>{t('status')}</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Registered</TableHead>
                                     <TableHead className="text-right">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -74,12 +69,13 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
                                         <TableCell className="font-medium">{user.name}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">
-                                                {user.role === 'teacher' ? t('teacher') : t('parent')}
-                                            </Badge>
+                                            <StatusBadge
+                                                status="neutral"
+                                                label={user.role === 'teacher' ? t('teacher') : t('parent')}
+                                            />
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary">{t('pending')}</Badge>
+                                            {new Date(user.created_at).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button
@@ -104,8 +100,8 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
                                 ))}
                             </TableBody>
                         </Table>
-                    )}
-                </CardContent>
+                    </div>
+                )}
             </Card>
         </AppShell>
     );

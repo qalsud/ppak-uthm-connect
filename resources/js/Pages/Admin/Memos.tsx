@@ -1,15 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { FileText, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import EmptyState from '@/Components/empty-state';
+import PageHeader from '@/Components/page-header';
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -19,7 +15,6 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Separator } from '@/Components/ui/separator';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
 import { adminNav } from '@/lib/navigation';
@@ -39,81 +34,77 @@ export default function Memos({ memos }: { memos: Memo[] }) {
 
     const form = useForm({ title: '', description: '' });
 
-    const submit = () => {
+    const submit = () =>
         form.post(route('admin.memos.store'), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
             },
         });
-    };
 
     const remove = (memo: Memo) => {
         if (confirm(`${t('delete')}: ${memo.title}?`)) {
-            router.delete(route('admin.memos.destroy', { memo: memo.id }), {
-                preserveScroll: true,
-            });
+            router.delete(route('admin.memos.destroy', { memo: memo.id }), { preserveScroll: true });
         }
     };
 
     return (
         <AppShell nav={adminNav} title={t('admin')}>
-            <div className="mb-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('memos')}</h1>
-                <Button onClick={() => setOpen(true)} className="gap-1">
+            <PageHeader title={t('memos')} description="Publish announcements to parents & teachers">
+                <Button onClick={() => setOpen(true)} className="gap-1.5">
                     <Plus className="size-4" />
-                    {t('add')}
+                    {t('add')} {t('memo')}
                 </Button>
-            </div>
+            </PageHeader>
 
-            <div className="space-y-4">
-                {memos.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-10 text-center text-muted-foreground">
-                            {t('no_data')}
-                        </CardContent>
-                    </Card>
-                ) : (
-                    memos.map((memo) => (
-                        <Card key={memo.id}>
-                            <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <CardTitle>{memo.title}</CardTitle>
-                                        <CardDescription>
-                                            {memo.author?.name} ·{' '}
-                                            {new Date(memo.created_at).toLocaleDateString()}
-                                        </CardDescription>
-                                    </div>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="text-destructive"
-                                        onClick={() => remove(memo)}
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Button>
+            {memos.length === 0 ? (
+                <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
+                    <EmptyState
+                        icon={FileText}
+                        title="No memos yet"
+                        description="Publish your first announcement for parents and teachers."
+                    />
+                </Card>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                    {memos.map((memo) => (
+                        <Card key={memo.id} className="rounded-2xl border-0 shadow-sm">
+                            <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
+                                <div>
+                                    <CardTitle className="text-base">{memo.title}</CardTitle>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                        {memo.author?.name} ·{' '}
+                                        {new Date(memo.created_at).toLocaleDateString()}
+                                    </p>
                                 </div>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-destructive"
+                                    onClick={() => remove(memo)}
+                                >
+                                    <Trash2 className="size-4" />
+                                </Button>
                             </CardHeader>
                             <CardContent>
-                                <p className="whitespace-pre-wrap text-sm">{memo.description}</p>
+                                <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted-foreground">
+                                    {memo.description}
+                                </p>
                             </CardContent>
                         </Card>
-                    ))
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{t('memos')}</DialogTitle>
+                        <DialogTitle>{t('add')} {t('memo')}</DialogTitle>
                     </DialogHeader>
-                    <Separator />
                     <div className="space-y-3">
                         <div className="space-y-1">
-                            <Label htmlFor="mtitle">{t('title')}</Label>
+                            <Label>{t('title')}</Label>
                             <Input
-                                id="mtitle"
                                 value={form.data.title}
                                 onChange={(e) => form.setData('title', e.target.value)}
                             />
@@ -122,15 +113,16 @@ export default function Memos({ memos }: { memos: Memo[] }) {
                             )}
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="mdesc">{t('description')}</Label>
+                            <Label>{t('description')}</Label>
                             <Textarea
-                                id="mdesc"
-                                rows={5}
+                                rows={6}
                                 value={form.data.description}
                                 onChange={(e) => form.setData('description', e.target.value)}
                             />
                             {form.errors.description && (
-                                <p className="text-xs text-destructive">{form.errors.description}</p>
+                                <p className="text-xs text-destructive">
+                                    {form.errors.description}
+                                </p>
                             )}
                         </div>
                     </div>

@@ -20,6 +20,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -64,7 +65,7 @@ export default function ParentFinancials({
 
     return (
         <AppShell nav={parentNav} title={t('parent')}>
-            <h1 className="mb-2 text-2xl font-bold">{t('financials')}</h1>
+            <PageHeader title={t('financials')} description="Monthly fees, overtime and receipts" />
             <p className="mb-6 text-sm text-muted-foreground">
                 {t('monthly_fee')}: RM {Number(fee.monthly_fee).toFixed(2)} · {t('overtime_rate')}: RM{' '}
                 {Number(fee.overtime_rate).toFixed(2)}/h

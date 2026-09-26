@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
-use App\Models\FinancialRecord;
 use App\Models\Memo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

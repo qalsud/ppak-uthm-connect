@@ -1,5 +1,5 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { GraduationCap, LogOut, Search } from 'lucide-react';
+import { GraduationCap, LifeBuoy, LogOut, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
@@ -25,10 +25,6 @@ type Props = {
     title?: string;
 };
 
-/**
- * School-dashboard style shell: dark fixed sidebar (desktop) + light top bar
- * with page title, search, notification bell and profile menu.
- */
 export default function AppShell({ children, nav = [], title }: Props) {
     const { t } = useI18n();
     const page = usePage<PageProps>();
@@ -38,9 +34,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
     const activeNav = nav.find(
         (item) => activeUrl === item.href || activeUrl.startsWith(`${item.href}/`),
     );
-    const heading = title ?? activeNav?.label
-        ? (title ?? (activeNav ? t(activeNav.label) : t('dashboard')))
-        : t('dashboard');
+    const heading = title ?? (activeNav ? t(activeNav.label) : t('dashboard'));
 
     const initials = (user?.name ?? 'U')
         .split(' ')
@@ -49,41 +43,50 @@ export default function AppShell({ children, nav = [], title }: Props) {
         .join('')
         .toUpperCase();
 
-    const handleLogout = () => {
-        router.post(route('logout'));
-    };
+    const handleLogout = () => router.post(route('logout'));
 
-    const isActive = (href: string) =>
-        activeUrl === href || activeUrl.startsWith(`${href}/`);
+    const isActive = (href: string) => activeUrl === href || activeUrl.startsWith(`${href}/`);
 
     return (
         <div className="min-h-screen bg-background">
             <div className="flex min-h-screen">
                 {nav.length > 0 && (
                     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
-                        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
-                            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
+                        {/* Brand */}
+                        <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-5">
+                            <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                 <GraduationCap className="size-5" />
                             </span>
                             <div className="leading-tight">
-                                <p className="text-sm font-bold">
-                                    <span className="text-brand-red-strong">PPAK</span>{' '}
-                                    <span className="text-brand-blue">UTHM</span>
+                                <p className="text-sm font-bold text-white">PPAK UTHM</p>
+                                <p className="text-[11px] text-sidebar-foreground/70">
+                                    Connect System
                                 </p>
-                                <p className="text-[11px] text-muted-foreground">Connect</p>
                             </div>
                         </div>
+
+                        {/* Navigation */}
                         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-                            {nav.map((item) => (
+                            {nav.map((item, index) => (
                                 <SidebarLink
                                     key={item.href}
                                     item={item}
                                     active={isActive(item.href)}
+                                    isNew={index === 0}
                                 />
                             ))}
                         </nav>
-                        <div className="border-t border-sidebar-border p-3">
-                            <p className="truncate px-2 py-1 text-xs text-muted-foreground">
+
+                        {/* Support + user */}
+                        <div className="space-y-1 border-t border-sidebar-border px-3 py-3">
+                            <a
+                                href="mailto:ppak@uthm.edu.my"
+                                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-white"
+                            >
+                                <LifeBuoy className="size-4 shrink-0" />
+                                Support
+                            </a>
+                            <p className="truncate px-3 pt-1 text-[11px] text-sidebar-foreground/50">
                                 {user?.email}
                             </p>
                         </div>
@@ -91,12 +94,13 @@ export default function AppShell({ children, nav = [], title }: Props) {
                 )}
 
                 <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
-                    <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur">
+                    {/* Top bar */}
+                    <header className="sticky top-0 z-30 border-b bg-card">
                         <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
                             <div className="flex min-w-0 items-center gap-3">
                                 {nav.length > 0 && (
                                     <Link href="/" className="flex items-center gap-2 lg:hidden">
-                                        <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                                        <span className="flex size-8 items-center justify-center rounded-lg bg-sidebar text-white">
                                             <GraduationCap className="size-4" />
                                         </span>
                                     </Link>
@@ -109,10 +113,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                             <div className="flex items-center gap-1.5">
                                 <div className="relative hidden md:block">
                                     <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        className="h-9 w-56 pl-9"
-                                        placeholder="Search…"
-                                    />
+                                    <Input className="h-9 w-60 pl-9" placeholder="Search…" />
                                 </div>
                                 <NotificationBell />
                                 {nav.length === 0 && <LanguageSwitcher />}
@@ -120,7 +121,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" className="gap-2 pl-1.5 pr-3">
                                             <Avatar className="size-8">
-                                                <AvatarFallback className="bg-indigo-100 text-xs text-indigo-700">
+                                                <AvatarFallback className="bg-accent text-xs font-semibold text-accent-foreground">
                                                     {initials}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -157,7 +158,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                                         href={item.href}
                                         className={`shrink-0 rounded-full px-3 py-1.5 text-sm ${
                                             isActive(item.href)
-                                                ? 'bg-primary text-primary-foreground'
+                                                ? 'bg-sidebar text-white'
                                                 : 'bg-muted text-muted-foreground'
                                         }`}
                                     >
@@ -175,21 +176,34 @@ export default function AppShell({ children, nav = [], title }: Props) {
     );
 }
 
-function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
+function SidebarLink({
+    item,
+    active,
+    isNew,
+}: {
+    item: NavItem;
+    active: boolean;
+    isNew?: boolean;
+}) {
     const { t } = useI18n();
     const Icon = item.icon;
 
     return (
         <Link
             href={item.href}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                    : 'text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white'
             }`}
         >
             <Icon className="size-4 shrink-0" />
-            {t(item.label)}
+            <span className="flex-1">{t(item.label)}</span>
+            {isNew && !active && (
+                <span className="rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                    New
+                </span>
+            )}
         </Link>
     );
 }

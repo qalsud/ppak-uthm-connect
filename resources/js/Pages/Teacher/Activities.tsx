@@ -23,6 +23,7 @@ import {
 } from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
+import PageHeader from '@/Components/page-header';
 import { teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -73,7 +74,7 @@ export default function Activities({
 
     return (
         <AppShell nav={teacherNav} title={t('teacher')}>
-            <h1 className="mb-6 text-2xl font-bold">{t('daily_activities')}</h1>
+            <PageHeader title={t('daily_activities')} description="Record daily classroom activities" />
 
             <Card className="mb-6">
                 <CardHeader>
