@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'parent_id',
         'name',
@@ -25,6 +28,21 @@ class Student extends Model
     public function financialRecords(): HasMany
     {
         return $this->hasMany(FinancialRecord::class);
+    }
+
+    public function dailyActivities(): HasMany
+    {
+        return $this->hasMany(DailyActivity::class);
+    }
+
+    public function dailyUpdates(): HasMany
+    {
+        return $this->hasMany(DailyUpdate::class);
+    }
+
+    public function progressRecords(): HasMany
+    {
+        return $this->hasMany(ProgressRecord::class);
     }
 
     // Future modules attach here:

@@ -4,9 +4,12 @@ namespace Database\Seeders;
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\DailyActivity;
+use App\Models\DailyUpdate;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -128,6 +131,51 @@ class DatabaseSeeder extends Seeder
                 'paid_on' => $record['status'] === 'paid' ? now()->subDays(random_int(3, 30)) : null,
             ]);
         }
+
+        // Teacher record: yesterday's daily activity for the demo student
+        DailyActivity::create([
+            'student_id' => $studentA->id,
+            'teacher_id' => $teacher->id,
+            'date' => now()->subDay()->toDateString(),
+            'afternoon_sleep' => 'yes',
+            'medication' => 'no',
+            'shower' => 'yes',
+            'brush_teeth' => 'yes',
+            'drink_milk' => 'yes',
+            'breakfast' => 'yes',
+            'lunch' => 'yes',
+            'afternoon_snack' => 'yes',
+            'eat_fruits' => 'yes',
+            'tantrum_crying' => 'no',
+            'health_issues' => 'no',
+            'injuries' => 'no',
+            'treatment_notes' => '-',
+        ]);
+
+        // Teacher record: latest progress
+        ProgressRecord::create([
+            'student_id' => $studentA->id,
+            'teacher_id' => $teacher->id,
+            'date' => now()->subDay()->toDateString(),
+            'sub_theme' => 'outdoor',
+            'activity_done' => 'Good',
+            'child_proficiency' => 'Good',
+            'permata_activity' => 'Drawing',
+            'free_activity' => 'Learning',
+            'development_proficiency' => 'Social Skills',
+            'notes' => 'good',
+        ]);
+
+        // Parent record: this morning's daily update
+        DailyUpdate::create([
+            'student_id' => $studentA->id,
+            'date' => now()->toDateString(),
+            'arrival_time' => '07:30',
+            'sleep_status' => 'Good',
+            'bath_status' => 'Done',
+            'health_status' => 'good',
+            'parent_notes' => 'Tolong bagi ubat jika demam.',
+        ]);
 
         $this->command?->info('Seeded demo data (admin/teacher/parent/pending, students, memos, payments).');
     }

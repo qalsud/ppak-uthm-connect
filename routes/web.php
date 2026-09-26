@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
 use App\Http\Controllers\Admin\MemoController;
 use App\Http\Controllers\Admin\PaymentController;
@@ -8,7 +8,17 @@ use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
+use App\Http\Controllers\Parent\DailyUpdateController as ParentDailyUpdateController;
+use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
+use App\Http\Controllers\Parent\FinancialController as ParentFinancialController;
+use App\Http\Controllers\Parent\MemoController as ParentMemoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Teacher\ActivityController as TeacherActivityController;
+use App\Http\Controllers\Teacher\DailyUpdateController as TeacherDailyUpdateController;
+use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\MemoController as TeacherMemoController;
+use App\Http\Controllers\Teacher\ProgressController as TeacherProgressController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,15 +42,15 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
 Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
     // Role home dashboards
-    Route::get('/admin', DashboardController::class)
+    Route::get('/admin', AdminDashboardController::class)
         ->middleware('role:admin')
         ->name('admin.dashboard');
 
-    Route::get('/teacher', fn () => Inertia::render('Teacher/Dashboard'))
+    Route::get('/teacher', TeacherDashboardController::class)
         ->middleware('role:teacher')
         ->name('teacher.dashboard');
 
-    Route::get('/parent', fn () => Inertia::render('Parent/Dashboard'))
+    Route::get('/parent', ParentDashboardController::class)
         ->middleware('role:parent')
         ->name('parent.dashboard');
 
@@ -74,6 +84,31 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
             Route::patch('/payments/{record}', [PaymentController::class, 'updateStatus'])->name('payments.status');
             Route::delete('/payments/{record}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+        });
+
+    // Teacher portal
+    Route::prefix('teacher')
+        ->middleware('role:teacher')
+        ->name('teacher.')
+        ->group(function () {
+            Route::get('/activities', [TeacherActivityController::class, 'index'])->name('activities.index');
+            Route::post('/activities', [TeacherActivityController::class, 'store'])->name('activities.store');
+            Route::get('/progress', [TeacherProgressController::class, 'index'])->name('progress.index');
+            Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
+            Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
+            Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');
+        });
+
+    // Parent portal
+    Route::prefix('parent')
+        ->middleware('role:parent')
+        ->name('parent.')
+        ->group(function () {
+            Route::get('/daily-update', [ParentDailyUpdateController::class, 'index'])->name('daily-update.index');
+            Route::post('/daily-update', [ParentDailyUpdateController::class, 'store'])->name('daily-update.store');
+            Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
+            Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
+            Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');
         });
 
     // Profile (shared)
