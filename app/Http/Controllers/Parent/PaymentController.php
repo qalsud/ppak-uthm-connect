@@ -32,9 +32,9 @@ class PaymentController extends Controller
             ->whereKey($validated['student_id'])
             ->firstOrFail();
 
-        $amount = $student->financialRecords
-            ->where('status', 'unpaid')
-            ->sum('amount');
+        $unpaid = $student->financialRecords->where('status', 'unpaid');
+        $amount = $unpaid->sum('amount');
+        $coveredIds = $unpaid->pluck('id')->values()->all();
 
         if ($amount <= 0) {
             return back()->with('error', __('payments.nothing_due'));
@@ -48,6 +48,7 @@ class PaymentController extends Controller
             'user_id' => $request->user()->id,
             'student_id' => $student->id,
             'amount' => $amount,
+            'financial_record_ids' => $coveredIds,
             'status' => 'pending',
         ]);
 
@@ -57,6 +58,7 @@ class PaymentController extends Controller
             return Redirect::away($session['url']);
         } catch (\Throwable $e) {
             report($e);
+            $payment->delete();
 
             return back()->with('error', __('payments.failed'));
         }
@@ -72,14 +74,9 @@ class PaymentController extends Controller
             $this->completion->complete($payment);
         }
 
-        $records = $payment->student->financialRecords()
-            ->where('status', 'paid')
-            ->orderBy('month')
-            ->get();
-
         return Inertia::render('Parent/PaymentSuccess', [
             'payment' => $payment,
-            'records' => $records,
+            'records' => $this->completion->coveredRecords($payment),
         ]);
     }
 
@@ -91,14 +88,9 @@ class PaymentController extends Controller
             return back()->with('error', __('payments.not_paid'));
         }
 
-        $records = $payment->student->financialRecords()
-            ->where('status', 'paid')
-            ->orderBy('month')
-            ->get();
-
         $pdf = Pdf::loadView('pdf.receipt', [
             'payment' => $payment,
-            'records' => $records,
+            'records' => $this->completion->coveredRecords($payment),
             'issuedAt' => now(),
         ]);
 

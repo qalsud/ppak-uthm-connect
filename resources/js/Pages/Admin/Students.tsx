@@ -106,9 +106,11 @@ export default function Students({ students }: { students: Student[] }) {
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('students')} description="Manage enrolled children">
-                <Button variant="outline" className="gap-1.5">
-                    <Download className="size-4" />
-                    Export CSV
+                <Button variant="outline" className="gap-1.5" asChild>
+                    <a href={route('admin.students.export')}>
+                        <Download className="size-4" />
+                        Export CSV
+                    </a>
                 </Button>
                 <Button onClick={openCreate} className="gap-1.5">
                     <Plus className="size-4" />

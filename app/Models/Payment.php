@@ -11,6 +11,7 @@ class Payment extends Model
         'user_id',
         'student_id',
         'amount',
+        'financial_record_ids',
         'stripe_session_id',
         'status',
         'paid_at',
@@ -18,6 +19,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'financial_record_ids' => 'array',
         'paid_at' => 'datetime',
     ];
 

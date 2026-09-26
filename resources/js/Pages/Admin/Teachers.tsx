@@ -115,9 +115,11 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('teachers')} description="Manage teaching staff">
-                <Button variant="outline" className="gap-1.5">
-                    <Download className="size-4" />
-                    Export CSV
+                <Button variant="outline" className="gap-1.5" asChild>
+                    <a href={route('admin.teachers.export')}>
+                        <Download className="size-4" />
+                        Export CSV
+                    </a>
                 </Button>
                 <Button onClick={openCreate} className="gap-1.5">
                     <Plus className="size-4" />

@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers\Parent;
 
+use App\Enums\AccountStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\DailyUpdate;
+use App\Models\Student;
+use App\Models\User;
+use App\Notifications\DailyUpdateSubmittedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,8 +25,12 @@ class DailyUpdateController extends Controller
             ? $children->firstWhere('id', (int) $request->input('student_id'))
             : $children->first();
 
+        // Only pre-fill from today's update, so stale values are never reused.
         $existing = $selected
-            ? DailyUpdate::query()->where('student_id', $selected->id)->latest('date')->first()
+            ? DailyUpdate::query()
+                ->where('student_id', $selected->id)
+                ->whereDate('date', today())
+                ->first()
             : null;
 
         return Inertia::render('Parent/DailyUpdate', [
@@ -34,7 +44,7 @@ class DailyUpdateController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'date' => 'required|date',
+            'date' => 'required|date|before_or_equal:today',
             'arrival_time' => 'required|date_format:H:i',
             'sleep_status' => ['required', Rule::in(['Good', 'Poor'])],
             'bath_status' => ['required', Rule::in(['Done', 'Not Done'])],
@@ -54,7 +64,18 @@ class DailyUpdateController extends Controller
         if ($record) {
             $record->update($validated);
         } else {
-            DailyUpdate::create($validated);
+            $record = DailyUpdate::create($validated);
+        }
+
+        // Notify the teaching team.
+        $teachers = User::query()
+            ->where('role', UserRole::Teacher)
+            ->where('status', AccountStatus::Active)
+            ->get();
+
+        if ($teachers->isNotEmpty()) {
+            $student = Student::find($validated['student_id']);
+            Notification::send($teachers, new DailyUpdateSubmittedNotification($student, $record));
         }
 
         return back()->with('success', __('approval.daily_update_saved'));

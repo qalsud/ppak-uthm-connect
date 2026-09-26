@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,6 +30,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
+        $unreadMessages = 0;
+        if ($user && ($user->isParent() || $user->isTeacher())) {
+            $query = Message::query()
+                ->whereNull('read_at')
+                ->where('sender_id', '!=', $user->id);
+
+            if ($user->isParent()) {
+                $ids = $user->students()->pluck('id');
+                $query->whereHas('conversation', fn ($q) => $q->whereIn('student_id', $ids));
+            }
+
+            $unreadMessages = $query->count();
+        }
+
         return [
             ...parent::share($request),
             'locale' => app()->getLocale(),
@@ -43,8 +60,9 @@ class HandleInertiaRequests extends Middleware
                 ),
             ],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
+            'unreadMessages' => $unreadMessages,
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),

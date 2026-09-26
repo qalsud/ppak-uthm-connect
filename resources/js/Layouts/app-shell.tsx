@@ -31,6 +31,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
     const { t } = useI18n();
     const page = usePage<PageProps>();
     const user = page.props.auth.user;
+    const unreadMessages = (page.props.unreadMessages as number) ?? 0;
     const activeUrl = page.url;
 
     const allNav = [...nav, ...bottomNav];
@@ -79,6 +80,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                     item={item}
                                     active={isActive(item.href)}
                                     isNew={index === 0}
+                                    badge={item.label === 'messages' ? unreadMessages : 0}
                                 />
                             ))}
                         </nav>
@@ -195,11 +197,16 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
+                                    className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
                                         active ? 'text-primary' : 'text-muted-foreground'
                                     }`}
                                 >
                                     <Icon className="size-5" />
+                                    {item.label === 'messages' && unreadMessages > 0 && (
+                                        <span className="absolute right-4 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                                            {unreadMessages > 9 ? '9+' : unreadMessages}
+                                        </span>
+                                    )}
                                     {t(item.label)}
                                 </Link>
                             );
@@ -215,10 +222,12 @@ function SidebarLink({
     item,
     active,
     isNew,
+    badge = 0,
 }: {
     item: NavItem;
     active: boolean;
     isNew?: boolean;
+    badge?: number;
 }) {
     const { t } = useI18n();
     const Icon = item.icon;
@@ -234,6 +243,11 @@ function SidebarLink({
         >
             <Icon className="size-4 shrink-0" />
             <span className="flex-1">{t(item.label)}</span>
+            {badge > 0 && (
+                <span className="rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {badge > 9 ? '9+' : badge}
+                </span>
+            )}
             {isNew && !active && (
                 <span className="rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                     New

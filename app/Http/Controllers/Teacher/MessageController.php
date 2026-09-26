@@ -75,7 +75,12 @@ class MessageController extends Controller
 
     private function list(Request $request): array
     {
+        $userId = $request->user()->id;
+
         return Conversation::with(['student', 'student.parent:id,name', 'latestMessage'])
+            ->withCount(['messages as unread_count' => fn ($q) => $q
+                ->where('sender_id', '!=', $userId)
+                ->whereNull('read_at')])
             ->orderByDesc('updated_at')
             ->get()
             ->map(fn (Conversation $c) => [
@@ -83,10 +88,7 @@ class MessageController extends Controller
                 'student' => $c->student->name ?? '—',
                 'parent' => $c->student->parent->name ?? '—',
                 'last_message' => $c->latestMessage->first()?->body,
-                'unread' => $c->messages()
-                    ->where('sender_id', '!=', auth()->id())
-                    ->whereNull('read_at')
-                    ->count(),
+                'unread' => $c->unread_count,
             ])
             ->values()
             ->toArray();

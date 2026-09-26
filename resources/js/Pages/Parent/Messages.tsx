@@ -13,6 +13,7 @@ import AppShell from '@/Layouts/app-shell';
 type Page = PageProps<{
     conversations: ChatConversation[];
     open: ChatOpen | null;
+    students: Array<{ id: number; name: string; class: string }>;
 }>;
 
 export default function ParentMessages() {
@@ -21,6 +22,10 @@ export default function ParentMessages() {
 
     const select = (id: number) => {
         router.get(route('parent.messages.show', { conversation: id }), {}, { preserveState: true });
+    };
+
+    const start = (studentId: number) => {
+        router.post(route('parent.messages.open', { student: studentId }));
     };
 
     const submit = (body: string) => {
@@ -38,8 +43,9 @@ export default function ParentMessages() {
             <ChatInbox
                 conversations={props.conversations}
                 open={props.open}
+                students={props.students}
                 onSelect={select}
-                onStart={() => {}}
+                onStart={start}
                 onSubmit={submit}
                 onBack={() => router.get('/parent/messages')}
                 currentUserId={props.auth.user.id}

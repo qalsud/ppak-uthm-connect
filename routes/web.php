@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
+use App\Http\Controllers\Parent\ContactController as ParentContactController;
 use App\Http\Controllers\Parent\DailyUpdateController as ParentDailyUpdateController;
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Controllers\Parent\FinancialController as ParentFinancialController;
@@ -76,11 +77,13 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/users/{user}/reject', [RegistrationController::class, 'reject'])->name('users.reject');
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
+            Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');
             Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
             Route::put('/teachers/{user}', [TeacherController::class, 'update'])->name('teachers.update');
             Route::delete('/teachers/{user}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
 
             Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+            Route::get('/students/export', [StudentController::class, 'export'])->name('students.export');
             Route::post('/students', [StudentController::class, 'store'])->name('students.store');
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
@@ -124,6 +127,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/daily-update', [ParentDailyUpdateController::class, 'index'])->name('daily-update.index');
             Route::post('/daily-update', [ParentDailyUpdateController::class, 'store'])->name('daily-update.store');
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
+            Route::get('/teachers', [ParentContactController::class, 'index'])->name('teachers.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');
 
@@ -134,6 +138,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/messages', [ParentMessageController::class, 'index'])->name('messages.index');
             Route::get('/messages/{conversation}', [ParentMessageController::class, 'show'])->name('messages.show');
             Route::post('/messages/{conversation}', [ParentMessageController::class, 'store'])->name('messages.store');
+            Route::post('/messages/student/{student}', [ParentMessageController::class, 'openWithStudent'])->name('messages.open');
         });
 
     // Profile (shared)

@@ -40,12 +40,12 @@ class MemoController extends Controller
             'author_id' => $request->user()->id,
         ]);
 
-        $parents = User::query()
-            ->where('role', UserRole::Parent)
+        $recipients = User::query()
+            ->whereIn('role', [UserRole::Parent, UserRole::Teacher])
             ->where('status', AccountStatus::Active)
             ->get();
 
-        Notification::send($parents, new MemoPostedNotification($memo));
+        Notification::send($recipients, new MemoPostedNotification($memo));
 
         return back()->with('success', __('approval.memo_created'));
     }

@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Notification;
 class PaymentCompletionService
 {
     /**
-     * Mark a checkout session's payment as completed. This is idempotent:
-     * running it twice never double-marks financial records.
+     * Mark a checkout session's payment as completed. This is idempotent and
+     * only ever marks the records that were captured when the session was made.
      */
     public function markSessionCompleted(string $stripeSessionId): ?Payment
     {
@@ -30,13 +30,24 @@ class PaymentCompletionService
         }
 
         $result = DB::transaction(function () use ($payment) {
-            $unpaid = FinancialRecord::query()
-                ->where('student_id', $payment->student_id)
-                ->where('status', 'unpaid')
-                ->get();
+            $ids = $payment->financial_record_ids ?? [];
 
-            foreach ($unpaid as $record) {
-                $record->update(['status' => 'paid', 'paid_on' => now()]);
+            // Only mark the snapshotted records; fall back to the student's
+            // currently-unpaid records for legacy payments without a snapshot.
+            $query = FinancialRecord::query()->where('status', 'unpaid');
+
+            if (! empty($ids)) {
+                $query->whereIn('id', $ids);
+            } else {
+                $query->where('student_id', $payment->student_id);
+            }
+
+            foreach ($query->get() as $record) {
+                $record->update([
+                    'status' => 'paid',
+                    'paid_on' => now(),
+                    'ReceiptGenerated' => true,
+                ]);
             }
 
             $payment->update(['status' => 'paid', 'paid_at' => now()]);
@@ -44,10 +55,26 @@ class PaymentCompletionService
             return $payment->fresh();
         });
 
-        $parent = $result->user;
-
-        Notification::send($parent, new PaymentCompletedNotification($result));
+        Notification::send($result->user, new PaymentCompletedNotification($result));
 
         return $result;
+    }
+
+    /** The financial records this payment covers (for the success page/receipt). */
+    public function coveredRecords(Payment $payment)
+    {
+        $ids = $payment->financial_record_ids ?? [];
+
+        if (! empty($ids)) {
+            return FinancialRecord::query()
+                ->whereIn('id', $ids)
+                ->orderBy('month')
+                ->get();
+        }
+
+        return $payment->student->financialRecords()
+            ->where('status', 'paid')
+            ->orderBy('month')
+            ->get();
     }
 }

@@ -38,13 +38,13 @@ class ProgressController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'date' => 'required|date',
+            'date' => 'required|date|before_or_equal:today',
             'sub_theme' => 'nullable|string|max:255',
-            'activity_done' => ['required', Rule::in(['Select', ...ProgressRecord::GRADES])],
-            'child_proficiency' => ['required', Rule::in(['Select', ...ProgressRecord::GRADES])],
-            'permata_activity' => ['required', Rule::in(['Select', ...ProgressRecord::PERMATA])],
-            'free_activity' => ['required', Rule::in(['Select', ...ProgressRecord::FREE])],
-            'development_proficiency' => ['required', Rule::in(['Select', ...ProgressRecord::DEVELOPMENT])],
+            'activity_done' => ['required', Rule::in(ProgressRecord::GRADES)],
+            'child_proficiency' => ['required', Rule::in(ProgressRecord::GRADES)],
+            'permata_activity' => ['required', Rule::in(ProgressRecord::PERMATA)],
+            'free_activity' => ['required', Rule::in(ProgressRecord::FREE)],
+            'development_proficiency' => ['required', Rule::in(ProgressRecord::DEVELOPMENT)],
             'notes' => 'nullable|string|max:1000',
         ]);
 

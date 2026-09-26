@@ -28,6 +28,7 @@ type Student = {
         health_status: string | null;
         parent_notes: string | null;
     } | null;
+    history: Array<{ date: string; sleep: string; bath: string; health: string | null }>;
 };
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
@@ -114,6 +115,28 @@ export default function DailyUpdates({
                                 <p className="py-4 text-center text-muted-foreground">
                                     {t('no_data')}
                                 </p>
+                            )}
+
+                            {student.history?.length > 0 && (
+                                <div className="mt-3 border-t pt-3">
+                                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                        Recent
+                                    </p>
+                                    <div className="space-y-1">
+                                        {student.history.map((h, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex items-center justify-between text-[11px] text-muted-foreground"
+                                            >
+                                                <span>{h.date}</span>
+                                                <span>
+                                                    {h.sleep} · {h.bath}
+                                                    {h.health ? ` · ${h.health}` : ''}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                         </CardContent>
                     </Card>

@@ -20,6 +20,8 @@ import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
 
+const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
+
 export default function Progress({
     students,
     records,
@@ -102,7 +104,7 @@ export default function Progress({
                                 <SelectContent>
                                     {students.map((s) => (
                                         <SelectItem key={s.id} value={String(s.id)}>
-                                            {s.name} · {s.class}
+                                            {s.name} · {classLabel(s.class)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

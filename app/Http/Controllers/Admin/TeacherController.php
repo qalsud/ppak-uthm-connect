@@ -71,4 +71,29 @@ class TeacherController extends Controller
 
         return back()->with('success', __('approval.deleted'));
     }
+
+    public function export()
+    {
+        $teachers = User::query()
+            ->where('role', UserRole::Teacher)
+            ->orderBy('name')
+            ->get();
+
+        return response()->streamDownload(function () use ($teachers) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'IC', 'Phone', 'Email', 'Status']);
+
+            foreach ($teachers as $teacher) {
+                fputcsv($out, [
+                    $teacher->name,
+                    $teacher->ic_number ?? '',
+                    $teacher->phone ?? '',
+                    $teacher->email,
+                    $teacher->status->value,
+                ]);
+            }
+
+            fclose($out);
+        }, 'teachers.csv', ['Content-Type' => 'text/csv']);
+    }
 }

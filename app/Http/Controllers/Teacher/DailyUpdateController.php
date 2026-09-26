@@ -24,12 +24,19 @@ class DailyUpdateController extends Controller
             ->whereIn('student_id', $students->pluck('id'))
             ->orderBy('date', 'desc')
             ->get()
-            ->groupBy('student_id')
-            ->map(fn ($rows) => $rows->first());
+            ->groupBy('student_id');
 
         $students->transform(function (Student $student) use ($updates) {
-            $student->latest_update = $updates->get($student->id);
+            $rows = $updates->get($student->id, collect());
+
+            $student->latest_update = $rows->first();
             $student->updated_today = $student->latest_update?->date?->isToday() ?? false;
+            $student->history = $rows->take(5)->map(fn ($u) => [
+                'date' => $u->date->format('d M'),
+                'sleep' => $u->sleep_status,
+                'bath' => $u->bath_status,
+                'health' => $u->health_status,
+            ])->values();
 
             return $student;
         });

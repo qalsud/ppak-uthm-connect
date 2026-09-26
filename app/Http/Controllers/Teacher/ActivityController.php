@@ -21,6 +21,7 @@ class ActivityController extends Controller
         $today = $request->input('date', today()->toDateString());
 
         $records = DailyActivity::query()
+            ->where('teacher_id', $request->user()->id)
             ->with('student:id,name,class')
             ->orderBy('date', 'desc')
             ->limit(30)

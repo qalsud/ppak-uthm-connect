@@ -25,8 +25,10 @@ class MessageReceivedNotification extends BaseNotification
 
     public function url(): ?string
     {
-        return $this->conversation->student->parent_id === $this->sender->id
-            ? route('parent.messages.index')
-            : route('teacher.messages.index');
+        // Link to the *recipient's* inbox: a parent send goes to the teacher,
+        // a teacher send goes to the parent.
+        return $this->sender->isParent()
+            ? route('teacher.messages.index')
+            : route('parent.messages.index');
     }
 }

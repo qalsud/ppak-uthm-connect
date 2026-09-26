@@ -26,6 +26,14 @@ type Child = {
         development_proficiency: string;
         notes: string | null;
     } | null;
+    recent_activities: Array<{ id: number; date: string }>;
+    recent_progress: Array<{
+        id: number;
+        date: string;
+        sub_theme: string | null;
+        activity_done: string;
+        development: string;
+    }>;
 };
 
 type FieldMap = Record<string, string>;
@@ -130,6 +138,40 @@ export default function ParentActivities({
                                     </p>
                                 )}
                             </div>
+
+                            {/* History */}
+                            {(child.recent_activities?.length > 0 ||
+                                child.recent_progress?.length > 0) && (
+                                <div className="border-t pt-4">
+                                    <p className="mb-2 text-sm font-semibold">{t('recent_records')}</p>
+                                    <div className="space-y-1">
+                                        {child.recent_activities?.map((a) => (
+                                            <div
+                                                key={`a${a.id}`}
+                                                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-1.5 text-xs"
+                                            >
+                                                <span className="text-muted-foreground">
+                                                    {t('daily_activities')}
+                                                </span>
+                                                <span>{a.date}</span>
+                                            </div>
+                                        ))}
+                                        {child.recent_progress?.map((p) => (
+                                            <div
+                                                key={`p${p.id}`}
+                                                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-1.5 text-xs"
+                                            >
+                                                <span className="text-muted-foreground">
+                                                    {p.sub_theme ?? t('progress')}
+                                                </span>
+                                                <span>
+                                                    {p.activity_done} · {p.development}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 ))}

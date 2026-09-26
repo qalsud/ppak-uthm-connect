@@ -64,6 +64,7 @@ export const parentNav: NavItem[] = [
     { label: 'financials', href: '/parent/financials', icon: Wallet },
     { label: 'messages', href: '/parent/messages', icon: MessageSquare },
     { label: 'memos', href: '/parent/memos', icon: FileText },
+    { label: 'teachers', href: '/parent/teachers', icon: Users },
 ];
 
 /** Mobile bottom tab bar for parents (max 5 items). */

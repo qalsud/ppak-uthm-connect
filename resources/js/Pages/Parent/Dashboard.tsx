@@ -7,6 +7,7 @@ import {
     FileText,
     GraduationCap,
     MessagesSquare,
+    Users,
     Wallet,
 } from 'lucide-react';
 
@@ -131,15 +132,22 @@ export default function ParentDashboard() {
                 ))}
             </div>
 
-            {/* Memos shortcut */}
-            <Link href="/parent/memos" className="mt-4 flex items-center gap-3 rounded-2xl border bg-card p-4">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
-                    <FileText className="size-5" />
-                </span>
-                <span className="flex-1 text-sm font-medium">{t('memos')}</span>
-                <span className="text-xs text-muted-foreground">{memoCount}</span>
-                <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
+            {/* Memos + Teachers shortcuts */}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+                <Link href="/parent/memos" className="flex items-center gap-3 rounded-2xl border bg-card p-4">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                        <FileText className="size-5" />
+                    </span>
+                    <span className="flex-1 text-sm font-medium">{t('memos')}</span>
+                    <span className="text-xs text-muted-foreground">{memoCount}</span>
+                </Link>
+                <Link href="/parent/teachers" className="flex items-center gap-3 rounded-2xl border bg-card p-4">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                        <Users className="size-5" />
+                    </span>
+                    <span className="flex-1 text-sm font-medium">{t('teachers')}</span>
+                </Link>
+            </div>
         </AppShell>
     );
 }

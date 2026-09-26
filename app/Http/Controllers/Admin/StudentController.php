@@ -28,7 +28,7 @@ class StudentController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'age' => 'nullable|integer|min:2|max:12',
+            'age' => 'nullable|integer|min:3|max:10',
             'class' => ['required', Rule::in(Student::CLASSES)],
             'parent_id' => 'nullable|exists:users,id',
         ]);
@@ -42,7 +42,7 @@ class StudentController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'age' => 'nullable|integer|min:2|max:12',
+            'age' => 'nullable|integer|min:3|max:10',
             'class' => ['required', Rule::in(Student::CLASSES)],
             'parent_id' => 'nullable|exists:users,id',
         ]);
@@ -50,6 +50,27 @@ class StudentController extends Controller
         $student->update($data);
 
         return back()->with('success', __('approval.updated'));
+    }
+
+    public function export()
+    {
+        $students = Student::query()->with('parent:id,name')->orderBy('name')->get();
+
+        return response()->streamDownload(function () use ($students) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Name', 'Age', 'Class', 'Parent']);
+
+            foreach ($students as $student) {
+                fputcsv($out, [
+                    $student->name,
+                    $student->age,
+                    $student->class_label,
+                    $student->parent?->name ?? '',
+                ]);
+            }
+
+            fclose($out);
+        }, 'students.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function destroy(Request $request, Student $student): RedirectResponse

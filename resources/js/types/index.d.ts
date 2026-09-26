@@ -17,6 +17,7 @@ export type PageProps<
     };
     locale?: 'en' | 'ms';
     translations?: Record<'en' | 'ms', Record<string, string>>;
+    unreadMessages?: number;
     flash?: {
         success?: string | null;
         error?: string | null;
