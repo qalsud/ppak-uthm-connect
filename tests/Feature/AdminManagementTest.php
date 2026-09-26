@@ -557,3 +557,17 @@ test('the student list supports server-side search and pagination', function () 
         ->get(route('admin.students.index'))
         ->assertInertia(fn (Assert $page) => $page->has('students.data', 15));
 });
+
+test('admin can open a student detail page', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    $this->actingAs(admin())->get(route('admin.students.show', $student))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Student')
+            ->where('student.name', $student->name)
+            ->has('attendance')
+            ->has('progress')
+            ->has('payments')
+        );
+});

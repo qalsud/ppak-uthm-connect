@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Attendance;
+use App\Models\DailyActivity;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -40,6 +42,48 @@ class StudentController extends Controller
             'students' => $students,
             'parents' => $parents,
             'filters' => ['search' => $search, 'class' => $class ?? ''],
+        ]);
+    }
+
+    public function show(Student $student): Response
+    {
+        $student->load('parent:id,name,email');
+
+        return Inertia::render('Admin/Student', [
+            'student' => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'age' => $student->age,
+                'class' => $student->classLabel,
+                'parent' => $student->parent ? [
+                    'id' => $student->parent->id,
+                    'name' => $student->parent->name,
+                    'email' => $student->parent->email,
+                ] : null,
+                'unpaid' => (float) $student->financialRecords()->where('status', 'unpaid')->sum('amount'),
+            ],
+            'attendance' => Attendance::historyFor($student->id, 14)
+                ->map(fn (Attendance $a) => $a->historyRow())
+                ->values(),
+            'updates' => $student->dailyUpdates()
+                ->latest('date')
+                ->limit(5)
+                ->get(['id', 'date', 'arrival_time', 'sleep_status', 'bath_status', 'health_status', 'parent_notes']),
+            'activities' => $student->dailyActivities()
+                ->with('teacher:id,name')
+                ->latest('date')
+                ->limit(5)
+                ->get(),
+            'progress' => $student->progressRecords()
+                ->with('photos.uploadedBy:id,name')
+                ->latest('date')
+                ->limit(5)
+                ->get(),
+            'payments' => $student->financialRecords()
+                ->latest('created_at')
+                ->limit(8)
+                ->get(['id', 'month', 'amount', 'status', 'paid_on']),
+            'fields' => DailyActivity::FIELDS,
         ]);
     }
 

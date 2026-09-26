@@ -1,5 +1,5 @@
-import { router, useForm } from '@inertiajs/react';
-import { Download, GraduationCap, Pencil, Plus, Trash2, Upload } from 'lucide-react';
+import { router, useForm, Link } from '@inertiajs/react';
+import { Download, Eye, GraduationCap, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -230,6 +230,11 @@ export default function Students({
                                             </p>
                                         </div>
                                         <div className="flex shrink-0">
+                                            <Link href={route('admin.students.show', { student: student.id })}>
+                                                <Button size="sm" variant="ghost">
+                                                    <Eye className="size-4" />
+                                                </Button>
+                                            </Link>
                                             <Button size="sm" variant="ghost" onClick={() => openEdit(student)}>
                                                 <Pencil className="size-4" />
                                             </Button>
@@ -274,6 +279,11 @@ export default function Students({
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
+                                                <Link href={route('admin.students.show', { student: student.id })}>
+                                                    <Button size="sm" variant="ghost" className="mr-1">
+                                                        <Eye className="size-4" />
+                                                    </Button>
+                                                </Link>
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
