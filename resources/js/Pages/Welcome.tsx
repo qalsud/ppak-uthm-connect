@@ -79,6 +79,10 @@ export default function Welcome({ auth }: PageProps) {
                     <div className="pointer-events-none absolute -right-24 top-0 size-96 rounded-full bg-brand-accent/20 blur-3xl" />
                     <div className="pointer-events-none absolute -left-24 bottom-0 size-96 rounded-full bg-indigo-500/20 blur-3xl" />
                     <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6">
+                        <div className="mb-7 flex flex-wrap items-center justify-center gap-4">
+                            <Logo chip className="size-16" />
+                            <Logo variant="uthm" chip className="h-16 w-56" />
+                        </div>
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90">
                             <Sparkles className="size-3.5" />
                             Digital platform for PPAK UTHM
