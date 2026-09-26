@@ -133,6 +133,15 @@ test('parent can submit a daily update for their own child only', function () {
     ])->assertForbidden();
 });
 
+test('authenticated roles can still view the public pages without errors', function () {
+    foreach ([UserRole::Admin, UserRole::Teacher, UserRole::Parent] as $role) {
+        $user = User::factory()->role($role)->create();
+
+        $this->actingAs($user)->get('/')->assertOk();
+        $this->actingAs($user)->get('/profile')->assertOk();
+    }
+});
+
 test('parent dashboard shows unpaid total across children', function () {
     [$parent, $children] = parentWithStudents(2);
 
