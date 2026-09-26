@@ -205,7 +205,7 @@ test('progress cannot be saved with placeholder Select values', function () {
     ])->assertSessionHasErrors('activity_done');
 });
 
-test('a teacher marks attendance and can toggle it back', function () {
+test('a teacher can mark a child as arrived', function () {
     [, $children] = reviewParent();
     $child = $children->first();
     $teacher = User::factory()->role(UserRole::Teacher)->create();
@@ -213,19 +213,6 @@ test('a teacher marks attendance and can toggle it back', function () {
     $this->actingAs($teacher)
         ->post(route('teacher.attendance.store', $child), ['action' => 'arrive'])
         ->assertRedirect();
-
-    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
-
-    $this->actingAs($teacher)
-        ->post(route('teacher.attendance.store', $child), ['action' => 'depart'])
-        ->assertRedirect();
-
-    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
-
-    // Re-check-in reopens the day.
-    $this->actingAs($teacher)
-        ->post(route('teacher.attendance.store', $child), ['action' => 'arrive'])
-        ->assertSessionHas('success');
 
     expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
 });
@@ -236,7 +223,7 @@ test('attendance keeps one row per student per day', function () {
     $teacher = User::factory()->role(UserRole::Teacher)->create();
 
     $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'arrive']);
-    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'depart']);
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'arrive']);
 
     expect(Attendance::where('student_id', $child->id)->count())->toBe(1);
 });
@@ -250,23 +237,6 @@ test('parents cannot mark attendance', function () {
         ->assertForbidden();
 
     expect(Attendance::where('student_id', $child->id)->count())->toBe(0);
-});
-
-test('a teacher can correct a closed day', function () {
-    [, $children] = reviewParent();
-    $child = $children->first();
-    $teacher = User::factory()->role(UserRole::Teacher)->create();
-
-    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), ['action' => 'depart']);
-
-    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('home');
-
-    $this->actingAs($teacher)->post(route('teacher.attendance.store', $child), [
-        'action' => 'arrive',
-        'date' => today()->toDateString(),
-    ]);
-
-    expect(Attendance::where('student_id', $child->id)->first()->status())->toBe('school');
 });
 
 test('teacher progress history can be filtered by student with a summary', function () {

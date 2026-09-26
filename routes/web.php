@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\AttendancePhotoController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
@@ -57,6 +58,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
     // Notifications (shared by all roles)
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
+
+    // Attendance photos (authorised per role)
+    Route::get('/attendance/photos/{attendancePhoto}', [AttendancePhotoController::class, 'show'])
+        ->name('attendance.photos.show');
 
     // Role home dashboards
     Route::get('/admin', AdminDashboardController::class)
@@ -126,6 +131,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
             Route::get('/attendance', [TeacherAttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('attendance.checkout');
             Route::post('/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
             Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');
 

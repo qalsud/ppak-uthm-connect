@@ -117,6 +117,7 @@ export default function ParentChild() {
 
                     <AttendanceActions
                         studentId={child.id}
+                        studentName={child.name}
                         attendance={child.attendance}
                         role="parent"
                     />

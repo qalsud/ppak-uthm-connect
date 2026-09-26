@@ -224,6 +224,7 @@ export default function TeacherDashboard() {
                                 <div className="mt-3">
                                     <AttendanceActions
                                         studentId={s.id}
+                                        studentName={s.name}
                                         attendance={s.attendance}
                                         role="teacher"
                                     />
@@ -271,6 +272,7 @@ export default function TeacherDashboard() {
                                             <div className="min-w-[220px]">
                                                 <AttendanceActions
                                                     studentId={s.id}
+                                                    studentName={s.name}
                                                     attendance={s.attendance}
                                                     role="teacher"
                                                 />

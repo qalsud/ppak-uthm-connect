@@ -1,7 +1,11 @@
 # Feature Plan — Checkout Photo (image uploads)
 
-**Status:** Plan / awaiting decisions
-**Scope:** Teacher submits a photo when checking a child out ("Back home"). Designed as the first consumer of a reusable image-upload capability.
+**Status:** ✅ Implemented (Phase 0 + Phase 1). Phases 2–3 tracked at the bottom.
+**Scope:** Teacher submits a photo when checking a child out ("Back home"). Built as the first consumer of a reusable image-upload capability.
+
+**Addendum (implemented):**
+- **Timestamp watermark** — every stored photo is stamped bottom-left with `PPAK UTHM · Check out`, the **child's name** and the **date/time** (`d/m/Y H:i`, app timezone), Shopee-style, on a translucent band. Drawn with FreeType (`resources/fonts/DejaVuSans-Bold.ttf`).
+- **Auto-compression to ≤ 1 MB** — the pipeline lowers JPEG quality (down to 40) then shrinks dimensions (area-based estimate) until the file fits `media.target_kb` (default 1 MB).
 
 ---
 
@@ -28,24 +32,24 @@ Secondary goal: build a **reusable image pipeline** so future features (arrival 
 
 ## 3. Key decisions (confirmed)
 
-1. **Who can check in/out?** → **Teachers only.** Parents no longer see "Send to school" / "Bring home" — their attendance views become **read-only** (status + history + checkout photos). This guarantees every checkout is staff-verified and photographed. *(Shipped first, independently — see Phase 0.)*
-2. **Is the photo always required?** → *Recommended: yes, but behind a config flag* (`CHECKOUT_PHOTO_REQUIRED=true`) with an **override + reason** for staff (camera broken etc.), audited.
-3. **Storage privacy** → *Recommended: **private disk**, served through an authorised route.* Children's photos must **not** be on guessable public URLs.
-4. **Photo subject** → *Recommended copy:* "Photograph the child with the person collecting them."
-5. **Retention** → *Recommended: keep; add a configurable cleanup job later* (`CHECKOUT_PHOTO_RETENTION_DAYS`, default keep).
-6. **Multiple photos / arrival photos** → *Recommended: schema supports it now, UI ships one checkout photo first* (Phase 2 adds more).
-7. **Notify the parent on checkout + photo?** → *Recommended: yes, reuse the notifications system.*
+1. **Who can check in/out?** → **Teachers only.** Parents no longer see "Send to school" / "Bring home" — their attendance views are **read-only** (status + history + checkout photos). ✅ *Shipped (Phase 0).*
+2. **Is the photo required?** → Yes, with a **documented override** (skip + reason) for edge cases. ✅ *Shipped.*
+3. **Storage privacy** → **Private disk** (`attendance`, `storage/app/attendance`), served through an **authorised route**. ✅ *Shipped.*
+4. **Photo subject** → Copy: *"Photograph the child with the person collecting them."* ✅ *Shipped.*
+5. **Retention** → **Auto-delete after 3 days** via `attendance:prune-photos` (scheduled 03:00). ✅ *Shipped.*
+6. **Arrival photos** → Not now; schema supports them for later. ✅
+7. **Notify parents** → Yes: post the photo **into the parent ↔ teacher chat** + a bell notification. ✅ *Shipped.*
 
 ### Parent experience after Phase 0
 
 | Page | Before | After |
 |---|---|---|
-| Parent dashboard child card | "Send to school" + "Bring home" buttons | **Status chip only** |
-| Parent attendance page | Mark + history | **Status + history (read-only)** |
-| Parent child page | Mark + history | **Status + history (read-only)** |
+| Parent dashboard child card | "Send to school" + "Bring home" buttons | **Status chip + checkout photo (read-only)** |
+| Parent attendance page | Mark + history | **Status + photo + history (read-only)** |
+| Parent child page | Mark + history | **Status + photo + history (read-only)** |
 | Backend | `parent.attendance.store` open | **Route removed**; parents can't POST attendance |
 
-Teachers become the sole writers via `teacher.attendance.store` (arrive) and `teacher.attendance.checkout` (depart + photo).
+Teachers are the sole writers via `teacher.attendance.store` (arrive) and `teacher.attendance.checkout` (depart + photo).
 
 ---
 

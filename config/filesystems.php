@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Private disk for children's photos — served only through an
+        // authorised route (never publicly reachable).
+        'attendance' => [
+            'driver' => 'local',
+            'root' => storage_path('app/attendance'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

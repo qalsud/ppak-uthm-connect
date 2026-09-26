@@ -144,6 +144,7 @@ export default function DailyUpdates({
                             <div className="mt-3 border-t pt-3">
                                 <AttendanceActions
                                     studentId={student.id}
+                                    studentName={student.name}
                                     attendance={student.attendance}
                                     role="teacher"
                                 />

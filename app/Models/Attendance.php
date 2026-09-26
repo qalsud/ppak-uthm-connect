@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 class Attendance extends Model
@@ -17,17 +18,35 @@ class Attendance extends Model
         'departed_at',
         'arrived_by',
         'departed_by',
+        'checkout_note',
+        'checkout_photo_override',
+        'checkout_override_reason',
     ];
 
     protected $casts = [
         'date' => 'date:Y-m-d',
         'arrived_at' => 'datetime',
         'departed_at' => 'datetime',
+        'checkout_photo_override' => 'boolean',
     ];
 
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(AttendancePhoto::class);
+    }
+
+    /** Latest checkout photo, if any. */
+    public function checkoutPhoto(): ?AttendancePhoto
+    {
+        return $this->photos
+            ->where('type', 'checkout')
+            ->sortByDesc('id')
+            ->first();
     }
 
     /** none | school | home */
@@ -51,6 +70,7 @@ class Attendance extends Model
             'status' => $this->status(),
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
+            ...$this->checkoutPayload(),
         ];
     }
 
@@ -64,12 +84,30 @@ class Attendance extends Model
             'status' => $this->status(),
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
+            ...$this->checkoutPayload(),
+        ];
+    }
+
+    /** @return array{photo: array|null, note: string|null, photo_override: bool} */
+    private function checkoutPayload(): array
+    {
+        return [
+            'photo' => $this->checkoutPhoto()?->payload(),
+            'note' => $this->checkout_note,
+            'photo_override' => (bool) $this->checkout_photo_override,
         ];
     }
 
     public static function emptySummary(): array
     {
-        return ['status' => 'none', 'arrived_at' => null, 'departed_at' => null];
+        return [
+            'status' => 'none',
+            'arrived_at' => null,
+            'departed_at' => null,
+            'photo' => null,
+            'note' => null,
+            'photo_override' => false,
+        ];
     }
 
     /**
@@ -104,6 +142,7 @@ class Attendance extends Model
     public static function todayFor(Collection|array $studentIds): Collection
     {
         return static::query()
+            ->with('photos.uploadedBy:id,name')
             ->whereIn('student_id', $studentIds)
             ->whereDate('date', today())
             ->get()
@@ -114,6 +153,7 @@ class Attendance extends Model
     public static function historyFor(int $studentId, int $limit = 21): Collection
     {
         return static::query()
+            ->with('photos.uploadedBy:id,name')
             ->where('student_id', $studentId)
             ->orderByDesc('date')
             ->limit($limit)
@@ -124,6 +164,7 @@ class Attendance extends Model
     public static function onDateFor(Collection|array $studentIds, string $date): Collection
     {
         return static::query()
+            ->with('photos.uploadedBy:id,name')
             ->whereIn('student_id', $studentIds)
             ->whereDate('date', $date)
             ->get()

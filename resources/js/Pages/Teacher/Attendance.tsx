@@ -129,6 +129,7 @@ export default function TeacherAttendance({
                                 <p className="mb-2 font-medium">{s.name}</p>
                                 <AttendanceActions
                                     studentId={s.id}
+                                    studentName={s.name}
                                     attendance={s.attendance}
                                     role="teacher"
                                     date={date}
@@ -170,6 +171,7 @@ export default function TeacherAttendance({
                                             <div className="ml-auto flex w-64 justify-end">
                                                 <AttendanceActions
                                                     studentId={s.id}
+                                                    studentName={s.name}
                                                     attendance={s.attendance}
                                                     role="teacher"
                                                     date={date}

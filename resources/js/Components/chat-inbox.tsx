@@ -36,6 +36,7 @@ export type ChatMessage = {
     sender_id: number;
     sender: { name: string };
     body: string;
+    photo_url?: string | null;
     created_at: string;
 };
 
@@ -189,6 +190,21 @@ export default function ChatInbox({
                                         <span className="mb-0.5 block text-[10px] font-medium opacity-70">
                                             {m.sender.name}
                                         </span>
+                                        {m.photo_url && (
+                                            <a
+                                                href={m.photo_url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="mb-1.5 block overflow-hidden rounded-lg"
+                                            >
+                                                <img
+                                                    src={m.photo_url}
+                                                    alt=""
+                                                    loading="lazy"
+                                                    className="max-h-56 w-full max-w-[240px] rounded-lg object-cover"
+                                                />
+                                            </a>
+                                        )}
                                         {m.body}
                                         <span
                                             className={`mt-1 block text-right text-[10px] ${

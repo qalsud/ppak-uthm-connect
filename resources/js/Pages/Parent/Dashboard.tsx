@@ -115,6 +115,7 @@ export default function ParentDashboard() {
                             </div>
                             <AttendanceActions
                                 studentId={child.id}
+                                studentName={child.name}
                                 attendance={child.attendance}
                                 role="parent"
                             />
