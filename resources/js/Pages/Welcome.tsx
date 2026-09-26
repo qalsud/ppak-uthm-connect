@@ -131,9 +131,9 @@ export default function Welcome({ auth }: PageProps) {
                     <div className="pointer-events-none absolute -right-24 top-0 size-80 rounded-full bg-brand-accent/20 blur-3xl" />
                     <div className="pointer-events-none absolute -left-24 bottom-0 size-80 rounded-full bg-indigo-500/20 blur-3xl" />
                     <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6">
-                        <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:mb-7 sm:gap-4">
-                            <Logo chip className="size-14 sm:size-16" />
-                            <Logo variant="uthm" chip className="h-14 w-40 sm:h-16 sm:w-56" />
+                        <div className="mb-6 flex flex-wrap items-center justify-center gap-3 sm:mb-7 sm:gap-5">
+                            <Logo chip className="size-20 sm:size-24" />
+                            <Logo variant="uthm" chip className="h-20 w-56 sm:h-24 sm:w-72" />
                         </div>
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90">
                             <Sparkles className="size-3.5" />
@@ -251,8 +251,8 @@ export default function Welcome({ auth }: PageProps) {
                 <footer id="about" className="bg-brand-navy py-12 text-white sm:py-14">
                     <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6">
                         <div className="flex flex-wrap items-center justify-center gap-4">
-                            <Logo chip className="size-12 sm:size-14" />
-                            <Logo variant="uthm" chip className="h-12 w-40 sm:h-14 sm:w-48" />
+                            <Logo chip className="size-16 sm:size-20" />
+                            <Logo variant="uthm" chip className="h-16 w-52 sm:h-20 sm:w-64" />
                         </div>
                         <p className="text-lg font-semibold">PPAK UTHM Connect System</p>
                         <p className="max-w-xl text-sm text-white/60">

@@ -35,9 +35,9 @@ export default function Login({
             <Head title="Log in" />
 
             {/* Logos */}
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
-                <Logo chip className="size-14" />
-                <Logo variant="uthm" chip className="h-14 w-44" />
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-4">
+                <Logo chip className="size-20" />
+                <Logo variant="uthm" chip className="h-20 w-60" />
             </div>
 
             {/* Heading */}
