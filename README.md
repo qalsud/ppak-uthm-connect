@@ -126,6 +126,9 @@ CI (GitHub Actions) runs Pint, the Pest suite, and the frontend build on push/PR
 
 - `npm install` uses `legacy-peer-deps` (see `.npmrc`) — known good for this
   Laravel/Vite dependency set.
-- Add PWA install icons (`public/pwa-512.png`, `public/pwa-maskable-512.png`)
-  before shipping — the manifest references them.
+- **PWA is disabled while developing** (see `vite.config.js`) — the service worker
+  is re-enabled in the deploy phase with real icons
+  (`public/pwa-512.png`, `public/pwa-maskable-512.png`).
+  If a browser ever shows a stale/blank page, hard-refresh or clear the site's
+  service worker (DevTools → Application → Service Workers → Unregister).
 - Keep secrets in `.env` only (`.env` is git-ignored, `.env.example` documents keys).
