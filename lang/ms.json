@@ -244,5 +244,10 @@
     "approval.checked_out_override": "Pulang tanpa foto.",
     "approval.photo_invalid": "Foto tidak dapat diproses. Sila cuba yang lain.",
     "approval.checkout_body": ":name pulang pada :time.",
-    "approval.checkout_message": ":name pulang pada :time."
+    "approval.checkout_message": ":name pulang pada :time.",
+    "approval.progress_message": ":name — kemas kini kemajuan: :theme",
+    "add_photo_optional": "Tambah foto (pilihan)",
+    "progress_photo_hint": "Lampirkan foto hasil kerja kanak-kanak. Ia juga dihantar ke sembang ibu bapa.",
+    "change_photo": "Tukar foto",
+    "remove_photo": "Buang"
 }

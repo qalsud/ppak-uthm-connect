@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
+use App\Models\ProgressPhoto;
 use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Notifications\ProgressRecordedNotification;
+use App\Services\Images\ImageStore;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class ProgressController extends Controller
 {
@@ -25,6 +29,7 @@ class ProgressController extends Controller
         $query = ProgressRecord::query()->with([
             'student:id,name,class',
             'teacher:id,name',
+            'photos.uploadedBy:id,name',
         ]);
 
         if ($studentId) {
@@ -71,7 +76,7 @@ class ProgressController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ImageStore $images): RedirectResponse
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
@@ -83,7 +88,16 @@ class ProgressController extends Controller
             'free_activity' => ['required', Rule::in(ProgressRecord::FREE)],
             'development_proficiency' => ['required', Rule::in(ProgressRecord::DEVELOPMENT)],
             'notes' => 'nullable|string|max:1000',
+            'photo' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:'.(int) config('media.max_upload_kb'),
+            ],
         ]);
+
+        $photoFile = $request->file('photo');
+        unset($validated['photo']);
 
         $validated['teacher_id'] = $request->user()->id;
 
@@ -95,15 +109,77 @@ class ProgressController extends Controller
         if ($record) {
             $record->update($validated);
         } else {
-            ProgressRecord::create($validated);
+            $record = ProgressRecord::create($validated);
         }
 
         $student = Student::with('parent')->find($validated['student_id']);
+
+        $photo = null;
+
+        if ($photoFile && $student) {
+            try {
+                $stored = $images->store($photoFile, 'progress', [
+                    'watermark' => [
+                        'PPAK UTHM · '.__('progress'),
+                        $student->name,
+                        now()->format('d/m/Y H:i'),
+                    ],
+                ]);
+            } catch (RuntimeException) {
+                return back()->with('error', __('approval.photo_invalid'));
+            }
+
+            // Keep a single photo per progress record.
+            $record->photos()->get()->each->delete();
+
+            $photo = ProgressPhoto::create([
+                'progress_record_id' => $record->id,
+                'student_id' => $student->id,
+                'disk' => $stored->disk,
+                'path' => $stored->path,
+                'thumb_path' => $stored->thumbPath,
+                'original_name' => $photoFile->getClientOriginalName(),
+                'mime' => $stored->mime,
+                'size' => $stored->size,
+                'width' => $stored->width,
+                'height' => $stored->height,
+                'note' => $record->sub_theme,
+                'uploaded_by' => $request->user()->id,
+            ]);
+        }
 
         if ($student?->parent) {
             Notification::send($student->parent, new ProgressRecordedNotification($student));
         }
 
+        if ($photo && $student) {
+            $this->postProgressMessage($record, $student, $photo, $request->user()->id);
+        }
+
         return back()->with('success', __('approval.progress_saved'));
+    }
+
+    /** Drop a short message (with the photo) into the parent ↔ teacher chat. */
+    private function postProgressMessage(ProgressRecord $record, Student $student, ProgressPhoto $photo, int $userId): void
+    {
+        $conversation = Conversation::firstOrCreate(
+            ['student_id' => $student->id],
+            ['teacher_id' => $userId],
+        );
+
+        if ($conversation->teacher_id === null) {
+            $conversation->update(['teacher_id' => $userId]);
+        }
+
+        $conversation->messages()->create([
+            'sender_id' => $userId,
+            'body' => __('approval.progress_message', [
+                'name' => $student->name,
+                'theme' => $record->sub_theme ?: __('progress'),
+            ]),
+            'progress_photo_id' => $photo->id,
+        ]);
+
+        $conversation->touch();
     }
 }

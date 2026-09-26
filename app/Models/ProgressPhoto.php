@@ -6,14 +6,13 @@ use App\Models\Concerns\HasStoredImage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AttendancePhoto extends Model
+class ProgressPhoto extends Model
 {
     use HasStoredImage;
 
     protected $fillable = [
-        'attendance_id',
+        'progress_record_id',
         'student_id',
-        'type',
         'disk',
         'path',
         'thumb_path',
@@ -34,12 +33,12 @@ class AttendancePhoto extends Model
 
     protected function imageRouteName(): string
     {
-        return 'attendance.photos.show';
+        return 'progress.photos.show';
     }
 
-    public function attendance(): BelongsTo
+    public function progressRecord(): BelongsTo
     {
-        return $this->belongsTo(Attendance::class);
+        return $this->belongsTo(ProgressRecord::class);
     }
 
     public function student(): BelongsTo

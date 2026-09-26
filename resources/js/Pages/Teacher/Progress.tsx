@@ -2,6 +2,8 @@ import { router, useForm } from '@inertiajs/react';
 import { BookOpen, CalendarDays, Info, LineChart, Save, User } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
+import PhotoThumb from '@/Components/photo-thumb';
+import PhotoUpload from '@/Components/photo-upload';
 import RatingChip from '@/Components/rating-chip';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -17,6 +19,7 @@ import {
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDate, localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import type { PhotoInfo } from '@/lib/photo';
 import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -34,6 +37,7 @@ type Record = {
     notes: string | null;
     student: { name: string; class: string };
     teacher: { name: string } | null;
+    photo?: PhotoInfo | null;
 };
 
 type Summary = {
@@ -58,6 +62,7 @@ const emptyForm = {
     free_activity: '',
     development_proficiency: '',
     notes: '',
+    photo: null as File | null,
 };
 
 export default function Progress({
@@ -87,6 +92,7 @@ export default function Progress({
 
     const submit = () =>
         form.post(route('teacher.progress.store'), {
+            forceFormData: true,
             preserveScroll: true,
             onSuccess: () =>
                 form.reset(
@@ -97,6 +103,7 @@ export default function Progress({
                     'free_activity',
                     'development_proficiency',
                     'notes',
+                    'photo',
                 ),
         });
 
@@ -273,6 +280,17 @@ export default function Progress({
                         />
                     </div>
 
+                    {/* Photo */}
+                    <div className="space-y-1.5">
+                        <Label>{t('add_photo_optional')}</Label>
+                        <PhotoUpload
+                            value={form.data.photo}
+                            onChange={(file) => form.setData('photo', file)}
+                            hint={t('progress_photo_hint')}
+                            error={form.errors.photo}
+                        />
+                    </div>
+
                     <Button
                         onClick={submit}
                         disabled={form.processing || !ready}
@@ -406,6 +424,12 @@ export default function Progress({
                                         <p className="mt-2 rounded bg-muted px-2 py-1.5 text-xs text-muted-foreground">
                                             {r.notes}
                                         </p>
+                                    )}
+
+                                    {r.photo && (
+                                        <div className="mt-2">
+                                            <PhotoThumb photo={r.photo} size="size-20" />
+                                        </div>
                                     )}
                                 </div>
                             ))}

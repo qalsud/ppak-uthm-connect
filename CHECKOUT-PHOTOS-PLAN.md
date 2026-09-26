@@ -6,6 +6,7 @@
 **Addendum (implemented):**
 - **Timestamp watermark** — every stored photo is stamped bottom-left with `PPAK UTHM · Check out`, the **child's name** and the **date/time** (`d/m/Y H:i`, app timezone), Shopee-style, on a translucent band. Drawn with FreeType (`resources/fonts/DejaVuSans-Bold.ttf`).
 - **Auto-compression to ≤ 1 MB** — the pipeline lowers JPEG quality (down to 40) then shrinks dimensions (area-based estimate) until the file fits `media.target_kb` (default 1 MB).
+- **Progress photos (Phase 3, done)** — the pipeline is now shared: `ImageStore`, `PhotoController` (authorised streaming), `HasStoredImage` trait, `PhotoUpload`/`PhotoThumb` components and `media:prune-photos`. Teachers can attach a photo when recording progress; it's watermarked, shown on the teacher/parent views and **posted to the parent chat**. Progress photos are **optional**.
 
 ---
 

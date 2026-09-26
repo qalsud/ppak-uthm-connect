@@ -244,5 +244,10 @@
     "approval.checked_out_override": "Checked out without a photo.",
     "approval.photo_invalid": "The photo could not be processed. Please try another.",
     "approval.checkout_body": ":name checked out at :time.",
-    "approval.checkout_message": ":name checked out at :time."
+    "approval.checkout_message": ":name checked out at :time.",
+    "approval.progress_message": ":name — progress update: :theme",
+    "add_photo_optional": "Add a photo (optional)",
+    "progress_photo_hint": "Attach a photo of the child's work. It is also sent to the parent's chat.",
+    "change_photo": "Change photo",
+    "remove_photo": "Remove"
 }

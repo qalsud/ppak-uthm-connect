@@ -5,14 +5,14 @@ import { useState } from 'react';
 import CheckoutDialog from '@/Components/checkout-dialog';
 import PhotoThumb from '@/Components/photo-thumb';
 import { Button } from '@/Components/ui/button';
-import type { AttendancePhotoInfo } from '@/lib/attendance';
+import type { PhotoInfo } from '@/lib/photo';
 import { useI18n } from '@/lib/i18n';
 
 export type AttendanceSummary = {
     status: 'none' | 'school' | 'home';
     arrived_at: string | null;
     departed_at: string | null;
-    photo?: AttendancePhotoInfo | null;
+    photo?: PhotoInfo | null;
     note?: string | null;
     photo_override?: boolean;
 };

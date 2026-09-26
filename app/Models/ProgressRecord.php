@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProgressRecord extends Model
 {
@@ -23,6 +24,8 @@ class ProgressRecord extends Model
     protected $casts = [
         'date' => 'date:Y-m-d',
     ];
+
+    protected $appends = ['photo'];
 
     public const PERMATA = ['Drawing', 'Coloring', 'Crafting', 'Reading', 'Writing'];
 
@@ -46,5 +49,21 @@ class ProgressRecord extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProgressPhoto::class);
+    }
+
+    public function latestPhoto(): ?ProgressPhoto
+    {
+        return $this->photos->sortByDesc('id')->first();
+    }
+
+    /** Latest progress photo, shaped for the frontend. */
+    public function getPhotoAttribute(): ?array
+    {
+        return $this->latestPhoto()?->payload();
     }
 }

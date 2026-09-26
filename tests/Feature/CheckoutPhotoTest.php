@@ -213,7 +213,7 @@ test('the prune command deletes old photos and clears the chat attachment', func
     $photo = AttendancePhoto::sole();
     $photo->forceFill(['created_at' => now()->subDays(5)])->save();
 
-    $this->artisan('attendance:prune-photos')->assertSuccessful();
+    $this->artisan('media:prune-photos')->assertSuccessful();
 
     expect(AttendancePhoto::count())->toBe(0);
     Storage::disk('attendance')->assertMissing($photo->path);

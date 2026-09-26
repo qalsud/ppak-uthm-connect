@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History,
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
+import PhotoThumb from '@/Components/photo-thumb';
 import RatingChip from '@/Components/rating-chip';
 import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/date';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
+import type { PhotoInfo } from '@/lib/photo';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
@@ -40,6 +42,7 @@ type Progress = {
     free_activity: string;
     development_proficiency: string;
     notes: string | null;
+    photo?: PhotoInfo | null;
 };
 type HistoryRow = {
     id: number;
@@ -303,6 +306,11 @@ export default function ParentChild() {
                                         <p className="mt-1 text-[11px] italic text-muted-foreground">
                                             {p.notes}
                                         </p>
+                                    )}
+                                    {p.photo && (
+                                        <div className="mt-2">
+                                            <PhotoThumb photo={p.photo} size="size-20" />
+                                        </div>
                                     )}
                                 </div>
                             ))}

@@ -12,6 +12,7 @@ class Message extends Model
         'sender_id',
         'body',
         'attendance_photo_id',
+        'progress_photo_id',
         'read_at',
     ];
 
@@ -36,11 +37,20 @@ class Message extends Model
         return $this->belongsTo(AttendancePhoto::class);
     }
 
-    /** Authorised URL to an attached checkout photo (null once pruned). */
+    public function progressPhoto(): BelongsTo
+    {
+        return $this->belongsTo(ProgressPhoto::class);
+    }
+
+    /** Authorised URL to an attached photo (null once pruned). */
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->attendance_photo_id
-            ? route('attendance.photos.show', $this->attendance_photo_id)
+        if ($this->attendance_photo_id) {
+            return route('attendance.photos.show', $this->attendance_photo_id);
+        }
+
+        return $this->progress_photo_id
+            ? route('progress.photos.show', $this->progress_photo_id)
             : null;
     }
 }

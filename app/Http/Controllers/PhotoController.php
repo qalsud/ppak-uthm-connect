@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AttendancePhoto;
+use App\Models\ProgressPhoto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+/**
+ * Serves stored photos from the private disk to authorised users only.
+ */
+class PhotoController extends Controller
+{
+    public function attendance(Request $request, AttendancePhoto $photo): StreamedResponse
+    {
+        return $this->serve($request, $photo);
+    }
+
+    public function progress(Request $request, ProgressPhoto $photo): StreamedResponse
+    {
+        return $this->serve($request, $photo);
+    }
+
+    private function serve(Request $request, AttendancePhoto|ProgressPhoto $photo): StreamedResponse
+    {
+        $user = $request->user();
+
+        $ownsChild = $photo->student?->parent_id === $user?->id;
+        $allowed = $user !== null && ($user->isAdmin() || $user->isTeacher() || $ownsChild);
+
+        abort_unless($allowed, 403);
+
+        $path = $request->query('variant') === 'thumb' && $photo->thumb_path
+            ? $photo->thumb_path
+            : $photo->path;
+
+        $disk = Storage::disk($photo->disk);
+
+        abort_unless($disk->exists($path), 404);
+
+        return $disk->response($path, null, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'private, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+}

@@ -8,9 +8,9 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
-use App\Http\Controllers\AttendancePhotoController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
 use App\Http\Controllers\Parent\AttendanceController as ParentAttendanceController;
 use App\Http\Controllers\Parent\ChildController as ParentChildController;
@@ -59,9 +59,11 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
 
-    // Attendance photos (authorised per role)
-    Route::get('/attendance/photos/{attendancePhoto}', [AttendancePhotoController::class, 'show'])
+    // Stored photos (authorised per role)
+    Route::get('/attendance/photos/{photo}', [PhotoController::class, 'attendance'])
         ->name('attendance.photos.show');
+    Route::get('/progress/photos/{photo}', [PhotoController::class, 'progress'])
+        ->name('progress.photos.show');
 
     // Role home dashboards
     Route::get('/admin', AdminDashboardController::class)

@@ -1,10 +1,12 @@
 import { BookOpen, CalendarCheck } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
+import PhotoThumb from '@/Components/photo-thumb';
 import RatingChip from '@/Components/rating-chip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
+import type { PhotoInfo } from '@/lib/photo';
 import AppShell from '@/Layouts/app-shell';
 
 type Child = {
@@ -26,6 +28,7 @@ type Child = {
         free_activity: string;
         development_proficiency: string;
         notes: string | null;
+        photo?: PhotoInfo | null;
     } | null;
     recent_activities: Array<{ id: number; date: string }>;
     recent_progress: Array<{
@@ -35,6 +38,7 @@ type Child = {
         activity_done: string;
         child_proficiency: string;
         development: string;
+        photo?: PhotoInfo | null;
     }>;
 };
 
@@ -150,6 +154,9 @@ export default function ParentActivities({
                                             <p className="rounded-xl bg-muted/50 px-3 py-2 text-xs italic text-muted-foreground">
                                                 {child.latest_progress.notes}
                                             </p>
+                                        )}
+                                        {child.latest_progress.photo && (
+                                            <PhotoThumb photo={child.latest_progress.photo} size="size-24" />
                                         )}
                                     </div>
                                 ) : (

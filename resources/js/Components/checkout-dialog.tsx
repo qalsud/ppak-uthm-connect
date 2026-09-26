@@ -1,7 +1,8 @@
 import { useForm } from '@inertiajs/react';
-import { Camera, CameraOff, Upload } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { CameraOff } from 'lucide-react';
+import { useState } from 'react';
 
+import PhotoUpload from '@/Components/photo-upload';
 import { Button } from '@/Components/ui/button';
 import {
     Dialog,
@@ -14,8 +15,6 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
-
-const MAX_BYTES = 10 * 1024 * 1024;
 
 export default function CheckoutDialog({
     studentId,
@@ -31,9 +30,6 @@ export default function CheckoutDialog({
     date?: string;
 }) {
     const { t } = useI18n();
-    const inputRef = useRef<HTMLInputElement>(null);
-    const [preview, setPreview] = useState<string | null>(null);
-    const [pickError, setPickError] = useState<string | null>(null);
     const [skip, setSkip] = useState(false);
 
     const form = useForm({
@@ -44,23 +40,9 @@ export default function CheckoutDialog({
         ...(date ? { date } : {}),
     });
 
-    // Revoke the preview object URL when it changes or the dialog unmounts.
-    useEffect(() => {
-        return () => {
-            if (preview) {
-                URL.revokeObjectURL(preview);
-            }
-        };
-    }, [preview]);
-
     const reset = () => {
-        setPreview(null);
-        setPickError(null);
         setSkip(false);
         form.reset();
-        if (inputRef.current) {
-            inputRef.current.value = '';
-        }
     };
 
     const close = (next: boolean) => {
@@ -70,42 +52,12 @@ export default function CheckoutDialog({
         onOpenChange(next);
     };
 
-    const pick = (file: File | null) => {
-        setPickError(null);
-
-        if (!file) {
-            setPreview(null);
-            form.setData('photo', null);
-
-            return;
-        }
-
-        if (!file.type.startsWith('image/')) {
-            setPickError(t('photo_invalid_type'));
-
-            return;
-        }
-
-        if (file.size > MAX_BYTES) {
-            setPickError(t('photo_too_large'));
-
-            return;
-        }
-
-        setPreview(URL.createObjectURL(file));
-        form.setData('photo', file);
-    };
-
     const toggleSkip = (value: boolean) => {
         setSkip(value);
         form.setData('skip_photo', value);
 
         if (value) {
             form.setData('photo', null);
-            setPreview(null);
-            if (inputRef.current) {
-                inputRef.current.value = '';
-            }
         } else {
             form.setData('override_reason', '');
         }
@@ -132,53 +84,13 @@ export default function CheckoutDialog({
                     <DialogDescription>{t('checkout_desc')}</DialogDescription>
                 </DialogHeader>
 
-                <input
-                    ref={inputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(e) => pick(e.target.files?.[0] ?? null)}
-                />
-
                 <div className="space-y-4">
                     {!skip && (
-                        <div className="space-y-2">
-                            {preview ? (
-                                <div className="overflow-hidden rounded-xl border">
-                                    <img src={preview} alt="" className="max-h-64 w-full object-contain" />
-                                </div>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => inputRef.current?.click()}
-                                    className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50"
-                                >
-                                    <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                                        <Camera className="size-5" />
-                                    </span>
-                                    <span className="text-sm font-medium">{t('take_photo')}</span>
-                                </button>
-                            )}
-
-                            {preview && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-1.5"
-                                    onClick={() => inputRef.current?.click()}
-                                >
-                                    <Upload className="size-4" />
-                                    {t('retake_photo')}
-                                </Button>
-                            )}
-
-                            {pickError && <p className="text-xs text-destructive">{pickError}</p>}
-                            {form.errors.photo && (
-                                <p className="text-xs text-destructive">{form.errors.photo}</p>
-                            )}
-                        </div>
+                        <PhotoUpload
+                            value={form.data.photo}
+                            onChange={(file) => form.setData('photo', file)}
+                            error={form.errors.photo}
+                        />
                     )}
 
                     <div className="space-y-1.5">

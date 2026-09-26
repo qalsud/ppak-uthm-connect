@@ -16,7 +16,7 @@ class ActivityController extends Controller
 
         $children->each(function ($child) {
             $child->latest_activity = $child->dailyActivities()->latest('date')->with('teacher:id,name')->first();
-            $child->latest_progress = $child->progressRecords()->latest('date')->first();
+            $child->latest_progress = $child->progressRecords()->latest('date')->with('photos.uploadedBy:id,name')->first();
 
             $child->recent_activities = $child->dailyActivities()
                 ->latest('date')
@@ -27,6 +27,7 @@ class ActivityController extends Controller
             $child->recent_progress = $child->progressRecords()
                 ->latest('date')
                 ->limit(5)
+                ->with('photos.uploadedBy:id,name')
                 ->get([
                     'id', 'date', 'sub_theme', 'activity_done', 'child_proficiency',
                     'permata_activity', 'free_activity', 'development_proficiency',
@@ -38,6 +39,7 @@ class ActivityController extends Controller
                     'activity_done' => $p->activity_done,
                     'child_proficiency' => $p->child_proficiency,
                     'development' => $p->development_proficiency,
+                    'photo' => $p->photo,
                 ]);
         });
 

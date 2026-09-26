@@ -35,6 +35,7 @@ class ChildController extends Controller
                 ->limit(7)
                 ->get(),
             'progress' => $student->progressRecords()
+                ->with('photos.uploadedBy:id,name')
                 ->latest('date')
                 ->limit(7)
                 ->get(),

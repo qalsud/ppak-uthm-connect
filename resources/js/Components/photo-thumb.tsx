@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
-import type { AttendancePhotoInfo } from '@/lib/attendance';
+import type { PhotoInfo } from '@/lib/photo';
 
 /** Small clickable thumbnail that opens the full-size photo. */
 export default function PhotoThumb({
@@ -9,7 +9,7 @@ export default function PhotoThumb({
     className = '',
     size = 'size-14',
 }: {
-    photo: AttendancePhotoInfo;
+    photo: PhotoInfo;
     className?: string;
     size?: string;
 }) {
