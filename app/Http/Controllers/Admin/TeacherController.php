@@ -92,13 +92,29 @@ class TeacherController extends Controller
         ]);
 
         $rows = $this->readCsv($request->file('file')->getRealPath());
-        $created = 0;
+        $imported = 0;
+        $skipped = [];
 
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
+            $line = $index + 2;
             $name = trim((string) ($row['name'] ?? ''));
             $email = trim((string) ($row['email'] ?? ''));
 
-            if ($name === '' || $email === '' || User::query()->where('email', $email)->exists()) {
+            if ($name === '') {
+                $skipped[] = ['line' => $line, 'reason' => 'missing_name'];
+
+                continue;
+            }
+
+            if ($email === '') {
+                $skipped[] = ['line' => $line, 'reason' => 'missing_email'];
+
+                continue;
+            }
+
+            if (User::query()->where('email', $email)->exists()) {
+                $skipped[] = ['line' => $line, 'reason' => 'duplicate_email'];
+
                 continue;
             }
 
@@ -113,10 +129,14 @@ class TeacherController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            $created++;
+            $imported++;
         }
 
-        return back()->with('success', __('approval.imported', ['count' => $created]));
+        return back()
+            ->with('success', $imported > 0
+                ? __('approval.imported', ['count' => $imported])
+                : __('approval.nothing_imported'))
+            ->with('import_report', ['imported' => $imported, 'skipped' => $skipped]);
     }
 
     public function destroy(Request $request, User $user): RedirectResponse

@@ -21,5 +21,9 @@ export type PageProps<
     flash?: {
         success?: string | null;
         error?: string | null;
+        import_report?: {
+            imported: number;
+            skipped: Array<{ line: number; reason: string }>;
+        } | null;
     };
 };

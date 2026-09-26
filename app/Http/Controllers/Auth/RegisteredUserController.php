@@ -6,6 +6,8 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\NewRegistrationNotification;
+use App\Support\AdminNotifier;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,6 +53,8 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        AdminNotifier::send(new NewRegistrationNotification($user));
 
         return redirect()
             ->route('login')

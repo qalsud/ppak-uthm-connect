@@ -5,10 +5,15 @@ use App\Enums\UserRole;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\NewRegistrationNotification;
+use App\Notifications\PaymentReceivedNotification;
+use App\Services\Payments\PaymentCompletionService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function admin(): User
@@ -149,8 +154,7 @@ test('admin can add a payment record that totals fee plus overtime', function ()
     expect($record->fresh()->paid_on)->not->toBeNull();
 });
 
-test('admin can import students from a csv and link parents by email', function () {
-    $parent = User::factory()->role(UserRole::Parent)->create(['email' => 'ibu@ppakuthm.com']);
+test('admin can import students from a csv and link parents by email', function () {    $parent = User::factory()->role(UserRole::Parent)->create(['email' => 'ibu@ppakuthm.com']);
 
     $csv = "name,age,class,parent_email\n"
         ."Ali Ahmad,6,6 Bintang,ibu@ppakuthm.com\n"
@@ -371,4 +375,76 @@ test('admin can download a receipt for a paid record but not an unpaid one', fun
     $this->actingAs(admin())
         ->get(route('admin.payments.receipt', $unpaid))
         ->assertNotFound();
+});
+
+test('student import reports skipped rows with reasons', function () {
+    $csv = "name,age,class,parent_email\n"
+        ."Ali Ahmad,6,6 Bintang,\n"
+        .",7,5tahun,\n"
+        ."Siti Aminah,5,KelasX,\n";
+
+    $this->actingAs(admin())
+        ->post(route('admin.students.import'), ['file' => csvUpload('students.csv', $csv)])
+        ->assertSessionHas('import_report')
+        ->assertSessionHas('success');
+
+    expect(Student::count())->toBe(1);
+
+    $report = session('import_report');
+
+    expect($report['imported'])->toBe(1)
+        ->and(collect($report['skipped'])->pluck('reason')->all())->toBe(['missing_name', 'invalid_class']);
+});
+
+test('teacher import reports duplicate emails', function () {
+    User::factory()->role(UserRole::Teacher)->create(['email' => 'exists@ppakuthm.com']);
+
+    $csv = "name,email\n"
+        ."Cikgu A,exists@ppakuthm.com\n"
+        ."Cikgu B,\n"
+        ."Cikgu C,new@ppakuthm.com\n";
+
+    $this->actingAs(admin())
+        ->post(route('admin.teachers.import'), ['file' => csvUpload('teachers.csv', $csv)])
+        ->assertSessionHas('import_report');
+
+    $report = session('import_report');
+
+    expect($report['imported'])->toBe(1)
+        ->and(collect($report['skipped'])->pluck('reason')->all())->toBe(['duplicate_email', 'missing_email']);
+});
+
+test('admins are notified of a new parent registration', function () {
+    Notification::fake();
+
+    $admin = User::factory()->role(UserRole::Admin)->create();
+
+    $this->post('/register', [
+        'name' => 'New Parent',
+        'email' => 'newparent@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    Notification::assertSentTo($admin, NewRegistrationNotification::class);
+});
+
+test('admins are notified when a payment completes', function () {
+    Notification::fake();
+
+    $admin = User::factory()->role(UserRole::Admin)->create();
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    $payment = Payment::create([
+        'user_id' => $parent->id,
+        'student_id' => $student->id,
+        'amount' => 300,
+        'financial_record_ids' => [],
+        'status' => 'pending',
+    ]);
+
+    app(PaymentCompletionService::class)->complete($payment);
+
+    Notification::assertSentTo($admin, PaymentReceivedNotification::class);
 });

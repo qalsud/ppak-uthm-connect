@@ -53,18 +53,24 @@ class StudentController extends Controller
         ]);
 
         $rows = $this->readCsv($request->file('file')->getRealPath());
-        $created = 0;
+        $imported = 0;
+        $skipped = [];
 
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
+            $line = $index + 2; // +1 for zero-index, +1 for the header row
             $name = trim((string) ($row['name'] ?? ''));
 
             if ($name === '') {
+                $skipped[] = ['line' => $line, 'reason' => 'missing_name'];
+
                 continue;
             }
 
             $class = $this->normaliseClass($row['class'] ?? null);
 
             if ($class === null) {
+                $skipped[] = ['line' => $line, 'reason' => 'invalid_class'];
+
                 continue;
             }
 
@@ -80,10 +86,14 @@ class StudentController extends Controller
                 'parent_id' => $parent?->id,
             ]);
 
-            $created++;
+            $imported++;
         }
 
-        return back()->with('success', __('approval.imported', ['count' => $created]));
+        return back()
+            ->with('success', $imported > 0
+                ? __('approval.imported', ['count' => $imported])
+                : __('approval.nothing_imported'))
+            ->with('import_report', ['imported' => $imported, 'skipped' => $skipped]);
     }
 
     public function export()

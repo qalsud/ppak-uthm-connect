@@ -5,6 +5,8 @@ namespace App\Services\Payments;
 use App\Models\FinancialRecord;
 use App\Models\Payment;
 use App\Notifications\PaymentCompletedNotification;
+use App\Notifications\PaymentReceivedNotification;
+use App\Support\AdminNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -56,6 +58,7 @@ class PaymentCompletionService
         });
 
         Notification::send($result->user, new PaymentCompletedNotification($result));
+        AdminNotifier::send(new PaymentReceivedNotification($result));
 
         return $result;
     }

@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
+import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
 import StatusBadge from '@/Components/status-badge';
@@ -152,6 +153,8 @@ export default function Teachers({
                     {t('add')} {t('teacher')}
                 </Button>
             </PageHeader>
+
+            <ImportReport />
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar

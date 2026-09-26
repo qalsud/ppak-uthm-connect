@@ -249,5 +249,15 @@
     "add_photo_optional": "Add a photo (optional)",
     "progress_photo_hint": "Attach a photo of the child's work. It is also sent to the parent's chat.",
     "change_photo": "Change photo",
-    "remove_photo": "Remove"
+    "remove_photo": "Remove",
+    "import_report": "Import result",
+    "import_imported": "Imported",
+    "import_skipped": "Skipped",
+    "line": "Line",
+    "dismiss": "Dismiss",
+    "reason_missing_name": "Missing name",
+    "reason_invalid_class": "Invalid class",
+    "reason_missing_email": "Missing email",
+    "reason_duplicate_email": "Email already exists",
+    "approval.nothing_imported": "No rows were imported."
 }

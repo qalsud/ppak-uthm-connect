@@ -249,5 +249,15 @@
     "add_photo_optional": "Tambah foto (pilihan)",
     "progress_photo_hint": "Lampirkan foto hasil kerja kanak-kanak. Ia juga dihantar ke sembang ibu bapa.",
     "change_photo": "Tukar foto",
-    "remove_photo": "Buang"
+    "remove_photo": "Buang",
+    "import_report": "Keputusan import",
+    "import_imported": "Diimport",
+    "import_skipped": "Dilangkau",
+    "line": "Baris",
+    "dismiss": "Tutup",
+    "reason_missing_name": "Tiada nama",
+    "reason_invalid_class": "Kelas tidak sah",
+    "reason_missing_email": "Tiada e-mel",
+    "reason_duplicate_email": "E-mel sudah wujud",
+    "approval.nothing_imported": "Tiada baris diimport."
 }
