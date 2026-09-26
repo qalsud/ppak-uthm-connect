@@ -20,8 +20,6 @@ class DashboardController extends Controller
         $children->each(function ($child) {
             $unpaid = $child->financialRecords()->where('status', 'unpaid')->sum('amount');
             $child->unpaid = (float) $unpaid;
-            $child->latest_update_date = $child->dailyUpdates()->latest('date')->value('date')?->format('Y-m-d');
-            $child->latest_activity_date = $child->dailyActivities()->latest('date')->value('date')?->format('Y-m-d');
         });
 
         $studentIds = $children->pluck('id');

@@ -4,6 +4,7 @@ import {
     BookOpen,
     CalendarCheck,
     ChevronRight,
+    Eye,
     FileText,
     GraduationCap,
     MessagesSquare,
@@ -13,6 +14,7 @@ import {
 
 import PageHeader from '@/Components/page-header';
 import StatusBadge from '@/Components/status-badge';
+import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
@@ -25,8 +27,6 @@ type Child = {
     age: number | null;
     class: string;
     unpaid: number;
-    latest_update_date: string | null;
-    latest_activity_date: string | null;
 };
 
 type Page = PageProps<{
@@ -113,20 +113,12 @@ export default function ParentDashboard() {
                                     label={child.unpaid > 0 ? `RM ${child.unpaid.toFixed(0)}` : 'Paid up'}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="rounded-xl bg-muted/60 p-2.5">
-                                    <p className="text-[10px] text-muted-foreground">{t('daily_update')}</p>
-                                    <p className="text-xs font-medium">
-                                        {child.latest_update_date ?? '—'}
-                                    </p>
-                                </div>
-                                <div className="rounded-xl bg-muted/60 p-2.5">
-                                    <p className="text-[10px] text-muted-foreground">{t('activities')}</p>
-                                    <p className="text-xs font-medium">
-                                        {child.latest_activity_date ?? '—'}
-                                    </p>
-                                </div>
-                            </div>
+                            <Link href={route('parent.children.show', { student: child.id })}>
+                                <Button variant="outline" className="h-10 w-full gap-1.5 rounded-xl">
+                                    <Eye className="size-4" />
+                                    {t('view_updates')}
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 ))}

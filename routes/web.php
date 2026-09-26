@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
+use App\Http\Controllers\Parent\ChildController as ParentChildController;
 use App\Http\Controllers\Parent\ContactController as ParentContactController;
 use App\Http\Controllers\Parent\DailyUpdateController as ParentDailyUpdateController;
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
@@ -127,6 +128,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/daily-update', [ParentDailyUpdateController::class, 'index'])->name('daily-update.index');
             Route::post('/daily-update', [ParentDailyUpdateController::class, 'store'])->name('daily-update.store');
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
+            Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
             Route::get('/teachers', [ParentContactController::class, 'index'])->name('teachers.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');

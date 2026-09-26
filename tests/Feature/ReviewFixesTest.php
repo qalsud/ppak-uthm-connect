@@ -177,6 +177,15 @@ test('daily update accepts HH:MM:SS and can be re-submitted the same day', funct
     expect(DailyUpdate::where('student_id', $student->id)->first()->arrival_time)->toBe('08:05');
 });
 
+test('a parent can only view their own child detail page', function () {
+    [$parent, $children] = reviewParent();
+
+    $this->actingAs($parent)->get(route('parent.children.show', $children->first()))->assertOk();
+
+    $other = Student::factory()->create();
+    $this->actingAs($parent)->get(route('parent.children.show', $other))->assertForbidden();
+});
+
 test('progress cannot be saved with placeholder Select values', function () {
     [$parent, $children] = reviewParent();
     $teacher = User::factory()->role(UserRole::Teacher)->create();
