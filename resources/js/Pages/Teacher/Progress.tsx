@@ -1,5 +1,7 @@
 import { useForm } from '@inertiajs/react';
+import { BookOpen } from 'lucide-react';
 
+import PageHeader from '@/Components/page-header';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
@@ -11,18 +13,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
-import PageHeader from '@/Components/page-header';
-import { teacherNav } from '@/lib/navigation';
+import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
@@ -63,18 +56,16 @@ export default function Progress({
         notes: '',
     });
 
-    const submit = () => {
-        form.post(route('teacher.progress.store'));
-    };
+    const submit = () => form.post(route('teacher.progress.store'));
 
     const field = (label: string, name: keyof typeof form.data, options: string[]) => (
-        <div className="space-y-1">
+        <div className="space-y-2">
             <Label>{label}</Label>
             <Select
                 value={String(form.data[name])}
                 onValueChange={(v) => form.setData(name, v as never)}
             >
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -90,22 +81,22 @@ export default function Progress({
     );
 
     return (
-        <AppShell nav={teacherNav} title={t('teacher')}>
-            <PageHeader title={t('progress')} description="Record each child's learning progress" />
+        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+            <PageHeader
+                title={t('progress')}
+                description="Record each child's learning progress"
+            />
 
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>{t('record_progress')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        <div className="space-y-1">
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardContent className="space-y-4 pt-5">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
                             <Label>{t('student')}</Label>
                             <Select
                                 value={form.data.student_id}
                                 onValueChange={(v) => form.setData('student_id', v)}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="h-11">
                                     <SelectValue placeholder={t('select_student')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -117,32 +108,36 @@ export default function Progress({
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <Label>{t('date')}</Label>
                             <Input
                                 type="date"
+                                className="h-11"
                                 value={form.data.date}
                                 onChange={(e) => form.setData('date', e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <Label>Sub-theme</Label>
-                            <Input
-                                value={form.data.sub_theme}
-                                onChange={(e) => form.setData('sub_theme', e.target.value)}
-                            />
-                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-                        {field('Activity Performance', 'activity_done', grades)}
-                        {field('Child Proficiency', 'child_proficiency', grades)}
-                        {field('PERMATA Activity', 'permata_activity', permata)}
-                        {field('Free Activity', 'free_activity', free)}
+                    <div className="space-y-2">
+                        <Label>Sub-theme</Label>
+                        <Input
+                            className="h-11"
+                            placeholder="Today's learning sub-theme"
+                            value={form.data.sub_theme}
+                            onChange={(e) => form.setData('sub_theme', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {field('Activity performance', 'activity_done', grades)}
+                        {field('Child proficiency', 'child_proficiency', grades)}
+                        {field('PERMATA activity', 'permata_activity', permata)}
+                        {field('Free activity', 'free_activity', free)}
                         {field('Development', 'development_proficiency', development)}
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <Label>{t('notes')}</Label>
                         <Textarea
                             rows={2}
@@ -151,42 +146,45 @@ export default function Progress({
                         />
                     </div>
 
-                    <Button onClick={submit} disabled={form.processing}>
-                        {t('save')}
+                    <Button
+                        onClick={submit}
+                        disabled={form.processing}
+                        className="h-12 w-full rounded-xl font-semibold"
+                    >
+                        {form.processing ? 'Saving…' : t('save')}
                     </Button>
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('recent_records')}</CardTitle>
+            <Card className="rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <BookOpen className="size-4 text-primary" />
+                        {t('recent_records')}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {records.length === 0 ? (
-                        <p className="py-8 text-center text-muted-foreground">{t('no_data')}</p>
+                        <p className="py-6 text-center text-sm text-muted-foreground">
+                            {t('no_data')}
+                        </p>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t('date')}</TableHead>
-                                    <TableHead>{t('student')}</TableHead>
-                                    <TableHead>Sub-theme</TableHead>
-                                    <TableHead>Activity</TableHead>
-                                    <TableHead>Development</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {records.map((r) => (
-                                    <TableRow key={r.id}>
-                                        <TableCell>{r.date}</TableCell>
-                                        <TableCell className="font-medium">{r.student.name}</TableCell>
-                                        <TableCell>{r.sub_theme ?? '—'}</TableCell>
-                                        <TableCell>{r.activity_done}</TableCell>
-                                        <TableCell>{r.development_proficiency}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="space-y-2">
+                            {records.map((r) => (
+                                <div key={r.id} className="rounded-xl bg-muted/50 px-3 py-2.5">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium">{r.student.name}</p>
+                                        <span className="text-xs text-muted-foreground">
+                                            {r.date}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {r.sub_theme ?? '—'} · {r.activity_done} ·{' '}
+                                        {r.development_proficiency}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </CardContent>
             </Card>

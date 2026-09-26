@@ -12,7 +12,7 @@ import {
 } from '@/Components/ui/select';
 import { useI18n } from '@/lib/i18n';
 import PageHeader from '@/Components/page-header';
-import { teacherNav } from '@/lib/navigation';
+import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {
@@ -46,7 +46,7 @@ export default function DailyUpdates({
     };
 
     return (
-        <AppShell nav={teacherNav} title={t('teacher')}>
+        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
             <PageHeader title={t('daily_updates')} description="Morning updates received from parents">
                 <div className="w-48">
                     <Select value={selectedClass} onValueChange={changeClass}>

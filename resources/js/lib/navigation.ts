@@ -39,6 +39,15 @@ export const teacherNav: NavItem[] = [
     { label: 'memos', href: '/teacher/memos', icon: FileText },
 ];
 
+/** Mobile bottom tab bar for teachers (max 5 items). */
+export const teacherBottomNav: NavItem[] = [
+    { label: 'dashboard', href: '/teacher', icon: LayoutDashboard },
+    { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },
+    { label: 'progress', href: '/teacher/progress', icon: BookOpen },
+    { label: 'daily_updates', href: '/teacher/daily-updates', icon: BellRing },
+    { label: 'messages', href: '/teacher/messages', icon: MessageSquare },
+];
+
 export const parentNav: NavItem[] = [
     { label: 'dashboard', href: '/parent', icon: LayoutDashboard },
     { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },

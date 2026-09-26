@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { CalendarCheck } from 'lucide-react';
 
-import { Badge } from '@/Components/ui/badge';
+import PageHeader from '@/Components/page-header';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
@@ -13,18 +13,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/Components/ui/table';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
-import PageHeader from '@/Components/page-header';
-import { teacherNav } from '@/lib/navigation';
+import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
@@ -47,45 +38,41 @@ export default function Activities({
     }>;
 }) {
     const { t } = useI18n();
-    const [dates, setDates] = useState<Record<string, string>>({});
 
     const form = useForm({
         student_id: '',
         date: today,
         treatment_notes: '',
-        statuses: Object.fromEntries(Object.keys(fields).map((k) => [k, 'no'])) as Record<string, 'yes' | 'no'>,
+        statuses: Object.fromEntries(
+            Object.keys(fields).map((k) => [k, 'no']),
+        ) as Record<string, 'yes' | 'no'>,
     });
 
-    const toggle = (field: string) => {
+    const toggle = (field: string) =>
         form.setData('statuses', {
             ...form.data.statuses,
             [field]: form.data.statuses[field] === 'yes' ? 'no' : 'yes',
         });
-    };
 
-    const submit = () => {
-        form.post(route('teacher.activities.store'));
-    };
-
-    const setStudent = (id: string) => {
-        form.setData('student_id', id);
-        setDates((prev) => ({ ...prev, [id]: today }));
-    };
+    const submit = () => form.post(route('teacher.activities.store'));
 
     return (
-        <AppShell nav={teacherNav} title={t('teacher')}>
-            <PageHeader title={t('daily_activities')} description="Record daily classroom activities" />
+        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+            <PageHeader
+                title={t('daily_activities')}
+                description="Record today's classroom activities"
+            />
 
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>{t('record_new')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardContent className="space-y-4 pt-5">
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <Label>{t('student')}</Label>
-                            <Select value={form.data.student_id} onValueChange={setStudent}>
-                                <SelectTrigger>
+                            <Select
+                                value={form.data.student_id}
+                                onValueChange={(v) => form.setData('student_id', v)}
+                            >
+                                <SelectTrigger className="h-11">
                                     <SelectValue placeholder={t('select_student')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -100,10 +87,11 @@ export default function Activities({
                                 <p className="text-xs text-destructive">{form.errors.student_id}</p>
                             )}
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             <Label>{t('date')}</Label>
                             <Input
                                 type="date"
+                                className="h-11"
                                 value={form.data.date}
                                 max={today}
                                 onChange={(e) => form.setData('date', e.target.value)}
@@ -111,30 +99,35 @@ export default function Activities({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                        {Object.entries(fields).map(([key, label]) => (
-                            <button
-                                key={key}
-                                type="button"
-                                onClick={() => toggle(key)}
-                                className={`rounded-lg border p-2 text-left text-sm transition-colors ${
-                                    form.data.statuses[key] === 'yes'
-                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                                        : 'border-border bg-card hover:bg-accent'
-                                }`}
-                            >
-                                {label}
-                                <Badge
-                                    variant={form.data.statuses[key] === 'yes' ? 'default' : 'secondary'}
-                                    className={`mt-1 ${form.data.statuses[key] === 'yes' ? 'bg-emerald-600' : ''}`}
+                    <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(fields).map(([key, label]) => {
+                            const yes = form.data.statuses[key] === 'yes';
+
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => toggle(key)}
+                                    className={`flex h-14 flex-col items-start justify-center rounded-xl border px-3 text-left text-sm transition ${
+                                        yes
+                                            ? 'border-emerald-300 bg-emerald-50'
+                                            : 'border-input bg-card'
+                                    }`}
                                 >
-                                    {form.data.statuses[key] === 'yes' ? 'Yes' : 'No'}
-                                </Badge>
-                            </button>
-                        ))}
+                                    <span className="text-[13px] font-medium">{label}</span>
+                                    <span
+                                        className={`text-[11px] font-semibold ${
+                                            yes ? 'text-emerald-600' : 'text-muted-foreground'
+                                        }`}
+                                    >
+                                        {yes ? '✓ Yes' : 'No'}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <Label>Treatment / {t('notes')}</Label>
                         <Textarea
                             rows={2}
@@ -143,40 +136,49 @@ export default function Activities({
                         />
                     </div>
 
-                    <Button onClick={submit} disabled={form.processing}>
-                        {t('save')}
+                    <Button
+                        onClick={submit}
+                        disabled={form.processing}
+                        className="h-12 w-full rounded-xl font-semibold"
+                    >
+                        {form.processing ? 'Saving…' : t('save')}
                     </Button>
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('recent_records')}</CardTitle>
+            <Card className="rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <CalendarCheck className="size-4 text-primary" />
+                        {t('recent_records')}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {records.length === 0 ? (
-                        <p className="py-8 text-center text-muted-foreground">{t('no_data')}</p>
+                        <p className="py-6 text-center text-sm text-muted-foreground">
+                            {t('no_data')}
+                        </p>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t('date')}</TableHead>
-                                    <TableHead>{t('student')}</TableHead>
-                                    <TableHead>{t('class')}</TableHead>
-                                    <TableHead>{t('notes')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {records.map((r) => (
-                                    <TableRow key={r.id}>
-                                        <TableCell>{r.date}</TableCell>
-                                        <TableCell className="font-medium">{r.student.name}</TableCell>
-                                        <TableCell>{r.student.class}</TableCell>
-                                        <TableCell>{r.treatment_notes ?? '—'}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="space-y-2">
+                            {records.map((r) => (
+                                <div
+                                    key={r.id}
+                                    className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2.5"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium">
+                                            {r.student.name}
+                                        </p>
+                                        <p className="truncate text-[11px] text-muted-foreground">
+                                            {r.treatment_notes || '—'}
+                                        </p>
+                                    </div>
+                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                        {r.date}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </CardContent>
             </Card>
