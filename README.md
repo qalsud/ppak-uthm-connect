@@ -98,9 +98,39 @@ docker-compose.yml          MySQL 8 + phpMyAdmin + Redis
 | Registrations | `/admin/registrations` | **Approve / Reject** pending parent & teacher accounts |
 | Teachers | `/admin/teachers` | List, add, edit, delete teachers |
 | Students | `/admin/students` | List, add, edit, delete students (link to parent) |
-| Payments | `/admin/payments` | Filter by month/class; add records (fee + overtime from settings); mark Paid/Unpaid; delete |
-| Memos | `/admin/memos` | Publish/delete announcements |
+| Payments | `/admin/payments` | Filter by month/class; add records (fee + overtime from settings); mark Paid/Unpaid; delete — **notifies the parent** |
+| Memos | `/admin/memos` | Publish/delete announcements — **notifies all active parents** |
 | Fee settings | `/admin/fees` | Edit monthly fee + overtime rate (applies to new payment records) |
+
+## Parent & teacher portals
+
+- **Teacher**: dashboard (today's status), daily activities log, learning progress,
+  per-class daily updates, **messages (parent↔teacher)**, memos.
+- **Parent**: dashboard, daily check-in, activities/progress view, financial
+  statement with **Stripe Checkout** ("Pay"), **payment success + PDF receipt**,
+  **messages**, memos. Posting/reading is ownership-checked per child.
+
+## Notifications
+
+- In-app **notification bell** (all roles) polling `/notifications`.
+- Sent on: new fee record, activity/progress recorded, memo posted, chat message.
+- Broadcast channels are wired (`database` + `broadcast`) — drop in Pusher keys
+  to get instant delivery; the bell already works via polling without them.
+
+## Payments & receipts
+
+- Server-computed amounts only (no client-chosen totals), idempotent webhook
+  completion, per-payment PDF receipts (dompdf).
+- **Stripe setup** (test mode first):
+  ```
+  STRIPE_PUBLISHABLE_KEY=pk_test_...
+  STRIPE_SECRET_KEY=sk_test_...
+  STRIPE_WEBHOOK_SECRET=whsec_...
+  STRIPE_CURRENCY=myr
+  ```
+  With no keys configured the app shows a graceful "payments unavailable"
+  notice (nothing breaks). Add the webhook endpoint `POST /stripe/webhook`
+  (`checkout.session.completed`) with Stripe CLI/stripe dashboard.
 
 ## Tests & style
 

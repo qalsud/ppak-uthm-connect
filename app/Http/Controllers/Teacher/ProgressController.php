@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\ProgressRecord;
 use App\Models\Student;
+use App\Notifications\ProgressRecordedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -57,6 +59,12 @@ class ProgressController extends Controller
             $record->update($validated);
         } else {
             ProgressRecord::create($validated);
+        }
+
+        $student = Student::with('parent')->find($validated['student_id']);
+
+        if ($student?->parent) {
+            Notification::send($student->parent, new ProgressRecordedNotification($student));
         }
 
         return back()->with('success', __('approval.progress_saved'));

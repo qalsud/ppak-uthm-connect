@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => CheckRole::class,
             'account.active' => EnsureAccountIsActive::class,
         ]);
+
+        // Stripe webhook is verified with its own signature, not CSRF.
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

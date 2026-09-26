@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AccountStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Memo;
+use App\Models\User;
+use App\Notifications\MemoPostedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,10 +35,17 @@ class MemoController extends Controller
             'description' => 'required|string',
         ]);
 
-        Memo::create([
+        $memo = Memo::create([
             ...$data,
             'author_id' => $request->user()->id,
         ]);
+
+        $parents = User::query()
+            ->where('role', UserRole::Parent)
+            ->where('status', AccountStatus::Active)
+            ->get();
+
+        Notification::send($parents, new MemoPostedNotification($memo));
 
         return back()->with('success', __('approval.memo_created'));
     }

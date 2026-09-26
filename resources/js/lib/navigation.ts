@@ -6,6 +6,7 @@ import {
     FileText,
     GraduationCap,
     LayoutDashboard,
+    MessageSquare,
     Settings,
     Users,
     Wallet,
@@ -34,6 +35,7 @@ export const teacherNav: NavItem[] = [
     { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },
     { label: 'progress', href: '/teacher/progress', icon: BookOpen },
     { label: 'daily_updates', href: '/teacher/daily-updates', icon: BellRing },
+    { label: 'messages', href: '/teacher/messages', icon: MessageSquare },
     { label: 'memos', href: '/teacher/memos', icon: FileText },
 ];
 
@@ -42,6 +44,7 @@ export const parentNav: NavItem[] = [
     { label: 'daily_update', href: '/parent/daily-update', icon: CalendarCheck },
     { label: 'activities', href: '/parent/activities', icon: BookOpen },
     { label: 'financials', href: '/parent/financials', icon: Wallet },
+    { label: 'messages', href: '/parent/messages', icon: MessageSquare },
     { label: 'memos', href: '/parent/memos', icon: FileText },
 ];
 

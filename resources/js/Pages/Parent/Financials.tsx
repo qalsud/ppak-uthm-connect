@@ -1,4 +1,6 @@
+import { router } from '@inertiajs/react';
 import { CreditCard } from 'lucide-react';
+import { useState } from 'react';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -48,6 +50,17 @@ export default function ParentFinancials({
     fee: { monthly_fee: string; overtime_rate: string };
 }) {
     const { t } = useI18n();
+
+    const [paying, setPaying] = useState<number | null>(null);
+
+    const checkout = (studentId: number) => {
+        setPaying(studentId);
+        router.post(
+            route('parent.payments.checkout'),
+            { student_id: studentId },
+            { preserveScroll: true, onFinish: () => setPaying(null) },
+        );
+    };
 
     return (
         <AppShell nav={parentNav} title={t('parent')}>
@@ -117,9 +130,9 @@ export default function ParentFinancials({
 
                             {child.totals.unpaid > 0 && (
                                 <div className="mt-4 flex justify-end">
-                                    <Button disabled className="gap-2">
+                                    <Button onClick={() => checkout(child.id)} disabled={paying === child.id} className="gap-2">
                                         <CreditCard className="size-4" />
-                                        {t('pay')} RM {child.totals.unpaid.toFixed(2)}
+                                        {paying === child.id ? '...' : t('pay')} RM {child.totals.unpaid.toFixed(2)}
                                     </Button>
                                 </div>
                             )}

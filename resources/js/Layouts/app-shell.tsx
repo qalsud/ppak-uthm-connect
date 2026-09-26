@@ -3,6 +3,7 @@ import { GraduationCap, LogOut, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
+import NotificationBell from '@/Components/notification-bell';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -69,6 +70,7 @@ export default function AppShell({ children, nav = [], title }: Props) {
                     </Link>
 
                     <div className="flex items-center gap-2">
+                        <NotificationBell />
                         {nav.length === 0 && <LanguageSwitcher />}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

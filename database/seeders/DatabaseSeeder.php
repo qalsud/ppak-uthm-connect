@@ -4,11 +4,13 @@ namespace Database\Seeders;
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\DailyUpdate;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
+use App\Models\Message;
 use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
@@ -175,6 +177,24 @@ class DatabaseSeeder extends Seeder
             'bath_status' => 'Done',
             'health_status' => 'good',
             'parent_notes' => 'Tolong bagi ubat jika demam.',
+        ]);
+
+        // Sample conversation between the demo teacher and parent
+        $conversation = Conversation::create([
+            'student_id' => $studentA->id,
+            'teacher_id' => $teacher->id,
+        ]);
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $teacher->id,
+            'body' => 'Selamat pagi! Anak anda menunjukkan perkembangan yang baik hari ini.',
+        ]);
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $parent->id,
+            'body' => 'Terima kasih cikgu!',
         ]);
 
         $this->command?->info('Seeded demo data (admin/teacher/parent/pending, students, memos, payments).');

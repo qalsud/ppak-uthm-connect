@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Student;
+use App\Notifications\FeeRecordAddedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -75,6 +77,12 @@ class PaymentController extends Controller
             'amount' => $fee->monthly_fee + $overtimeAmount,
             'status' => 'unpaid',
         ]);
+
+        $student = Student::with('parent')->find($data['student_id']);
+
+        if ($student?->parent) {
+            Notification::send($student->parent, new FeeRecordAddedNotification($student->financialRecords()->latest('id')->first()));
+        }
 
         return back()->with('success', __('approval.payment_created'));
     }

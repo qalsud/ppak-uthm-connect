@@ -8,16 +8,21 @@ use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
 use App\Http\Controllers\Parent\DailyUpdateController as ParentDailyUpdateController;
 use App\Http\Controllers\Parent\DashboardController as ParentDashboardController;
 use App\Http\Controllers\Parent\FinancialController as ParentFinancialController;
 use App\Http\Controllers\Parent\MemoController as ParentMemoController;
+use App\Http\Controllers\Parent\MessageController as ParentMessageController;
+use App\Http\Controllers\Parent\PaymentController as ParentPaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Teacher\ActivityController as TeacherActivityController;
 use App\Http\Controllers\Teacher\DailyUpdateController as TeacherDailyUpdateController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\MemoController as TeacherMemoController;
+use App\Http\Controllers\Teacher\MessageController as TeacherMessageController;
 use App\Http\Controllers\Teacher\ProgressController as TeacherProgressController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -38,8 +43,15 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])
     ->whereIn('locale', ['en', 'ms'])
     ->name('locale.switch');
 
+// Stripe webhook (public, signature-verified)
+Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+
 // Authenticated + verified + active accounts only
 Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
+
+    // Notifications (shared by all roles)
+    Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
 
     // Role home dashboards
     Route::get('/admin', AdminDashboardController::class)
@@ -97,6 +109,11 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
             Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');
+
+            Route::get('/messages', [TeacherMessageController::class, 'index'])->name('messages.index');
+            Route::get('/messages/{conversation}', [TeacherMessageController::class, 'show'])->name('messages.show');
+            Route::post('/messages/{conversation}', [TeacherMessageController::class, 'store'])->name('messages.store');
+            Route::post('/messages/student/{student}', [TeacherMessageController::class, 'openWithStudent'])->name('messages.open');
         });
 
     // Parent portal
@@ -109,6 +126,14 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');
+
+            Route::post('/payments/checkout', [ParentPaymentController::class, 'checkout'])->name('payments.checkout');
+            Route::get('/payments/{payment}/success', [ParentPaymentController::class, 'success'])->name('payments.success');
+            Route::get('/payments/{payment}/receipt', [ParentPaymentController::class, 'receipt'])->name('payments.receipt');
+
+            Route::get('/messages', [ParentMessageController::class, 'index'])->name('messages.index');
+            Route::get('/messages/{conversation}', [ParentMessageController::class, 'show'])->name('messages.show');
+            Route::post('/messages/{conversation}', [ParentMessageController::class, 'store'])->name('messages.store');
         });
 
     // Profile (shared)

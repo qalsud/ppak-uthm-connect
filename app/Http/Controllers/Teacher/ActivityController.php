@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\DailyActivity;
 use App\Models\Student;
+use App\Notifications\ActivityRecordedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,6 +64,12 @@ class ActivityController extends Controller
             $record->update($data);
         } else {
             DailyActivity::create($data);
+        }
+
+        $student = Student::with('parent')->find($data['student_id']);
+
+        if ($student?->parent) {
+            Notification::send($student->parent, new ActivityRecordedNotification($student));
         }
 
         return back()->with('success', __('approval.activity_saved'));

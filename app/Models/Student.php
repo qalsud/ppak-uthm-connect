@@ -52,10 +52,15 @@ class Student extends Model
 
     public function getClassLabelAttribute(): string
     {
-        return match ($this->class) {
+        return static::classLabelStatic($this->class);
+    }
+
+    public static function classLabelStatic(string $class): string
+    {
+        return match ($class) {
             '5tahun' => '5 Tahun',
             '6bintang' => '6 Bintang',
-            default => strtoupper($this->class),
+            default => strtoupper($class),
         };
     }
 }
