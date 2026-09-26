@@ -44,3 +44,17 @@ export const parentNav: NavItem[] = [
     { label: 'financials', href: '/parent/financials', icon: Wallet },
     { label: 'memos', href: '/parent/memos', icon: FileText },
 ];
+
+/** Role-aware landing path (replaces the removed generic `dashboard` route). */
+export function homePathFor(user?: { role?: string } | null): string {
+    switch (user?.role) {
+        case 'admin':
+            return '/admin';
+        case 'teacher':
+            return '/teacher';
+        case 'parent':
+            return '/parent';
+        default:
+            return '/';
+    }
+}
