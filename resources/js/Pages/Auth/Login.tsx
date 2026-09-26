@@ -1,6 +1,7 @@
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import Logo from '@/Components/logo';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -32,8 +33,21 @@ export default function Login({
         <GuestLayout>
             <Head title="Log in" />
 
+            {/* Logos above the form */}
+            <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
+                <Logo chip className="size-14" />
+                <Logo variant="uthm" chip className="h-14 w-44" />
+            </div>
+
+            <div className="mb-6 text-center">
+                <h1 className="text-lg font-bold text-foreground">Welcome back</h1>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                    Sign in to your PPAK UTHM account
+                </p>
+            </div>
+
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
                     {status}
                 </div>
             )}
