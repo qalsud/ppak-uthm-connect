@@ -1,11 +1,12 @@
 import { router, useForm } from '@inertiajs/react';
 import { Download, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
+import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -35,6 +36,7 @@ import {
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type Child = { id: number; name: string; class: string };
@@ -58,15 +60,16 @@ export default function Parents({
     counts,
     filters,
 }: {
-    parents: Parent[];
+    parents: Paginator<Parent>;
     counts: Record<string, number>;
-    filters: { status: string };
+    filters: { status: string; search: string };
 }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Parent | null>(null);
-    const [query, setQuery] = useState('');
+    const [search, setSearch] = useState(filters.search);
     const [deleteTarget, setDeleteTarget] = useState<Parent | null>(null);
+    const firstRender = useRef(true);
 
     const form = useForm({
         name: '',
@@ -77,22 +80,34 @@ export default function Parents({
         status: 'active',
     });
 
-    const filtered = useMemo(
-        () =>
-            parents.filter(
-                (p) =>
-                    p.name.toLowerCase().includes(query.toLowerCase()) ||
-                    p.email.toLowerCase().includes(query.toLowerCase()),
-            ),
-        [parents, query],
-    );
+    const rows = parents.data;
 
-    const applyStatus = (status: string) =>
+    const visit = (params: Partial<{ search: string; status: string }>) =>
         router.get(
             '/admin/parents',
-            status && status !== 'all' ? { status } : {},
-            { preserveState: true, preserveScroll: true },
+            {
+                search: params.search ?? search,
+                status: params.status ?? filters.status,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
         );
+
+    useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
+
+            return;
+        }
+
+        const id = setTimeout(() => {
+            if (search !== filters.search) {
+                visit({ search });
+            }
+        }, 350);
+
+        return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
 
     const openCreate = () => {
         setEditing(null);
@@ -153,11 +168,11 @@ export default function Parents({
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar
-                    search={query}
-                    onSearch={setQuery}
+                    search={search}
+                    onSearch={setSearch}
                     placeholder={t('search_users')}
                     filters={
-                        <Select value={filters.status || 'all'} onValueChange={applyStatus}>
+                        <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
                             <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
                                 <SelectValue />
                             </SelectTrigger>
@@ -173,10 +188,10 @@ export default function Parents({
                     }
                 />
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground">
-                    {t('parents')}: {filtered.length}/{parents.length}
+                    {t('parents')}: {parents.from ?? 0}–{parents.to ?? 0} / {parents.total}
                 </div>
 
-                {filtered.length === 0 ? (
+                {rows.length === 0 ? (
                     <EmptyState
                         icon={UserRound}
                         title={t('no_parents_title')}
@@ -186,7 +201,7 @@ export default function Parents({
                     <>
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
-                            {filtered.map((parent) => (
+                            {rows.map((parent) => (
                                 <div key={parent.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -238,7 +253,7 @@ export default function Parents({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filtered.map((parent) => (
+                                    {rows.map((parent) => (
                                         <TableRow key={parent.id}>
                                             <TableCell className="font-medium">{parent.name}</TableCell>
                                             <TableCell>{parent.ic_number ?? '—'}</TableCell>
@@ -278,6 +293,13 @@ export default function Parents({
                                 </TableBody>
                             </Table>
                         </div>
+
+                        <Pagination
+                            links={parents.links}
+                            from={parents.from}
+                            to={parents.to}
+                            total={parents.total}
+                        />
                     </>
                 )}
             </Card>

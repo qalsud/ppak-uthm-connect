@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
@@ -8,6 +8,7 @@ import EmptyState from '@/Components/empty-state';
 import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
+import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -37,6 +38,7 @@ import {
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type Teacher = {
@@ -56,16 +58,17 @@ export default function Teachers({
     counts,
     filters,
 }: {
-    teachers: Teacher[];
+    teachers: Paginator<Teacher>;
     counts: Record<string, number>;
-    filters: { status: string };
+    filters: { status: string; search: string };
 }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Teacher | null>(null);
-    const [query, setQuery] = useState('');
+    const [search, setSearch] = useState(filters.search);
     const [importing, setImporting] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<Teacher | null>(null);
+    const firstRender = useRef(true);
 
     const form = useForm({
         name: '',
@@ -76,22 +79,34 @@ export default function Teachers({
         status: 'active',
     });
 
-    const filtered = useMemo(
-        () =>
-            teachers.filter(
-                (x) =>
-                    x.name.toLowerCase().includes(query.toLowerCase()) ||
-                    x.email.toLowerCase().includes(query.toLowerCase()),
-            ),
-        [teachers, query],
-    );
+    const rows = teachers.data;
 
-    const applyStatus = (status: string) =>
+    const visit = (params: Partial<{ search: string; status: string }>) =>
         router.get(
             '/admin/teachers',
-            status && status !== 'all' ? { status } : {},
-            { preserveState: true, preserveScroll: true },
+            {
+                search: params.search ?? search,
+                status: params.status ?? filters.status,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
         );
+
+    useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
+
+            return;
+        }
+
+        const id = setTimeout(() => {
+            if (search !== filters.search) {
+                visit({ search });
+            }
+        }, 350);
+
+        return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
 
     const openCreate = () => {
         setEditing(null);
@@ -158,14 +173,11 @@ export default function Teachers({
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar
-                    search={query}
-                    onSearch={setQuery}
+                    search={search}
+                    onSearch={setSearch}
                     placeholder={t('search_teachers')}
                     filters={
-                        <Select
-                            value={filters.status || 'all'}
-                            onValueChange={applyStatus}
-                        >
+                        <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
                             <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
                                 <SelectValue />
                             </SelectTrigger>
@@ -181,10 +193,10 @@ export default function Teachers({
                     }
                 />
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground">
-                    {t('teachers')}: {filtered.length}/{teachers.length}
+                    {t('teachers')}: {teachers.from ?? 0}–{teachers.to ?? 0} / {teachers.total}
                 </div>
 
-                {filtered.length === 0 ? (
+                {rows.length === 0 ? (
                     <EmptyState
                         icon={Users}
                         title={t('teachers_empty_title')}
@@ -194,7 +206,7 @@ export default function Teachers({
                     <>
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
-                            {filtered.map((teacher) => (
+                            {rows.map((teacher) => (
                                 <div key={teacher.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -237,7 +249,7 @@ export default function Teachers({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filtered.map((teacher) => (
+                                    {rows.map((teacher) => (
                                         <TableRow key={teacher.id}>
                                             <TableCell className="font-medium">{teacher.name}</TableCell>
                                             <TableCell>{teacher.ic_number ?? '—'}</TableCell>
@@ -269,6 +281,13 @@ export default function Teachers({
                                 </TableBody>
                             </Table>
                         </div>
+
+                        <Pagination
+                            links={teachers.links}
+                            from={teachers.from}
+                            to={teachers.to}
+                            total={teachers.total}
+                        />
                     </>
                 )}
             </Card>

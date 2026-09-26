@@ -268,8 +268,8 @@ test('payment records can be filtered by status', function () {
         ->get(route('admin.payments.index', ['status' => 'unpaid']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Payments')
-            ->has('records', 1)
-            ->where('records.0.status', 'unpaid')
+            ->has('records.data', 1)
+            ->where('records.data.0.status', 'unpaid')
         );
 });
 
@@ -282,14 +282,14 @@ test('registrations can be filtered by status and role with counts', function ()
         ->get(route('admin.registrations.index', ['status' => 'pending']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Registrations')
-            ->has('users', 2)
+            ->has('users.data', 2)
             ->where('counts.pending', 2)
             ->where('counts.active', 1)
         );
 
     $this->actingAs(admin())
         ->get(route('admin.registrations.index', ['status' => 'all', 'role' => 'teacher']))
-        ->assertInertia(fn (Assert $page) => $page->has('users', 2));
+        ->assertInertia(fn (Assert $page) => $page->has('users.data', 2));
 });
 
 test('admin can manage parents', function () {
@@ -338,8 +338,8 @@ test('parents list shows the number of children', function () {
         ->get(route('admin.parents.index'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Parents')
-            ->has('parents', 1)
-            ->where('parents.0.students_count', 2)
+            ->has('parents.data', 1)
+            ->where('parents.data.0.students_count', 2)
         );
 });
 
@@ -538,4 +538,22 @@ test('the activity log page renders paginated entries', function () {
             ->has('logs.data', 1)
             ->where('logs.data.0.action', 'student.created')
         );
+});
+
+test('the student list supports server-side search and pagination', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create(['name' => 'Cari Nama Unik']);
+    Student::factory()->create(['name' => 'Ali', 'parent_id' => $parent->id]);
+    Student::factory()->count(20)->create();
+
+    $this->actingAs(admin())
+        ->get(route('admin.students.index', ['search' => 'Cari Nama Unik']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Students')
+            ->has('students.data', 1)
+            ->where('students.total', 1)
+        );
+
+    $this->actingAs(admin())
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn (Assert $page) => $page->has('students.data', 15));
 });

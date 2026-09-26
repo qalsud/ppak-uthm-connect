@@ -18,6 +18,7 @@ class TeacherController extends Controller
     public function index(Request $request): Response
     {
         $status = $request->query('status');
+        $search = trim((string) $request->query('search', ''));
 
         $teachers = User::query()
             ->where('role', UserRole::Teacher)
@@ -25,8 +26,13 @@ class TeacherController extends Controller
                 in_array($status, AccountStatus::values(), true),
                 fn ($q) => $q->where('status', $status)
             )
+            ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            }))
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'ic_number', 'phone', 'status', 'created_at']);
+            ->paginate(15)
+            ->withQueryString();
 
         $counts = User::query()
             ->where('role', UserRole::Teacher)
@@ -40,7 +46,7 @@ class TeacherController extends Controller
                 'all' => User::query()->where('role', UserRole::Teacher)->count(),
                 ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
             ],
-            'filters' => ['status' => $status ?? ''],
+            'filters' => ['status' => $status ?? '', 'search' => $search],
         ]);
     }
 

@@ -39,7 +39,13 @@ class PaymentController extends Controller
             $query->where('status', $request->query('status'));
         }
 
-        $records = $query->orderBy('created_at', 'desc')->get();
+        $search = trim((string) $request->query('search', ''));
+
+        if ($search !== '') {
+            $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         $currentMonth = now()->format('F');
 
@@ -64,6 +70,7 @@ class PaymentController extends Controller
                 'month' => $request->string('month'),
                 'class' => $request->string('class'),
                 'status' => $request->query('status', ''),
+                'search' => $search,
             ],
         ]);
     }

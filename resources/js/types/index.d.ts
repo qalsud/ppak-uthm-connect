@@ -9,6 +9,22 @@ export interface User {
     email_verified_at?: string | null;
 }
 
+export type PaginatorLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+export type Paginator<T> = {
+    data: T[];
+    links: PaginatorLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+    current_page: number;
+    last_page: number;
+};
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {

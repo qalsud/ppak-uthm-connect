@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
+import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -26,6 +27,7 @@ import {
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type ManagedUser = {
@@ -47,13 +49,15 @@ export default function Registrations({
     counts,
     filters,
 }: {
-    users: ManagedUser[];
+    users: Paginator<ManagedUser>;
     counts: Record<string, number>;
     filters: Filters;
 }) {
     const { t } = useI18n();
     const [search, setSearch] = useState(filters.search);
     const firstRender = useRef(true);
+
+    const rows = users.data;
 
     const visit = (next: Partial<Filters>) =>
         router.get(
@@ -161,7 +165,7 @@ export default function Registrations({
                     </div>
                 </div>
 
-                {users.length === 0 ? (
+                {rows.length === 0 ? (
                     <EmptyState
                         icon={Inbox}
                         title={t('registrations_empty_title')}
@@ -171,7 +175,7 @@ export default function Registrations({
                     <>
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
-                            {users.map((user) => (
+                            {rows.map((user) => (
                                 <div key={user.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -225,7 +229,7 @@ export default function Registrations({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {users.map((user) => (
+                                    {rows.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-medium">{user.name}</TableCell>
                                             <TableCell>{user.email}</TableCell>
@@ -266,6 +270,13 @@ export default function Registrations({
                                 </TableBody>
                             </Table>
                         </div>
+
+                        <Pagination
+                            links={users.links}
+                            from={users.from}
+                            to={users.to}
+                            total={users.total}
+                        />
                     </>
                 )}
             </Card>

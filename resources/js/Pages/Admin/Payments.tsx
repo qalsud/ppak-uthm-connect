@@ -1,10 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
-import { CalendarPlus, Plus, Receipt, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { CalendarPlus, Plus, Receipt, Search, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
+import Pagination from '@/Components/pagination';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
@@ -36,6 +37,7 @@ import {
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type PaymentRecord = {
@@ -49,7 +51,7 @@ type PaymentRecord = {
 };
 
 type Props = {
-    records: PaymentRecord[];
+    records: Paginator<PaymentRecord>;
     months: string[];
     classes: string[];
     students: Array<{ id: number; name: string; class: string }>;
@@ -60,7 +62,7 @@ type Props = {
         unpaid_count: number;
         current_month: string;
     };
-    filters: { month: string; class: string; status: string };
+    filters: { month: string; class: string; status: string; search: string };
 };
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
@@ -70,6 +72,31 @@ export default function Payments({ records, months, classes, students, fee, summ
     const [open, setOpen] = useState(false);
     const [genOpen, setGenOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<PaymentRecord | null>(null);
+    const [search, setSearch] = useState(filters.search);
+    const firstRender = useRef(true);
+
+    const rows = records.data;
+
+    useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
+
+            return;
+        }
+
+        const id = setTimeout(() => {
+            if (search !== filters.search) {
+                router.get(
+                    '/admin/payments',
+                    { ...filters, search },
+                    { preserveState: true, preserveScroll: true, replace: true },
+                );
+            }
+        }, 350);
+
+        return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
 
     const addForm = useForm({ student_id: '', month: '', overtime_hours: '0' });
     const genForm = useForm({ month: summary.current_month });
@@ -187,9 +214,18 @@ export default function Payments({ records, months, classes, students, fee, summ
                         {t('monthly_fee')}: RM {Number(fee.monthly_fee).toFixed(2)} ·{' '}
                         {t('overtime_rate')}: RM {Number(fee.overtime_rate).toFixed(2)}/h
                     </span>
+                    <div className="relative w-full min-w-56 sm:w-auto sm:flex-1">
+                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={t('search_students')}
+                            className="pl-9"
+                        />
+                    </div>
                 </div>
 
-                {records.length === 0 ? (
+                {rows.length === 0 ? (
                     <EmptyState
                         icon={Receipt}
                         title={t('payments_empty_title')}
@@ -199,7 +235,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                     <>
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
-                            {records.map((record) => (
+                            {rows.map((record) => (
                                 <div key={record.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -273,7 +309,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {records.map((record) => (
+                                    {rows.map((record) => (
                                         <TableRow key={record.id}>
                                             <TableCell className="font-medium">
                                                 {record.student.name}
@@ -333,6 +369,13 @@ export default function Payments({ records, months, classes, students, fee, summ
                                 </TableBody>
                             </Table>
                         </div>
+
+                        <Pagination
+                            links={records.links}
+                            from={records.from}
+                            to={records.to}
+                            total={records.total}
+                        />
                     </>
                 )}
             </Card>

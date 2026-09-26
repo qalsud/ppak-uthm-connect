@@ -15,12 +15,21 @@ use Inertia\Response;
 
 class StudentController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = trim((string) $request->query('search', ''));
+        $class = $request->query('class');
+
         $students = Student::query()
             ->with('parent:id,name')
+            ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
+                $w->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('parent', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            }))
+            ->when(in_array($class, Student::CLASSES, true), fn ($q) => $q->where('class', $class))
             ->orderBy('name')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         $parents = User::query()
             ->where('role', UserRole::Parent)
@@ -30,6 +39,7 @@ class StudentController extends Controller
         return Inertia::render('Admin/Students', [
             'students' => $students,
             'parents' => $parents,
+            'filters' => ['search' => $search, 'class' => $class ?? ''],
         ]);
     }
 

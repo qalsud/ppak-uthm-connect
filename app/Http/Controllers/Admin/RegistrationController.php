@@ -36,7 +36,8 @@ class RegistrationController extends Controller
                     ->orWhere('email', 'like', "%{$search}%")
             ))
             ->orderBy('created_at', 'desc')
-            ->get(['id', 'name', 'email', 'phone', 'role', 'status', 'created_at']);
+            ->paginate(20)
+            ->withQueryString();
 
         $counts = [
             'all' => (clone $base)->count(),

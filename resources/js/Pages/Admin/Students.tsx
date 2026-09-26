@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { Download, GraduationCap, Pencil, Plus, Trash2, Upload } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
@@ -8,6 +8,7 @@ import EmptyState from '@/Components/empty-state';
 import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
+import Pagination from '@/Components/pagination';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -37,6 +38,7 @@ import {
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { PageProps, Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {
@@ -55,19 +57,33 @@ const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang'
 export default function Students({
     students,
     parents,
+    filters,
 }: {
-    students: Student[];
+    students: Paginator<Student>;
     parents: Parent[];
+    filters: { search: string; class: string };
 }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Student | null>(null);
-    const [query, setQuery] = useState('');
-    const [classFilter, setClassFilter] = useState('all');
+    const [search, setSearch] = useState(filters.search);
     const [importing, setImporting] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
+    const firstRender = useRef(true);
 
     const form = useForm({ name: '', age: '', class: '5tahun', parent_id: '' });
+
+    const rows = students.data;
+
+    const visit = (params: Partial<{ search: string; class: string }>) =>
+        router.get(
+            '/admin/students',
+            {
+                search: params.search ?? search,
+                class: params.class ?? filters.class,
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
     // Support the dashboard "Add student" quick action: /admin/students?create=1
     useEffect(() => {
@@ -77,22 +93,23 @@ export default function Students({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const filtered = useMemo(
-        () =>
-            students.filter((s) => {
-                if (classFilter !== 'all' && s.class !== classFilter) {
-                    return false;
-                }
+    // Debounced server-side search.
+    useEffect(() => {
+        if (firstRender.current) {
+            firstRender.current = false;
 
-                const q = query.toLowerCase();
+            return;
+        }
 
-                return (
-                    s.name.toLowerCase().includes(q) ||
-                    (s.parent?.name ?? '').toLowerCase().includes(q)
-                );
-            }),
-        [students, query, classFilter],
-    );
+        const id = setTimeout(() => {
+            if (search !== filters.search) {
+                visit({ search });
+            }
+        }, 350);
+
+        return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
 
     const openCreate = () => {
         setEditing(null);
@@ -135,7 +152,7 @@ export default function Students({
     };
 
     const classFilters = [
-        { value: 'all', label: t('all') },
+        { value: '', label: t('all') },
         { value: '5tahun', label: '5 Tahun' },
         { value: '6bintang', label: '6 Bintang' },
     ];
@@ -163,8 +180,8 @@ export default function Students({
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar
-                    search={query}
-                    onSearch={setQuery}
+                    search={search}
+                    onSearch={setSearch}
                     placeholder={t('search_students')}
                     filters={
                         <div className="flex rounded-lg p-0.5">
@@ -172,9 +189,9 @@ export default function Students({
                                 <button
                                     key={f.value}
                                     type="button"
-                                    onClick={() => setClassFilter(f.value)}
+                                    onClick={() => visit({ class: f.value })}
                                     className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                                        classFilter === f.value
+                                        filters.class === f.value
                                             ? 'bg-brand-navy text-white'
                                             : 'text-muted-foreground hover:bg-muted'
                                     }`}
@@ -186,10 +203,10 @@ export default function Students({
                     }
                 />
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground">
-                    {t('students')}: {filtered.length}/{students.length}
+                    {t('students')}: {students.from ?? 0}–{students.to ?? 0} / {students.total}
                 </div>
 
-                {filtered.length === 0 ? (
+                {rows.length === 0 ? (
                     <EmptyState
                         icon={GraduationCap}
                         title={t('students_empty_title')}
@@ -199,7 +216,7 @@ export default function Students({
                     <>
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
-                            {filtered.map((student) => (
+                            {rows.map((student) => (
                                 <div key={student.id} className="rounded-xl border p-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -242,7 +259,7 @@ export default function Students({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filtered.map((student) => (
+                                    {rows.map((student) => (
                                         <TableRow key={student.id}>
                                             <TableCell className="font-medium">{student.name}</TableCell>
                                             <TableCell>{student.age ?? '—'}</TableCell>
@@ -279,6 +296,13 @@ export default function Students({
                                 </TableBody>
                             </Table>
                         </div>
+
+                        <Pagination
+                            links={students.links}
+                            from={students.from}
+                            to={students.to}
+                            total={students.total}
+                        />
                     </>
                 )}
             </Card>
