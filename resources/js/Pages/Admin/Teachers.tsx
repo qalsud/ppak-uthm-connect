@@ -34,7 +34,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Teacher = {
@@ -113,7 +113,7 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
     };
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('teachers')} description="Manage teaching staff">
                 <Button variant="outline" className="gap-1.5">
                     <Download className="size-4" />
@@ -138,7 +138,40 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                         description="Teachers will appear here after they register and are approved."
                     />
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-2 p-3 lg:hidden">
+                            {filtered.map((teacher) => (
+                                <div key={teacher.id} className="rounded-xl border p-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-medium">{teacher.name}</p>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {teacher.email}
+                                            </p>
+                                            <div className="mt-1.5">
+                                                <StatusBadge status={teacher.status} label={t(teacher.status)} />
+                                            </div>
+                                        </div>
+                                        <div className="flex shrink-0">
+                                            <Button size="sm" variant="ghost" onClick={() => openEdit(teacher)}>
+                                                <Pencil className="size-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-destructive"
+                                                onClick={() => remove(teacher)}
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/40">
@@ -182,7 +215,8 @@ export default function Teachers({ teachers }: { teachers: Teacher[] }) {
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
+                        </div>
+                    </>
                 )}
             </Card>
 

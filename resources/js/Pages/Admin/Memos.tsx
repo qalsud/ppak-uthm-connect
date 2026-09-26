@@ -17,7 +17,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Memo = {
@@ -49,7 +49,7 @@ export default function Memos({ memos }: { memos: Memo[] }) {
     };
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('memos')} description="Publish announcements to parents & teachers">
                 <Button onClick={() => setOpen(true)} className="gap-1.5">
                     <Plus className="size-4" />

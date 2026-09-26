@@ -30,6 +30,15 @@ export const adminNav: NavItem[] = [
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
 ];
 
+/** Mobile bottom tab bar for admins (max 5 items). */
+export const adminBottomNav: NavItem[] = [
+    { label: 'dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'students', href: '/admin/students', icon: GraduationCap },
+    { label: 'teachers', href: '/admin/teachers', icon: Users },
+    { label: 'payments', href: '/admin/payments', icon: Wallet },
+    { label: 'registrations', href: '/admin/registrations', icon: ClipboardList },
+];
+
 export const teacherNav: NavItem[] = [
     { label: 'dashboard', href: '/teacher', icon: LayoutDashboard },
     { label: 'daily_activities', href: '/teacher/activities', icon: CalendarCheck },

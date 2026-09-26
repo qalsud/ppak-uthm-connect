@@ -15,7 +15,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type PendingUser = {
@@ -41,7 +41,7 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
     };
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('registrations')} description="Approve or reject new accounts" />
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
@@ -52,7 +52,48 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
                         description="New parent and teacher sign-ups will appear here for approval."
                     />
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-2 p-3 lg:hidden">
+                            {users.map((user) => (
+                                <div key={user.id} className="rounded-xl border p-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-medium">{user.name}</p>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {user.email}
+                                            </p>
+                                            <div className="mt-1.5 flex items-center gap-2">
+                                                <StatusBadge
+                                                    status="neutral"
+                                                    label={user.role === 'teacher' ? t('teacher') : t('parent')}
+                                                />
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    {new Date(user.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex gap-2">
+                                        <Button size="sm" className="flex-1 gap-1" onClick={() => act(user, 'approve')}>
+                                            <Check className="size-4" />
+                                            {t('approve')}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 gap-1"
+                                            onClick={() => act(user, 'reject')}
+                                        >
+                                            <X className="size-4" />
+                                            {t('reject')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/40">
@@ -100,7 +141,8 @@ export default function Registrations({ users }: { users: PendingUser[] }) {
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
+                        </div>
+                    </>
                 )}
             </Card>
         </AppShell>

@@ -33,7 +33,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {
@@ -104,7 +104,7 @@ export default function Students({ students }: { students: Student[] }) {
     };
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('students')} description="Manage enrolled children">
                 <Button variant="outline" className="gap-1.5">
                     <Download className="size-4" />
@@ -129,7 +129,41 @@ export default function Students({ students }: { students: Student[] }) {
                         description="Students will appear here after they enroll in your school."
                     />
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-2 p-3 lg:hidden">
+                            {filtered.map((student) => (
+                                <div key={student.id} className="rounded-xl border p-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-medium">{student.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {classLabel(student.class)}
+                                                {student.age ? ` · ${student.age} yrs` : ''}
+                                            </p>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {student.parent?.name ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0">
+                                            <Button size="sm" variant="ghost" onClick={() => openEdit(student)}>
+                                                <Pencil className="size-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-destructive"
+                                                onClick={() => remove(student)}
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/40">
@@ -173,7 +207,8 @@ export default function Students({ students }: { students: Student[] }) {
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
+                        </div>
+                    </>
                 )}
             </Card>
 

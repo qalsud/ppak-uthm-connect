@@ -32,7 +32,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Record = {
@@ -92,7 +92,7 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
         );
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('payments')} description="Track fees, overtime and receipts">
                 <Button onClick={() => setOpen(true)} className="gap-1.5">
                     <Plus className="size-4" />
@@ -141,7 +141,54 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
                         description="Add a payment record to start tracking fees."
                     />
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-2 p-3 lg:hidden">
+                            {records.map((record) => (
+                                <div key={record.id} className="rounded-xl border p-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-medium">{record.student.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {classLabel(record.student.class)} · {record.month}
+                                            </p>
+                                            <p className="text-sm font-semibold">
+                                                RM {Number(record.amount).toFixed(2)}
+                                                {Number(record.overtime_hours) > 0
+                                                    ? ` · ${Number(record.overtime_hours)}h OT`
+                                                    : ''}
+                                            </p>
+                                        </div>
+                                        <StatusBadge
+                                            status={record.status}
+                                            label={record.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                        />
+                                    </div>
+                                    <div className="mt-3 flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1"
+                                            onClick={() =>
+                                                setStatus(record, record.status === 'unpaid' ? 'paid' : 'unpaid')
+                                            }
+                                        >
+                                            {record.status === 'unpaid' ? 'Mark paid' : 'Mark unpaid'}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="text-destructive"
+                                            onClick={() => remove(record)}
+                                        >
+                                            <Trash2 className="size-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/40">
@@ -197,7 +244,8 @@ export default function Payments({ records, months, classes, fee, filters }: Pro
                                 ))}
                             </TableBody>
                         </Table>
-                    </div>
+                        </div>
+                    </>
                 )}
             </Card>
 

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
-import { adminNav } from '@/lib/navigation';
+import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
 type Fee = { monthly_fee: string; overtime_rate: string };
@@ -23,7 +23,7 @@ export default function Fees({ fee }: { fee: Fee }) {
     const submit = () => form.put(route('admin.fees.update'));
 
     return (
-        <AppShell nav={adminNav} title={t('admin')}>
+        <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('fee_settings')} description="Set the monthly fee and overtime rate" />
 
             <Card className="max-w-xl rounded-2xl border-0 shadow-sm">
