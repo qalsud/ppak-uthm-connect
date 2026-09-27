@@ -9,6 +9,30 @@ value · **P3** = nice-to-have.
 
 ---
 
+## Progress (updated 27 Sep 2026)
+
+**✅ Done in this pass**
+
+| Item | What shipped |
+|---|---|
+| **F1 Email** | Notifications now carry a **mail channel** (+ `toMail()`); **approve/reject emails** to applicants; **rejection reasons** captured and shown. *(Set a real `MAIL_MAILER` for production.)* |
+| **F2 Archive** | Students have **active / withdrawn / graduated** status with **restore**; hard delete is blocked while enrolled and **never cascade-deletes history**; all lists scope to active. |
+| **F3 Teacher–class** | Teachers are **assigned a class** (admin UI) and can only **view/manage their class** (attendance, activities, progress, updates, messages). |
+| **Global search** | The dead header box is now a **real role-aware search** (students/teachers/parents/memos). |
+| **Bulk attendance** | **"Mark all present"** for a class in one tap. |
+| **Arrival notifications** | Parents are notified **on check-in** as well as check-out (once per child/day). |
+| **Fees** | **Due dates** on fee records, **overdue** flags, and parents can **pay only the months they choose**. |
+| **Auth/registrations** | Decision emails + reasons (above). |
+
+**⏳ Still open** (next passes): guardians (F4) · academic terms (F5) · centres (F6) · absence requests +
+absent/sick attendance states · scheduled **fee reminders** · bulk class activities/progress · student
+photo/IC/medical + class-move history + CSV upsert/dry-run · memo attachments/scheduling/read
+receipts · message pagination/attachments/admin oversight · **term progress-report PDF** + monthly
+statements · reports/analytics · backups · PWA/push · queueing notifications · audit coverage
+(logins/exports) · accessibility pass.
+
+---
+
 ## 0. Structural foundations (fix these first — they affect every module)
 
 | # | Gap | Why it matters | Suggested |
