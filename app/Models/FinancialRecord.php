@@ -10,6 +10,7 @@ class FinancialRecord extends Model
     protected $fillable = [
         'student_id',
         'month',
+        'due_on',
         'amount',
         'overtime_hours',
         'status',
@@ -21,9 +22,17 @@ class FinancialRecord extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'overtime_hours' => 'decimal:2',
+        'due_on' => 'date:Y-m-d',
         'paid_on' => 'date:Y-m-d',
         'ReceiptGenerated' => 'boolean',
     ];
+
+    public function isOverdue(): bool
+    {
+        return $this->status === 'unpaid'
+            && $this->due_on !== null
+            && $this->due_on->isPast();
+    }
 
     public function student(): BelongsTo
     {

@@ -16,6 +16,7 @@ use App\Notifications\MemoPostedNotification;
 use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
 use App\Services\Payments\PaymentCompletionService;
+use App\Services\Payments\StripeCheckoutService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -708,6 +709,43 @@ test('search ignores very short queries', function () {
         ->getJson(route('search', ['q' => 'a']))
         ->assertOk()
         ->assertJson(['groups' => []]);
+});
+
+test('generated fee records get a due date', function () {
+    FeeSetting::create(['monthly_fee' => 300, 'overtime_rate' => 6]);
+    Student::factory()->create();
+
+    $this->actingAs(admin())->post(route('admin.payments.generate'), ['month' => 'July']);
+
+    $record = FinancialRecord::where('month', 'July')->first();
+
+    expect($record->due_on)->not->toBeNull()
+        ->and($record->due_on->format('m-d'))->toBe('07-07');
+});
+
+test('a parent can pay only the selected months', function () {
+    FeeSetting::create(['monthly_fee' => 300, 'overtime_rate' => 6]);
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    $june = FinancialRecord::create(['student_id' => $student->id, 'month' => 'June', 'amount' => 300, 'overtime_hours' => 0, 'status' => 'unpaid']);
+    $july = FinancialRecord::create(['student_id' => $student->id, 'month' => 'July', 'amount' => 300, 'overtime_hours' => 0, 'status' => 'unpaid']);
+
+    $this->mock(StripeCheckoutService::class, function ($mock) {
+        $mock->shouldReceive('isConfigured')->andReturn(true);
+        $mock->shouldReceive('createSession')->andReturn(['url' => 'https://example.test/checkout']);
+    });
+
+    $this->actingAs($parent)->post(route('parent.payments.checkout'), [
+        'student_id' => $student->id,
+        'record_ids' => [$july->id],
+    ])->assertRedirect('https://example.test/checkout');
+
+    $payment = Payment::query()->latest('id')->first();
+
+    expect((float) $payment->amount)->toBe(300.0)
+        ->and($payment->financial_record_ids)->toBe([$july->id]);
 });
 
 test('admin can bulk approve registrations', function () {

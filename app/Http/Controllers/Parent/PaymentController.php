@@ -24,6 +24,8 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'student_id' => ['required', 'integer', 'exists:students,id'],
+            'record_ids' => ['nullable', 'array'],
+            'record_ids.*' => ['integer', 'exists:financial_records,id'],
         ]);
 
         $student = $request->user()
@@ -33,6 +35,12 @@ class PaymentController extends Controller
             ->firstOrFail();
 
         $unpaid = $student->financialRecords->where('status', 'unpaid');
+
+        // Pay only the selected months when the parent chose them.
+        if (! empty($validated['record_ids'])) {
+            $unpaid = $unpaid->whereIn('id', $validated['record_ids']);
+        }
+
         $amount = $unpaid->sum('amount');
         $coveredIds = $unpaid->pluck('id')->values()->all();
 

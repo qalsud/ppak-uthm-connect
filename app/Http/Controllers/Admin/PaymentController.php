@@ -11,6 +11,7 @@ use App\Notifications\FeeRecordAddedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -98,6 +99,7 @@ class PaymentController extends Controller
         $record = FinancialRecord::create([
             'student_id' => $data['student_id'],
             'month' => $data['month'],
+            'due_on' => $this->dueDateFor($data['month']),
             'overtime_hours' => $data['overtime_hours'],
             'amount' => $fee->monthly_fee + $overtimeAmount,
             'status' => 'unpaid',
@@ -141,6 +143,7 @@ class PaymentController extends Controller
             $record = FinancialRecord::create([
                 'student_id' => $student->id,
                 'month' => $data['month'],
+                'due_on' => $this->dueDateFor($data['month']),
                 'overtime_hours' => 0,
                 'amount' => $fee->monthly_fee,
                 'status' => 'unpaid',
@@ -188,6 +191,16 @@ class PaymentController extends Controller
         $record->delete();
 
         return back()->with('success', __('approval.deleted'));
+    }
+
+    /** The 7th of the given month (current year) is the default due date. */
+    private function dueDateFor(string $month): string
+    {
+        try {
+            return Carbon::parse("7 {$month}")->toDateString();
+        } catch (\Throwable) {
+            return today()->addDays(7)->toDateString();
+        }
     }
 
     /** Download a PDF receipt for a paid fee record. */
