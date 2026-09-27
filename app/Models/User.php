@@ -27,6 +27,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'class',
         'status',
         'rejection_reason',
         'activation_token',
@@ -81,6 +82,26 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === AccountStatus::Active;
+    }
+
+    /** The class this teacher manages, or null when unrestricted. */
+    public function assignedClass(): ?string
+    {
+        return $this->class ?: null;
+    }
+
+    /** Whether this user may act on the given student's records. */
+    public function canManage(Student $student): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->isTeacher()) {
+            return false;
+        }
+
+        return $this->class === null || $this->class === $student->class;
     }
 
     /** Route name this user should be redirected to after login. */

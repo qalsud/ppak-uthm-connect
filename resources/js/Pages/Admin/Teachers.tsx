@@ -47,20 +47,25 @@ type Teacher = {
     email: string;
     ic_number: string | null;
     phone: string | null;
+    class: string | null;
     status: 'active' | 'pending' | 'rejected' | 'awaiting';
     created_at: string;
 };
 
 const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
 
+const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
+
 export default function Teachers({
     teachers,
     counts,
     filters,
+    classes,
 }: {
     teachers: Paginator<Teacher>;
     counts: Record<string, number>;
-    filters: { status: string; search: string };
+    filters: { status: string; search: string; class: string };
+    classes: string[];
 }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
@@ -77,6 +82,7 @@ export default function Teachers({
         phone: '',
         password: '',
         status: 'active',
+        class: '',
     });
 
     const rows = teachers.data;
@@ -136,7 +142,7 @@ export default function Teachers({
 
     const openCreate = () => {
         setEditing(null);
-        form.setData({ name: '', email: '', ic_number: '', phone: '', password: '', status: 'active' });
+        form.setData({ name: '', email: '', ic_number: '', phone: '', password: '', status: 'active', class: '' });
         form.clearErrors();
         setOpen(true);
     };
@@ -150,6 +156,7 @@ export default function Teachers({
             phone: teacher.phone ?? '',
             password: '',
             status: teacher.status,
+            class: teacher.class ?? '',
         });
         form.clearErrors();
         setOpen(true);
@@ -268,6 +275,9 @@ export default function Teachers({
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {teacher.email}
                                             </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {teacher.class ? classLabel(teacher.class) : t('all_classes')}
+                                            </p>
                                             <div className="mt-1.5">
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
                                             </div>
@@ -306,6 +316,7 @@ export default function Teachers({
                                         <TableHead>{t('name')}</TableHead>
                                         <TableHead>{t('ic')}</TableHead>
                                         <TableHead>{t('email')}</TableHead>
+                                        <TableHead>{t('class')}</TableHead>
                                         <TableHead>{t('phone')}</TableHead>
                                         <TableHead>{t('status')}</TableHead>
                                         <TableHead className="text-right">{t('actions')}</TableHead>
@@ -325,6 +336,13 @@ export default function Teachers({
                                             <TableCell className="font-medium">{teacher.name}</TableCell>
                                             <TableCell>{teacher.ic_number ?? '—'}</TableCell>
                                             <TableCell>{teacher.email}</TableCell>
+                                            <TableCell>
+                                                {teacher.class ? (
+                                                    classLabel(teacher.class)
+                                                ) : (
+                                                    <span className="text-muted-foreground">{t('all_classes')}</span>
+                                                )}
+                                            </TableCell>
                                             <TableCell>{teacher.phone ?? '—'}</TableCell>
                                             <TableCell>
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
@@ -406,6 +424,26 @@ export default function Teachers({
                                 value={form.data.phone}
                                 onChange={(e) => form.setData('phone', e.target.value)}
                             />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('class')}</Label>
+                            <Select
+                                value={form.data.class || 'none'}
+                                onValueChange={(v) => form.setData('class', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">{t('all_classes')}</SelectItem>
+                                    {classes.map((c) => (
+                                        <SelectItem key={c} value={c}>
+                                            {classLabel(c)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">{t('class_assignment_hint')}</p>
                         </div>
                         <div className="space-y-1 sm:col-span-2">
                             <Label>{t('password')}</Label>

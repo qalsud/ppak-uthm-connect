@@ -22,7 +22,13 @@ class ProgressController extends Controller
 {
     public function index(Request $request): Response
     {
-        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
+        $assigned = $request->user()->assignedClass();
+
+        $students = Student::query()
+            ->active()
+            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->orderBy('name')
+            ->get(['id', 'name', 'class']);
 
         $studentId = $request->query('student');
         $class = $request->query('class');
@@ -66,6 +72,7 @@ class ProgressController extends Controller
             'students' => $students,
             'records' => $records,
             'summary' => $summary,
+            'assignedClass' => $assigned,
             'permata' => ProgressRecord::PERMATA,
             'free' => ProgressRecord::FREE,
             'development' => ProgressRecord::DEVELOPMENT,
@@ -102,6 +109,9 @@ class ProgressController extends Controller
 
         $validated['teacher_id'] = $request->user()->id;
 
+        $student = Student::with('parent')->findOrFail($validated['student_id']);
+        abort_unless($request->user()->canManage($student), 403);
+
         $record = ProgressRecord::query()
             ->where('student_id', $validated['student_id'])
             ->whereDate('date', $validated['date'])
@@ -112,8 +122,6 @@ class ProgressController extends Controller
         } else {
             $record = ProgressRecord::create($validated);
         }
-
-        $student = Student::with('parent')->find($validated['student_id']);
 
         $photo = null;
 

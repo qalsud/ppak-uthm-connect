@@ -148,6 +148,7 @@
     "status_all": "All statuses",
     "all_months": "All months",
     "all_classes": "All classes",
+    "class_assignment_hint": "Leave empty to allow all classes.",
     "all_roles": "All roles",
     "paid": "Paid",
     "unpaid": "Unpaid",

@@ -6,6 +6,7 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ class TeacherController extends Controller
     {
         $status = $request->query('status');
         $search = trim((string) $request->query('search', ''));
+        $class = $request->query('class');
 
         $teachers = User::query()
             ->where('role', UserRole::Teacher)
@@ -26,6 +28,7 @@ class TeacherController extends Controller
                 in_array($status, AccountStatus::values(), true),
                 fn ($q) => $q->where('status', $status)
             )
+            ->when(in_array($class, Student::CLASSES, true), fn ($q) => $q->where('class', $class))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
@@ -46,7 +49,8 @@ class TeacherController extends Controller
                 'all' => User::query()->where('role', UserRole::Teacher)->count(),
                 ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
             ],
-            'filters' => ['status' => $status ?? '', 'search' => $search],
+            'filters' => ['status' => $status ?? '', 'search' => $search, 'class' => $class ?? ''],
+            'classes' => Student::CLASSES,
         ]);
     }
 
@@ -58,6 +62,7 @@ class TeacherController extends Controller
             'ic_number' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
+            'class' => ['nullable', Rule::in(Student::CLASSES)],
         ]);
 
         $teacher = User::create([
@@ -83,6 +88,7 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
             'status' => ['required', Rule::enum(AccountStatus::class)],
             'password' => 'nullable|string|min:8',
+            'class' => ['nullable', Rule::in(Student::CLASSES)],
         ]);
 
         if (empty($data['password'])) {

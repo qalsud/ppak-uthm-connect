@@ -18,12 +18,18 @@ class MessageController extends Controller
     {
         return Inertia::render('Teacher/Messages', [
             'conversations' => $this->list($request),
-            'students' => Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']),
+            'students' => Student::query()
+                ->active()
+                ->when($request->user()->assignedClass(), fn ($q) => $q->where('class', $request->user()->assignedClass()))
+                ->orderBy('name')
+                ->get(['id', 'name', 'class']),
         ]);
     }
 
-    public function openWithStudent(Student $student): RedirectResponse
+    public function openWithStudent(Request $request, Student $student): RedirectResponse
     {
+        abort_unless($request->user()->canManage($student), 403);
+
         $conversation = Conversation::firstOrCreate(
             ['student_id' => $student->id],
             ['teacher_id' => auth()->id()],
@@ -34,6 +40,9 @@ class MessageController extends Controller
 
     public function show(Request $request, Conversation $conversation): Response
     {
+        $conversation->loadMissing('student');
+        abort_unless($request->user()->canManage($conversation->student), 403);
+
         $conversation->messages()
             ->where('sender_id', '!=', auth()->id())
             ->whereNull('read_at')
@@ -78,6 +87,10 @@ class MessageController extends Controller
         $userId = $request->user()->id;
 
         return Conversation::with(['student', 'student.parent:id,name', 'latestMessage'])
+            ->when($request->user()->assignedClass(), fn ($q) => $q->whereHas(
+                'student',
+                fn ($s) => $s->where('class', $request->user()->assignedClass())
+            ))
             ->withCount(['messages as unread_count' => fn ($q) => $q
                 ->where('sender_id', '!=', $userId)
                 ->whereNull('read_at')])

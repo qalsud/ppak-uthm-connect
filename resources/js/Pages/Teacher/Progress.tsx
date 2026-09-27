@@ -69,6 +69,7 @@ export default function Progress({
     students,
     records,
     summary,
+    assignedClass,
     permata,
     free,
     development,
@@ -78,6 +79,7 @@ export default function Progress({
     students: Student[];
     records: Record[];
     summary: Summary | null;
+    assignedClass?: string | null;
     permata: string[];
     free: string[];
     development: string[];
@@ -328,16 +330,18 @@ export default function Progress({
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={filters.class || '__all'} onValueChange={(v) => applyFilter('class', v)}>
-                        <SelectTrigger className="w-40">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="__all">{t('all_classes')}</SelectItem>
-                            <SelectItem value="5tahun">5 Tahun</SelectItem>
-                            <SelectItem value="6bintang">6 Bintang</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    {!assignedClass && (
+                        <Select value={filters.class || '__all'} onValueChange={(v) => applyFilter('class', v)}>
+                            <SelectTrigger className="w-40">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__all">{t('all_classes')}</SelectItem>
+                                <SelectItem value="5tahun">5 Tahun</SelectItem>
+                                <SelectItem value="6bintang">6 Bintang</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
                     <span className="ml-auto text-xs text-muted-foreground">
                         {records.length} {t('records')}
                     </span>

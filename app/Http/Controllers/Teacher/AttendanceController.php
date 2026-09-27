@@ -24,9 +24,11 @@ class AttendanceController extends Controller
 {
     public function index(Request $request): Response
     {
-        $class = in_array($request->query('class'), Student::CLASSES, true)
+        $assigned = $request->user()->assignedClass();
+
+        $class = $assigned ?? (in_array($request->query('class'), Student::CLASSES, true)
             ? $request->query('class')
-            : Student::CLASSES[0];
+            : Student::CLASSES[0]);
 
         $date = $this->resolveDate($request->query('date'));
 
@@ -45,6 +47,7 @@ class AttendanceController extends Controller
         return Inertia::render('Teacher/Attendance', [
             'students' => $students,
             'selectedClass' => $class,
+            'assignedClass' => $assigned,
             'date' => $date,
             'isToday' => $date === today()->toDateString(),
             'counts' => [
@@ -58,6 +61,8 @@ class AttendanceController extends Controller
     /** Mark a child as arrived (no photo required). */
     public function store(Request $request, Student $student): RedirectResponse
     {
+        abort_unless($request->user()->canManage($student), 403);
+
         $data = $request->validate([
             'action' => ['required', Rule::in(['arrive'])],
             'date' => ['nullable', 'date', 'before_or_equal:today'],
@@ -77,6 +82,8 @@ class AttendanceController extends Controller
     /** Check a child out — requires a photo (or a documented override). */
     public function checkout(Request $request, Student $student, ImageStore $images): RedirectResponse
     {
+        abort_unless($request->user()->canManage($student), 403);
+
         $required = (bool) config('media.checkout_photo_required');
         $skip = $request->boolean('skip_photo');
         $hasPhoto = $request->hasFile('photo');

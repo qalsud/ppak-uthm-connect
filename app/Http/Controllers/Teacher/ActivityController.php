@@ -17,7 +17,13 @@ class ActivityController extends Controller
 {
     public function index(Request $request): Response
     {
-        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
+        $assigned = $request->user()->assignedClass();
+
+        $students = Student::query()
+            ->active()
+            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->orderBy('name')
+            ->get(['id', 'name', 'class']);
         $today = $request->input('date', today()->toDateString());
 
         $records = DailyActivity::query()
@@ -52,6 +58,9 @@ class ActivityController extends Controller
             'treatment_notes' => $validated['treatment_notes'] ?? null,
         ];
 
+        $student = Student::with('parent')->findOrFail($data['student_id']);
+        abort_unless($request->user()->canManage($student), 403);
+
         foreach (array_keys(DailyActivity::FIELDS) as $field) {
             $data[$field] = $validated['statuses'][$field] ?? 'no';
         }
@@ -66,8 +75,6 @@ class ActivityController extends Controller
         } else {
             DailyActivity::create($data);
         }
-
-        $student = Student::with('parent')->find($data['student_id']);
 
         if ($student?->parent) {
             Notification::send($student->parent, new ActivityRecordedNotification($student));

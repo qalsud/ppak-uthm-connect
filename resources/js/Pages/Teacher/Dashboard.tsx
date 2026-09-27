@@ -55,6 +55,7 @@ type Page = PageProps<{
     updateCount: number;
     memoCount: number;
     recentActivities: Array<{ id: number; date: string; student: string }>;
+    assignedClass?: string | null;
 }>;
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
@@ -68,6 +69,7 @@ export default function TeacherDashboard() {
     const updateCount = (props.updateCount as number) ?? 0;
     const memoCount = (props.memoCount as number) ?? 0;
     const recentActivities = props.recentActivities as Page['recentActivities'];
+    const assignedClass = props.assignedClass as string | null | undefined;
 
     const actions = [
         { label: t('record_new'), href: '/teacher/activities', icon: CalendarCheck, tint: 'bg-sky-100 text-sky-600' },
@@ -157,20 +159,21 @@ export default function TeacherDashboard() {
                 {/* Filter bar */}
                 <div className="flex flex-wrap items-center gap-2 border-y px-4 py-3">
                     <div className="flex rounded-lg border p-0.5">
-                        {classFilters.map((f) => (
-                            <button
-                                key={f.value}
-                                type="button"
-                                onClick={() => setClassFilter(f.value)}
-                                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                                    classFilter === f.value
-                                        ? 'bg-brand-navy text-white'
-                                        : 'text-muted-foreground hover:bg-muted'
-                                }`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
+                        {!assignedClass &&
+                            classFilters.map((f) => (
+                                <button
+                                    key={f.value}
+                                    type="button"
+                                    onClick={() => setClassFilter(f.value)}
+                                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                                        classFilter === f.value
+                                            ? 'bg-brand-navy text-white'
+                                            : 'text-muted-foreground hover:bg-muted'
+                                    }`}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
                     </div>
 
                     <Select value={statusFilter} onValueChange={setStatusFilter}>

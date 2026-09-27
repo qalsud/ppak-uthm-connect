@@ -38,9 +38,11 @@ const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 export default function DailyUpdates({
     students,
     selectedClass,
+    assignedClass,
 }: {
     students: Student[];
     selectedClass: string;
+    assignedClass?: string | null;
 }) {
     const { t } = useI18n();
 
@@ -51,17 +53,19 @@ export default function DailyUpdates({
     return (
         <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
             <PageHeader title={t('daily_updates')} description="Morning updates received from parents">
-                <div className="w-48">
-                    <Select value={selectedClass} onValueChange={changeClass}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="5tahun">5 Tahun</SelectItem>
-                            <SelectItem value="6bintang">6 Bintang</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                {!assignedClass && (
+                    <div className="w-48">
+                        <Select value={selectedClass} onValueChange={changeClass}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5tahun">5 Tahun</SelectItem>
+                                <SelectItem value="6bintang">6 Bintang</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </PageHeader>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

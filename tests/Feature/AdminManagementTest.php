@@ -619,6 +619,36 @@ test('archived students are hidden from active lists', function () {
         ->assertInertia(fn (Assert $page) => $page->has('students', 1));
 });
 
+test('a teacher assigned to a class only sees and manages that class', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    $mine = Student::factory()->create(['class' => '5tahun']);
+    $other = Student::factory()->create(['class' => '6bintang']);
+
+    $this->actingAs($teacher)
+        ->get(route('teacher.attendance.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students', 1)
+            ->where('assignedClass', '5tahun')
+        );
+
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.store', $other), ['action' => 'arrive'])
+        ->assertForbidden();
+
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.store', $mine), ['action' => 'arrive'])
+        ->assertRedirect();
+});
+
+test('an unrestricted teacher can manage any class', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => null]);
+    $a = Student::factory()->create(['class' => '5tahun']);
+    $b = Student::factory()->create(['class' => '6bintang']);
+
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $a), ['action' => 'arrive'])->assertRedirect();
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $b), ['action' => 'arrive'])->assertRedirect();
+});
+
 test('admin can bulk approve registrations', function () {
     $parent = User::factory()->role(UserRole::Parent)->pending()->create();
     $teacher = User::factory()->role(UserRole::Teacher)->pending()->create();

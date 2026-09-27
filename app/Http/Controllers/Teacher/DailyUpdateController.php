@@ -14,7 +14,8 @@ class DailyUpdateController extends Controller
 {
     public function index(Request $request): Response
     {
-        $selectedClass = $request->input('class', '5tahun');
+        $assigned = $request->user()->assignedClass();
+        $selectedClass = $assigned ?? $request->input('class', '5tahun');
 
         $students = Student::query()
             ->active()
@@ -51,6 +52,7 @@ class DailyUpdateController extends Controller
         return Inertia::render('Teacher/DailyUpdates', [
             'students' => $students,
             'selectedClass' => $selectedClass,
+            'assignedClass' => $assigned,
         ]);
     }
 }

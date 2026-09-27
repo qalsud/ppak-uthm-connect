@@ -17,7 +17,13 @@ class DashboardController extends Controller
     {
         $today = today()->toDateString();
 
-        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
+        $assigned = auth()->user()->assignedClass();
+
+        $students = Student::query()
+            ->active()
+            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->orderBy('name')
+            ->get(['id', 'name', 'class']);
 
         $todayActivities = DailyActivity::query()
             ->where('date', $today)
@@ -56,6 +62,7 @@ class DashboardController extends Controller
         return Inertia::render('Teacher/Dashboard', [
             'students' => $students,
             'today' => $today,
+            'assignedClass' => $assigned,
             'activityCount' => $todayActivities->count(),
             'updateCount' => $todayUpdates->count(),
             'memoCount' => Memo::count(),

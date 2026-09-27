@@ -36,12 +36,14 @@ const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang'
 export default function TeacherAttendance({
     students,
     selectedClass,
+    assignedClass,
     date,
     isToday,
     counts,
 }: {
     students: Student[];
     selectedClass: string;
+    assignedClass?: string | null;
     date: string;
     isToday: boolean;
     counts: { school: number; home: number; none: number };
@@ -73,17 +75,19 @@ export default function TeacherAttendance({
         <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
             <PageHeader title={t('attendance')} description={t('attendance_register')}>
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="w-40">
-                        <Select value={selectedClass} onValueChange={(v) => reload({ class: v })}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="5tahun">5 Tahun</SelectItem>
-                                <SelectItem value="6bintang">6 Bintang</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {!assignedClass && (
+                        <div className="w-40">
+                            <Select value={selectedClass} onValueChange={(v) => reload({ class: v })}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5tahun">5 Tahun</SelectItem>
+                                    <SelectItem value="6bintang">6 Bintang</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     <input
                         type="date"
                         value={date}
