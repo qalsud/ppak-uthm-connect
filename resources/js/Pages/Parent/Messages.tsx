@@ -28,15 +28,6 @@ export default function ParentMessages() {
         router.post(route('parent.messages.open', { student: studentId }));
     };
 
-    const submit = (body: string) => {
-        if (!props.open) return;
-        router.post(
-            route('parent.messages.store', { conversation: props.open.id }),
-            { body },
-            { preserveScroll: true },
-        );
-    };
-
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
             <PageHeader title={t('messages')} description="Chat with your child's teachers" />
@@ -44,11 +35,11 @@ export default function ParentMessages() {
                 conversations={props.conversations}
                 open={props.open}
                 students={props.students}
+                currentUserId={props.auth.user.id}
+                basePath="/parent/messages"
                 onSelect={select}
                 onStart={start}
-                onSubmit={submit}
                 onBack={() => router.get('/parent/messages')}
-                currentUserId={props.auth.user.id}
             />
         </AppShell>
     );

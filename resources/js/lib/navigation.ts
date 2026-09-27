@@ -32,6 +32,7 @@ export const adminNav: NavItem[] = [
     { label: 'students', href: '/admin/students', icon: GraduationCap },
     { label: 'parents', href: '/admin/parents', icon: UserRound },
     { label: 'payments', href: '/admin/payments', icon: Wallet },
+    { label: 'conversations', href: '/admin/conversations', icon: MessageSquare },
     { label: 'memos', href: '/admin/memos', icon: FileText },
     { label: 'activity_log', href: '/admin/activity', icon: History },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },

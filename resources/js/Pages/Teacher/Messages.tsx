@@ -44,11 +44,11 @@ export default function TeacherMessages() {
                 conversations={props.conversations}
                 open={props.open}
                 students={props.students}
+                currentUserId={props.auth.user.id}
+                basePath="/teacher/messages"
                 onSelect={select}
                 onStart={start}
-                onSubmit={submit}
                 onBack={() => router.get('/teacher/messages')}
-                currentUserId={props.auth.user.id}
             />
         </AppShell>
     );
