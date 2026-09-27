@@ -75,3 +75,38 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 
 *Reviewed against `Conversation`/`Message` models, `Parent\MessageController`, `Teacher\MessageController`,
 `ChatInbox`, the two Messages pages, routes and the `conversations`/`messages` schema on 28 Sep 2026.*
+
+---
+
+## Progress (28 Sep 2026)
+
+**✅ Done**
+
+| Area | What shipped |
+|---|---|
+| Architecture | Shared **`ConversationService`** (list, thread, post, notify, unread) — both portals use it, so logic can't drift |
+| F2 | **Pagination** — last 30 with a **"Load earlier"** cursor (older pages navigable) |
+| F3 | Notifications **deep-link to the thread** |
+| F4 | **Teacher fan-out** — parents' messages reach every active teacher of the class until claimed; an inactive assignee **falls back**; the assignee is shown in the header |
+| F5 | **Read receipts** — ✓ sent / ✓✓ *Seen* on the last outbound message |
+| F6 | **Attachments** — parents/teachers can attach up to 3 photos (ENTERPRISE via `ImageStore`, private disk) |
+| F7 | **Edit** (own, ≤15 min) and **delete** (soft, with a "message deleted" placeholder) |
+| F8 | **Admin oversight** — `/admin/conversations` (search + pagination + read-only thread) and a **CSV transcript export** |
+| F9 | **Email is opt-in** per user (Profile toggle) — the bell always fires, inboxes aren't flooded |
+| F10 | `latestMessage()` → `latestOfMany()` |
+| F11 | **Message search** (role-scoped) with a results dropdown that jumps to the thread |
+| F13 | Pruned photos set `photo_expired` → chat shows *"Photo no longer available"* instead of nothing |
+| U1/U2/V1/V2 | **Date separators** (Today/Yesterday/date), **grouped bubbles**, **avatars**, distinct **system-message** style, and **server-formatted times** (app timezone) |
+| U4/V4 | **Multiline composer** (Enter sends, **Shift+Enter** = newline), **attach**, and a counter near the 2000 limit |
+| U5/V7 | **Responsive height** (`100dvh`) so the composer clears the floating bottom nav |
+| U6/U7 | **Optimistic send** + **partial reloads** (`only: ['open','conversations']`) |
+| U9/V5 | Conversation rows show **avatar, time, system preview icon, unread dot/count** |
+| U10 | `role="log"` + `aria-live`, `aria-label`s on icon buttons |
+| F1 (interim) | **5-second polling** of the open thread (visibility-aware) — new messages appear without a refresh |
+
+**⏳ Still open**
+
+- **F1 true realtime** — add Laravel Echo + Pusher (keys already supported) to replace polling; also poll the badge globally.
+- **F12 general/centre thread** — chats are still per-child (needs new schema; deliberately deferred).
+- **U8** richer empty states (parent guidance / first-message CTA).
+- **Typing indicators**, **message pinning/starring**, **archive/mute**, and per-conversation **unread badge polling**.

@@ -21,6 +21,7 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            notify_email_messages: (user as { notify_email_messages?: boolean }).notify_email_messages ?? false,
         });
 
     const submit: FormEventHandler = (e) => {
@@ -96,6 +97,24 @@ export default function UpdateProfileInformation({
                         )}
                     </div>
                 )}
+
+                <div className="mt-4">
+                    <label className="flex cursor-pointer items-start gap-2.5">
+                        <input
+                            type="checkbox"
+                            className="mt-0.5 size-4 accent-primary"
+                            checked={data.notify_email_messages}
+                            onChange={(e) => setData('notify_email_messages', e.target.checked)}
+                        />
+                        <span className="text-sm text-gray-600">
+                            Email me when I receive a new chat message.
+                            <span className="mt-0.5 block text-xs text-gray-500">
+                                Off by default — the in-app notification bell always works.
+                            </span>
+                        </span>
+                    </label>
+                    <InputError className="mt-2" message={errors.notify_email_messages} />
+                </div>
 
                 <div className="flex items-center gap-4">
                     <PrimaryButton disabled={processing}>Save</PrimaryButton>
