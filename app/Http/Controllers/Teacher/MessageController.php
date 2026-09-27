@@ -18,7 +18,7 @@ class MessageController extends Controller
     {
         return Inertia::render('Teacher/Messages', [
             'conversations' => $this->list($request),
-            'students' => Student::query()->orderBy('name')->get(['id', 'name', 'class']),
+            'students' => Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']),
         ]);
     }
 

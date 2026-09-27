@@ -1,5 +1,5 @@
 import { router, useForm, Link } from '@inertiajs/react';
-import { Download, Eye, GraduationCap, Pencil, Plus, Trash2, Upload } from 'lucide-react';
+import { Archive, Download, Eye, GraduationCap, Pencil, Plus, RotateCcw, Trash2, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -46,6 +46,7 @@ type Student = {
     name: string;
     age: number | null;
     class: string;
+    status: 'active' | 'withdrawn' | 'graduated';
     parent: { id: number; name: string } | null;
 };
 
@@ -57,11 +58,13 @@ const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang'
 export default function Students({
     students,
     parents,
+    counts,
     filters,
 }: {
     students: Paginator<Student>;
     parents: Parent[];
-    filters: { search: string; class: string };
+    counts: Record<string, number>;
+    filters: { search: string; class: string; status: string };
 }) {
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
@@ -80,7 +83,7 @@ export default function Students({
 
     useEffect(() => {
         setSelected([]);
-    }, [students.current_page, filters.search, filters.class]);
+    }, [students.current_page, filters.search, filters.class, filters.status]);
 
     const toggle = (id: number) =>
         setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -91,7 +94,7 @@ export default function Students({
     const runBulk = () =>
         router.post(
             route('admin.students.bulk'),
-            { action: 'delete', ids: selected },
+            { action: filters.status === 'active' ? 'withdraw' : 'delete', ids: selected },
             {
                 preserveScroll: true,
                 onFinish: () => {
@@ -101,14 +104,22 @@ export default function Students({
             },
         );
 
-    const visit = (params: Partial<{ search: string; class: string }>) =>
+    const visit = (params: Partial<{ search: string; class: string; status: string }>) =>
         router.get(
             '/admin/students',
             {
                 search: params.search ?? search,
                 class: params.class ?? filters.class,
+                status: params.status ?? filters.status,
             },
             { preserveState: true, preserveScroll: true, replace: true },
+        );
+
+    const setStudentStatus = (student: Student, status: 'active' | 'withdrawn' | 'graduated') =>
+        router.post(
+            route('admin.students.status', { student: student.id }),
+            { status },
+            { preserveScroll: true },
         );
 
     // Support the dashboard "Add student" quick action: /admin/students?create=1
@@ -204,6 +215,38 @@ export default function Students({
 
             <ImportReport />
 
+            {/* Status tabs */}
+            <div className="mb-4 flex flex-wrap gap-2">
+                {[
+                    { value: 'active', label: t('active') },
+                    { value: 'withdrawn', label: t('withdrawn') },
+                    { value: 'graduated', label: t('graduated') },
+                    { value: 'all', label: t('all') },
+                ].map((tab) => (
+                    <button
+                        key={tab.value}
+                        type="button"
+                        onClick={() => visit({ status: tab.value })}
+                        className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
+                            filters.status === tab.value
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'bg-card text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        {tab.label}
+                        <span
+                            className={`rounded-full px-1.5 text-xs ${
+                                filters.status === tab.value
+                                    ? 'bg-white/20'
+                                    : 'bg-muted text-muted-foreground'
+                            }`}
+                        >
+                            {counts[tab.value] ?? 0}
+                        </span>
+                    </button>
+                ))}
+            </div>
+
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar
                     search={search}
@@ -243,8 +286,12 @@ export default function Students({
                             className="gap-1.5"
                             onClick={() => setBulkOpen(true)}
                         >
-                            <Trash2 className="size-4" />
-                            {t('delete_selected')}
+                            {filters.status === 'active' ? (
+                                <Archive className="size-4" />
+                            ) : (
+                                <Trash2 className="size-4" />
+                            )}
+                            {filters.status === 'active' ? t('archive_selected') : t('delete_selected')}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
                             {t('clear_selection')}
@@ -282,6 +329,11 @@ export default function Students({
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {student.parent?.name ?? t('unassigned')}
                                             </p>
+                                            {student.status !== 'active' && (
+                                                <span className="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                    {t(student.status)}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="flex shrink-0">
                                             <Link href={route('admin.students.show', { student: student.id })}>
@@ -292,14 +344,36 @@ export default function Students({
                                             <Button size="sm" variant="ghost" onClick={() => openEdit(student)}>
                                                 <Pencil className="size-4" />
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-destructive"
-                                                onClick={() => setDeleteTarget(student)}
-                                            >
-                                                <Trash2 className="size-4" />
-                                            </Button>
+                                            {student.status === 'active' ? (
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    title={t('archive')}
+                                                    onClick={() => setStudentStatus(student, 'withdrawn')}
+                                                >
+                                                    <Archive className="size-4" />
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        title={t('restore')}
+                                                        onClick={() => setStudentStatus(student, 'active')}
+                                                    >
+                                                        <RotateCcw className="size-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="text-destructive"
+                                                        title={t('delete_permanently')}
+                                                        onClick={() => setDeleteTarget(student)}
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -337,7 +411,14 @@ export default function Students({
                                                     onChange={() => toggle(student.id)}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{student.name}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {student.name}
+                                                {student.status !== 'active' && (
+                                                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                        {t(student.status)}
+                                                    </span>
+                                                )}
+                                            </TableCell>
                                             <TableCell>{student.age ?? '—'}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">{classLabel(student.class)}</Badge>
@@ -363,14 +444,37 @@ export default function Students({
                                                 >
                                                     <Pencil className="size-4" />
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-destructive"
-                                                    onClick={() => setDeleteTarget(student)}
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </Button>
+                                                {student.status === 'active' ? (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        title={t('archive')}
+                                                        onClick={() => setStudentStatus(student, 'withdrawn')}
+                                                    >
+                                                        <Archive className="size-4" />
+                                                    </Button>
+                                                ) : (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="mr-1"
+                                                            title={t('restore')}
+                                                            onClick={() => setStudentStatus(student, 'active')}
+                                                        >
+                                                            <RotateCcw className="size-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="text-destructive"
+                                                            title={t('delete_permanently')}
+                                                            onClick={() => setDeleteTarget(student)}
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -491,9 +595,11 @@ export default function Students({
             <ConfirmDialog
                 open={bulkOpen}
                 onOpenChange={setBulkOpen}
-                title={`${t('delete_selected')} (${selected.length})?`}
+                title={`${
+                    filters.status === 'active' ? t('archive_selected') : t('delete_selected')
+                } (${selected.length})?`}
                 description={t('cannot_be_undone')}
-                confirmLabel={t('delete')}
+                confirmLabel={filters.status === 'active' ? t('archive') : t('delete')}
                 onConfirm={runBulk}
             />
         </AppShell>

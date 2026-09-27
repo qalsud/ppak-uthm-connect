@@ -15,6 +15,7 @@ class AttendanceController extends Controller
     {
         $children = $request->user()
             ->students()
+            ->active()
             ->get(['id', 'name', 'class']);
 
         $today = Attendance::todayFor($children->pluck('id'));

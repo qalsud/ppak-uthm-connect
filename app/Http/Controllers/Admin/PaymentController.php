@@ -53,7 +53,7 @@ class PaymentController extends Controller
             'records' => $records,
             'months' => self::MONTHS,
             'classes' => Student::CLASSES,
-            'students' => Student::query()->orderBy('name')->get(['id', 'name', 'class']),
+            'students' => Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']),
             'fee' => FeeSetting::current(),
             'summary' => [
                 'collected_month' => (float) FinancialRecord::query()
@@ -126,7 +126,7 @@ class PaymentController extends Controller
         $fee = FeeSetting::current();
         $created = 0;
 
-        $students = Student::query()->with('parent')->get();
+        $students = Student::query()->active()->with('parent')->get();
 
         foreach ($students as $student) {
             $exists = FinancialRecord::query()

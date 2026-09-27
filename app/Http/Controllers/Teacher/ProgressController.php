@@ -22,7 +22,7 @@ class ProgressController extends Controller
 {
     public function index(Request $request): Response
     {
-        $students = Student::query()->orderBy('name')->get(['id', 'name', 'class']);
+        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
 
         $studentId = $request->query('student');
         $class = $request->query('class');

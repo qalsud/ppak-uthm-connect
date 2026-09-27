@@ -31,6 +31,7 @@ class AttendanceController extends Controller
         $date = $this->resolveDate($request->query('date'));
 
         $students = Student::query()
+            ->active()
             ->where('class', $class)
             ->orderBy('name')
             ->get(['id', 'name', 'class']);

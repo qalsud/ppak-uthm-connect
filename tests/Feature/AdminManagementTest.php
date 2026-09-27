@@ -573,16 +573,50 @@ test('admin can open a student detail page', function () {
         );
 });
 
-test('admin can bulk delete students', function () {
+test('admin can bulk archive students', function () {
     $a = Student::factory()->create();
     $b = Student::factory()->create();
 
     $this->actingAs(admin())->post(route('admin.students.bulk'), [
-        'action' => 'delete',
+        'action' => 'withdraw',
         'ids' => [$a->id, $b->id],
     ])->assertRedirect();
 
-    expect(Student::count())->toBe(0);
+    expect($a->fresh()->status)->toBe('withdrawn')
+        ->and($b->fresh()->status)->toBe('withdrawn')
+        ->and(Student::count())->toBe(2);
+});
+
+test('archiving keeps a student\'s history and enrolled students cannot be hard-deleted', function () {
+    $student = Student::factory()->create();
+
+    // Active students are protected from permanent deletion.
+    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertStatus(422);
+    expect(Student::find($student->id))->not->toBeNull();
+
+    // Archive, then permanent delete is allowed.
+    $this->actingAs(admin())->post(route('admin.students.status', $student), ['status' => 'withdrawn']);
+    expect($student->fresh()->status)->toBe('withdrawn');
+
+    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertRedirect();
+    expect(Student::find($student->id))->toBeNull();
+});
+
+test('archived students are hidden from active lists', function () {
+    $active = Student::factory()->create(['name' => 'Active Kid']);
+    $gone = Student::factory()->create(['name' => 'Gone Kid', 'status' => 'withdrawn']);
+
+    $this->actingAs(admin())
+        ->get(route('admin.students.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students.data', 1)
+            ->where('students.data.0.name', 'Active Kid')
+        );
+
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $this->actingAs($teacher)
+        ->get(route('teacher.attendance.index', ['class' => $active->class]))
+        ->assertInertia(fn (Assert $page) => $page->has('students', 1));
 });
 
 test('admin can bulk approve registrations', function () {

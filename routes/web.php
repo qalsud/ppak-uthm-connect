@@ -106,6 +106,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
             Route::post('/students', [StudentController::class, 'store'])->name('students.store');
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
+            Route::post('/students/{student}/status', [StudentController::class, 'status'])->name('students.status');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
 
             Route::get('/parents', [ParentController::class, 'index'])->name('parents.index');

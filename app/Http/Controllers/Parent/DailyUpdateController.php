@@ -20,7 +20,7 @@ class DailyUpdateController extends Controller
 {
     public function index(Request $request): Response
     {
-        $children = $request->user()->students()->get(['id', 'name', 'class']);
+        $children = $request->user()->students()->active()->get(['id', 'name', 'class']);
         $selected = $request->input('student_id')
             ? $children->firstWhere('id', (int) $request->input('student_id'))
             : $children->first();

@@ -17,7 +17,7 @@ class ActivityController extends Controller
 {
     public function index(Request $request): Response
     {
-        $students = Student::query()->orderBy('name')->get(['id', 'name', 'class']);
+        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
         $today = $request->input('date', today()->toDateString());
 
         $records = DailyActivity::query()

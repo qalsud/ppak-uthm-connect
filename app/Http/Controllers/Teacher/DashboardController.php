@@ -17,7 +17,7 @@ class DashboardController extends Controller
     {
         $today = today()->toDateString();
 
-        $students = Student::query()->orderBy('name')->get(['id', 'name', 'class']);
+        $students = Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']);
 
         $todayActivities = DailyActivity::query()
             ->where('date', $today)

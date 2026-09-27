@@ -17,6 +17,7 @@ class DailyUpdateController extends Controller
         $selectedClass = $request->input('class', '5tahun');
 
         $students = Student::query()
+            ->active()
             ->where('class', $selectedClass)
             ->orderBy('name')
             ->get(['id', 'name', 'class']);

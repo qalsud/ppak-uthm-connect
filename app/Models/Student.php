@@ -16,9 +16,29 @@ class Student extends Model
         'name',
         'age',
         'class',
+        'status',
+        'withdrawn_at',
     ];
 
     public const CLASSES = ['5tahun', '6bintang'];
+
+    /** active | withdrawn | graduated */
+    public const STATUSES = ['active', 'withdrawn', 'graduated'];
+
+    protected $casts = [
+        'withdrawn_at' => 'datetime',
+    ];
+
+    /** Children currently enrolled. */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
 
     public function parent(): BelongsTo
     {

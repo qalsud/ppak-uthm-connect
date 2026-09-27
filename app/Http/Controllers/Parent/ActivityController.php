@@ -12,7 +12,7 @@ class ActivityController extends Controller
 {
     public function index(Request $request): Response
     {
-        $children = $request->user()->students()->get(['id', 'name']);
+        $children = $request->user()->students()->active()->get(['id', 'name']);
 
         $children->each(function ($child) {
             $child->latest_activity = $child->dailyActivities()->latest('date')->with('teacher:id,name')->first();

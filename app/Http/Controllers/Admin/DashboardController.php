@@ -54,8 +54,8 @@ class DashboardController extends Controller
         );
 
         $classDistribution = [
-            ['label' => '5 Tahun', 'value' => Student::query()->where('class', '5tahun')->count()],
-            ['label' => '6 Bintang', 'value' => Student::query()->where('class', '6bintang')->count()],
+            ['label' => '5 Tahun', 'value' => Student::query()->active()->where('class', '5tahun')->count()],
+            ['label' => '6 Bintang', 'value' => Student::query()->active()->where('class', '6bintang')->count()],
         ];
 
         $recentPayments = FinancialRecord::query()

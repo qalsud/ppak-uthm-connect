@@ -16,6 +16,7 @@ class DashboardController extends Controller
     {
         $children = $request->user()
             ->students()
+            ->active()
             ->get(['id', 'name', 'age', 'class']);
 
         $children->each(function ($child) {

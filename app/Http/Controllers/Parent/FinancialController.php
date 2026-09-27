@@ -12,7 +12,7 @@ class FinancialController extends Controller
 {
     public function index(Request $request): Response
     {
-        $children = $request->user()->students()->with('financialRecords')->get();
+        $children = $request->user()->students()->active()->with('financialRecords')->get();
 
         $children->each(function ($child) {
             $child->totals = [
