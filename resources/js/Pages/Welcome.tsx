@@ -3,6 +3,7 @@ import { ArrowRight, Check, GraduationCap, Menu, ShieldCheck, Users, X } from 'l
 import { useState } from 'react';
 
 import LanguageSwitcher from '@/Components/language-switcher';
+import BrandLockup from '@/Components/brand-lockup';
 import Logo from '@/Components/logo';
 import { Button } from '@/Components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -137,9 +138,8 @@ export default function Welcome({ auth }: PageProps) {
                     <div className="pointer-events-none absolute -right-24 top-0 size-80 rounded-full bg-brand-accent/20 blur-3xl" />
                     <div className="pointer-events-none absolute -left-24 bottom-0 size-80 rounded-full bg-indigo-500/20 blur-3xl" />
                     <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-                        <div className="mb-7 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
-                            <Logo chip className="size-20 sm:size-24" />
-                            <Logo variant="uthm" chip className="h-20 w-56 sm:h-24 sm:w-72" />
+                        <div className="mb-7 flex justify-center">
+                            <BrandLockup />
                         </div>
                         <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90">
                             {t('landing.badge')}
@@ -300,10 +300,7 @@ export default function Welcome({ auth }: PageProps) {
                 {/* Footer */}
                 <footer className="border-t bg-white py-12 sm:py-14">
                     <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:px-6">
-                        <div className="flex flex-wrap items-center justify-center gap-4">
-                            <Logo chip className="size-16 sm:size-20" />
-                            <Logo variant="uthm" chip className="h-16 w-52 sm:h-20 sm:w-64" />
-                        </div>
+                        <BrandLockup variant="plain" />
                         <p className="text-lg font-semibold">PPAK UTHM Connect</p>
                         <p className="max-w-xl text-sm text-muted-foreground">{t('landing.address')}</p>
                         <p className="mt-2 text-xs text-muted-foreground">
