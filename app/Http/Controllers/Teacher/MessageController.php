@@ -5,24 +5,25 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Student;
-use App\Notifications\MessageReceivedNotification;
+use App\Models\User;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class MessageController extends Controller
 {
+    public function __construct(private ConversationService $chat) {}
+
     public function index(Request $request): Response
     {
         return Inertia::render('Teacher/Messages', [
-            'conversations' => $this->list($request),
-            'students' => Student::query()
-                ->active()
-                ->when($request->user()->assignedClass(), fn ($q) => $q->where('class', $request->user()->assignedClass()))
-                ->orderBy('name')
-                ->get(['id', 'name', 'class']),
+            'conversations' => $this->chat->listFor($request->user()),
+            'students' => $this->students($request),
+            'open' => null,
         ]);
     }
 
@@ -30,80 +31,64 @@ class MessageController extends Controller
     {
         abort_unless($request->user()->canManage($student), 403);
 
-        $conversation = Conversation::firstOrCreate(
-            ['student_id' => $student->id],
-            ['teacher_id' => auth()->id()],
-        );
+        $conversation = $this->chat->conversationFor($student);
+
+        if ($conversation->teacher_id === null) {
+            $conversation->update(['teacher_id' => $request->user()->id]);
+        }
 
         return redirect()->route('teacher.messages.show', $conversation);
     }
 
     public function show(Request $request, Conversation $conversation): Response
     {
-        $conversation->loadMissing('student');
-        abort_unless($request->user()->canManage($conversation->student), 403);
-
-        $conversation->messages()
-            ->where('sender_id', '!=', auth()->id())
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        $conversation->load(['student', 'messages.sender:id,name']);
+        $this->authorizeConversation($request->user(), $conversation);
+        $this->chat->markRead($conversation, $request->user());
 
         return Inertia::render('Teacher/Messages', [
-            'conversations' => $this->list($request),
-            'open' => $conversation,
+            'conversations' => $this->chat->listFor($request->user()),
+            'students' => $this->students($request),
+            'open' => $this->chat->thread($conversation, $request->integer('before') ?: null),
         ]);
     }
 
     public function store(Request $request, Conversation $conversation): RedirectResponse
     {
+        $this->authorizeConversation($request->user(), $conversation);
+
         $validated = $request->validate([
-            'body' => 'required|string|max:2000',
+            'body' => ['nullable', 'string', 'max:2000', 'required_without:attachments'],
+            'attachments' => ['nullable', 'array', 'max:3'],
+            'attachments.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.(int) config('media.max_upload_kb')],
         ]);
 
-        if ($conversation->teacher_id === null) {
-            $conversation->update(['teacher_id' => auth()->id()]);
-        }
-
-        $message = $conversation->messages()->create([
-            'sender_id' => auth()->id(),
-            'body' => $validated['body'],
-        ]);
-        $conversation->touch();
-
-        if ($conversation->student->parent_id) {
-            Notification::send(
-                $conversation->student->parent,
-                new MessageReceivedNotification($conversation, auth()->user(), $message->body)
+        try {
+            $this->chat->post(
+                $conversation,
+                $request->user(),
+                (string) ($validated['body'] ?? ''),
+                $request->file('attachments') ?? [],
             );
+        } catch (RuntimeException) {
+            return back()->with('error', __('approval.photo_invalid'));
         }
 
         return back();
     }
 
-    private function list(Request $request): array
+    private function students(Request $request): Collection
     {
-        $userId = $request->user()->id;
+        return Student::query()
+            ->active()
+            ->when($request->user()->assignedClass(), fn ($q) => $q->where('class', $request->user()->assignedClass()))
+            ->orderBy('name')
+            ->get(['id', 'name', 'class']);
+    }
 
-        return Conversation::with(['student', 'student.parent:id,name', 'latestMessage'])
-            ->when($request->user()->assignedClass(), fn ($q) => $q->whereHas(
-                'student',
-                fn ($s) => $s->where('class', $request->user()->assignedClass())
-            ))
-            ->withCount(['messages as unread_count' => fn ($q) => $q
-                ->where('sender_id', '!=', $userId)
-                ->whereNull('read_at')])
-            ->orderByDesc('updated_at')
-            ->get()
-            ->map(fn (Conversation $c) => [
-                'id' => $c->id,
-                'student' => $c->student->name ?? '—',
-                'parent' => $c->student->parent->name ?? '—',
-                'last_message' => $c->latestMessage->first()?->body,
-                'unread' => $c->unread_count,
-            ])
-            ->values()
-            ->toArray();
+    private function authorizeConversation(User $user, Conversation $conversation): void
+    {
+        $conversation->loadMissing('student');
+
+        abort_unless($conversation->student && $user->canManage($conversation->student), 403);
     }
 }

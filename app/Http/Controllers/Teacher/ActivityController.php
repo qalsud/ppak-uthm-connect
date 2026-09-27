@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
-use App\Models\Conversation;
 use App\Models\DailyActivity;
+use App\Models\Message;
 use App\Models\Student;
+use App\Models\User;
 use App\Notifications\ActivityRecordedNotification;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -16,6 +18,8 @@ use Inertia\Response;
 
 class ActivityController extends Controller
 {
+    public function __construct(private ConversationService $chat) {}
+
     public function index(Request $request): Response
     {
         $assigned = $request->user()->assignedClass();
@@ -25,6 +29,7 @@ class ActivityController extends Controller
             ->when($assigned, fn ($q) => $q->where('class', $assigned))
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
+
         $today = $request->input('date', today()->toDateString());
 
         $records = DailyActivity::query()
@@ -79,51 +84,42 @@ class ActivityController extends Controller
             $record = DailyActivity::create($data);
         }
 
-        if ($student?->parent) {
+        if ($student->parent) {
             Notification::send($student->parent, new ActivityRecordedNotification($student));
         }
 
         // First time this day's activity is recorded → drop a summary into the chat.
         if ($isNew) {
-            $this->postActivityMessage($record, $student, $request->user()->id);
+            $this->postActivityMessage($record, $student, $request->user());
         }
 
         return back()->with('success', __('approval.activity_saved'));
     }
 
     /** Post a summary of the day's activity into the parent ↔ teacher chat. */
-    private function postActivityMessage(DailyActivity $activity, Student $student, int $userId): void
+    private function postActivityMessage(DailyActivity $activity, Student $student, User $sender): void
     {
         $done = collect(DailyActivity::FIELDS)
             ->filter(fn ($label, $field) => $activity->{$field} === 'yes')
             ->values();
 
-        $summary = $done->isNotEmpty() ? $done->implode(', ') : __('approval.activity_none');
-
-        $conversation = Conversation::firstOrCreate(
-            ['student_id' => $student->id],
-            ['teacher_id' => $userId],
-        );
-
-        if ($conversation->teacher_id === null) {
-            $conversation->update(['teacher_id' => $userId]);
-        }
-
         $body = __('approval.activity_message', [
             'name' => $student->name,
             'date' => $activity->date?->format('d/m/Y') ?? '',
-            'summary' => $summary,
+            'summary' => $done->isNotEmpty() ? $done->implode(', ') : __('approval.activity_none'),
         ]);
 
         if ($activity->treatment_notes) {
             $body .= "\n".$activity->treatment_notes;
         }
 
-        $conversation->messages()->create([
-            'sender_id' => $userId,
-            'body' => $body,
-        ]);
-
-        $conversation->touch();
+        $this->chat->post(
+            $this->chat->conversationFor($student),
+            $sender,
+            $body,
+            [],
+            Message::TYPE_SYSTEM,
+            false,
+        );
     }
 }

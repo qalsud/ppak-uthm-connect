@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendancePhoto;
+use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +24,12 @@ class PhotoController extends Controller
         return $this->serve($request, $photo);
     }
 
-    private function serve(Request $request, AttendancePhoto|ProgressPhoto $photo): StreamedResponse
+    public function message(Request $request, MessageAttachment $photo): StreamedResponse
+    {
+        return $this->serve($request, $photo);
+    }
+
+    private function serve(Request $request, AttendancePhoto|ProgressPhoto|MessageAttachment $photo): StreamedResponse
     {
         $user = $request->user();
 

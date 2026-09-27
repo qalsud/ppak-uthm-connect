@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Conversation;
 use App\Models\User;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class MessageReceivedNotification extends BaseNotification
 {
@@ -12,6 +13,21 @@ class MessageReceivedNotification extends BaseNotification
         private User $sender,
         private string $body,
     ) {}
+
+    /**
+     * Email is opt-in per user (`notify_email_messages`) so a busy chat does
+     * not flood inboxes — the in-app bell always fires.
+     */
+    public function via(object $notifiable): array
+    {
+        $channels = ['database', 'broadcast'];
+
+        if (($notifiable->notify_email_messages ?? false) === true) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
+    }
 
     public function title(): string
     {
@@ -25,10 +41,14 @@ class MessageReceivedNotification extends BaseNotification
 
     public function url(): ?string
     {
-        // Link to the *recipient's* inbox: a parent send goes to the teacher,
-        // a teacher send goes to the parent.
+        // Deep-link straight to the thread, on the recipient's side.
         return $this->sender->isParent()
-            ? route('teacher.messages.index')
-            : route('parent.messages.index');
+            ? route('teacher.messages.show', $this->conversation)
+            : route('parent.messages.show', $this->conversation);
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        return parent::toMail($notifiable);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Message;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -34,16 +34,7 @@ class HandleInertiaRequests extends Middleware
 
         $unreadMessages = 0;
         if ($user && ($user->isParent() || $user->isTeacher())) {
-            $query = Message::query()
-                ->whereNull('read_at')
-                ->where('sender_id', '!=', $user->id);
-
-            if ($user->isParent()) {
-                $ids = $user->students()->pluck('id');
-                $query->whereHas('conversation', fn ($q) => $q->whereIn('student_id', $ids));
-            }
-
-            $unreadMessages = $query->count();
+            $unreadMessages = app(ConversationService::class)->unreadCountFor($user);
         }
 
         return [

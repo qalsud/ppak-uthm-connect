@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendancePhoto;
-use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\Student;
 use App\Notifications\CheckInRecordedNotification;
 use App\Notifications\CheckoutRecordedNotification;
 use App\Services\Images\ImageStore;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,8 @@ use RuntimeException;
 
 class AttendanceController extends Controller
 {
+    public function __construct(private ConversationService $chat) {}
+
     public function index(Request $request): Response
     {
         $assigned = $request->user()->assignedClass();
@@ -205,7 +208,18 @@ class AttendanceController extends Controller
             ]);
         }
 
-        $this->postCheckoutMessage($attendance, $student, $photo, $userId);
+        $this->chat->post(
+            $this->chat->conversationFor($student),
+            $request->user(),
+            __('approval.checkout_message', [
+                'name' => $student->name,
+                'time' => $attendance->departed_at?->format('H:i') ?? now()->format('H:i'),
+            ]),
+            [],
+            Message::TYPE_SYSTEM,
+            false,
+            ['attendance_photo_id' => $photo?->id],
+        );
 
         ActivityLog::record('attendance.checkout', $student, $student->name, [
             'photo' => $photo !== null,
@@ -225,30 +239,6 @@ class AttendanceController extends Controller
                 ? __('approval.checked_out')
                 : __('approval.checked_out_override')
         );
-    }
-
-    /** Drop a short message (with the photo) into the parent ↔ teacher chat. */
-    private function postCheckoutMessage(Attendance $attendance, Student $student, ?AttendancePhoto $photo, int $userId): void
-    {
-        $conversation = Conversation::firstOrCreate(
-            ['student_id' => $student->id],
-            ['teacher_id' => $userId],
-        );
-
-        if ($conversation->teacher_id === null) {
-            $conversation->update(['teacher_id' => $userId]);
-        }
-
-        $conversation->messages()->create([
-            'sender_id' => $userId,
-            'body' => __('approval.checkout_message', [
-                'name' => $student->name,
-                'time' => $attendance->departed_at?->format('H:i') ?? now()->format('H:i'),
-            ]),
-            'attendance_photo_id' => $photo?->id,
-        ]);
-
-        $conversation->touch();
     }
 
     private function resolveDate(?string $date): string

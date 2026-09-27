@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AttendancePhoto;
+use App\Models\Message;
 use App\Models\ProgressPhoto;
 use Illuminate\Console\Command;
 
@@ -30,6 +31,13 @@ class PrunePhotos extends Command
                 ->where('created_at', '<', $cutoff)
                 ->chunkById(100, function ($photos) use (&$pruned) {
                     foreach ($photos as $photo) {
+                        // Keep a placeholder in any chat message that used it.
+                        Message::withTrashed()
+                            ->where(fn ($q) => $q
+                                ->where('attendance_photo_id', $photo->id)
+                                ->orWhere('progress_photo_id', $photo->id))
+                            ->update(['photo_expired' => true]);
+
                         $photo->delete(); // model event removes the files
                         $pruned++;
                     }

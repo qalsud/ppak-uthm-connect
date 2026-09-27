@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
 use App\Http\Controllers\Admin\MemoController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\MessageController as MessageOpsController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\SearchController;
@@ -69,6 +71,15 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('attendance.photos.show');
     Route::get('/progress/photos/{photo}', [PhotoController::class, 'progress'])
         ->name('progress.photos.show');
+    Route::get('/message-attachments/{photo}', [PhotoController::class, 'message'])
+        ->name('message.photos.show');
+
+    // Message operations (polling, unread, edit, delete, search)
+    Route::get('/messages/unread', [MessageOpsController::class, 'unread'])->name('messages.unread');
+    Route::get('/messages/search', [MessageOpsController::class, 'search'])->name('messages.search');
+    Route::get('/messages/{conversation}/updates', [MessageOpsController::class, 'updates'])->name('messages.updates');
+    Route::patch('/messages/record/{message}', [MessageOpsController::class, 'update'])->name('messages.update');
+    Route::delete('/messages/record/{message}', [MessageOpsController::class, 'destroy'])->name('messages.destroy');
 
     // Role home dashboards
     Route::get('/admin', AdminDashboardController::class)
@@ -94,6 +105,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/registrations/bulk', [RegistrationController::class, 'bulk'])->name('users.bulk');
 
             Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
+
+            Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
+            Route::get('/conversations/export', [ConversationController::class, 'export'])->name('conversations.export');
+            Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

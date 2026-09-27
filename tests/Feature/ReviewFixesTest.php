@@ -58,7 +58,7 @@ test('payment completion only marks the records covered by the session', functio
     expect($covered->fresh()->status)->toBe('paid');
 });
 
-test('message notification links to the recipient inbox', function () {
+test('message notification deep-links to the conversation', function () {
     [$parent, $children] = reviewParent();
     $teacher = User::factory()->role(UserRole::Teacher)->create();
     $conversation = Conversation::create(['student_id' => $children->first()->id, 'teacher_id' => $teacher->id]);
@@ -66,8 +66,8 @@ test('message notification links to the recipient inbox', function () {
     $parentSends = new MessageReceivedNotification($conversation, $parent, 'hi');
     $teacherSends = new MessageReceivedNotification($conversation, $teacher, 'hello');
 
-    expect($parentSends->url())->toBe(route('teacher.messages.index'));
-    expect($teacherSends->url())->toBe(route('parent.messages.index'));
+    expect($parentSends->url())->toBe(route('teacher.messages.show', $conversation));
+    expect($teacherSends->url())->toBe(route('parent.messages.show', $conversation));
 });
 
 test('a parent can start a conversation and teachers are notified', function () {

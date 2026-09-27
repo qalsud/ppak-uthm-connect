@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
-use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\ProgressPhoto;
 use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Notifications\ProgressRecordedNotification;
 use App\Services\Images\ImageStore;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -20,6 +21,8 @@ use RuntimeException;
 
 class ProgressController extends Controller
 {
+    public function __construct(private ConversationService $chat) {}
+
     public function index(Request $request): Response
     {
         $assigned = $request->user()->assignedClass();
@@ -162,7 +165,18 @@ class ProgressController extends Controller
         }
 
         if ($photo && $student) {
-            $this->postProgressMessage($record, $student, $photo, $request->user()->id);
+            $this->chat->post(
+                $this->chat->conversationFor($student),
+                $request->user(),
+                __('approval.progress_message', [
+                    'name' => $student->name,
+                    'theme' => $record->sub_theme ?: __('progress'),
+                ]),
+                [],
+                Message::TYPE_SYSTEM,
+                false,
+                ['progress_photo_id' => $photo->id],
+            );
         }
 
         ActivityLog::record('progress.recorded', $record, $student?->name, [
@@ -170,29 +184,5 @@ class ProgressController extends Controller
         ]);
 
         return back()->with('success', __('approval.progress_saved'));
-    }
-
-    /** Drop a short message (with the photo) into the parent ↔ teacher chat. */
-    private function postProgressMessage(ProgressRecord $record, Student $student, ProgressPhoto $photo, int $userId): void
-    {
-        $conversation = Conversation::firstOrCreate(
-            ['student_id' => $student->id],
-            ['teacher_id' => $userId],
-        );
-
-        if ($conversation->teacher_id === null) {
-            $conversation->update(['teacher_id' => $userId]);
-        }
-
-        $conversation->messages()->create([
-            'sender_id' => $userId,
-            'body' => __('approval.progress_message', [
-                'name' => $student->name,
-                'theme' => $record->sub_theme ?: __('progress'),
-            ]),
-            'progress_photo_id' => $photo->id,
-        ]);
-
-        $conversation->touch();
     }
 }
