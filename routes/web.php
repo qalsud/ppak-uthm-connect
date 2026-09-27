@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
             Route::get('/attendance', [TeacherAttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('/attendance/mark-all', [TeacherAttendanceController::class, 'markAll'])->name('attendance.mark-all');
             Route::post('/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('attendance.checkout');
             Route::post('/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
             Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');

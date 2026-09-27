@@ -1,10 +1,12 @@
 import { router } from '@inertiajs/react';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, UserCheck } from 'lucide-react';
+import { useState } from 'react';
 
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
+import ConfirmDialog from '@/Components/confirm-dialog';
 import PageHeader from '@/Components/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import {
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';import {
     Select,
     SelectContent,
     SelectItem,
@@ -49,6 +51,7 @@ export default function TeacherAttendance({
     counts: { school: number; home: number; none: number };
 }) {
     const { t } = useI18n();
+    const [markAllOpen, setMarkAllOpen] = useState(false);
 
     const reload = (params: { class?: string; date?: string }) => {
         router.get(
@@ -88,6 +91,14 @@ export default function TeacherAttendance({
                             </Select>
                         </div>
                     )}
+                    <Button
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={() => setMarkAllOpen(true)}
+                    >
+                        <UserCheck className="size-4" />
+                        {t('mark_all_present')}
+                    </Button>
                     <input
                         type="date"
                         value={date}
@@ -190,6 +201,22 @@ export default function TeacherAttendance({
                     </Table>
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                open={markAllOpen}
+                onOpenChange={setMarkAllOpen}
+                title={t('mark_all_present')}
+                description={t('mark_all_present_desc')}
+                confirmLabel={t('mark_all_present')}
+                destructive={false}
+                onConfirm={() =>
+                    router.post(
+                        route('teacher.attendance.mark-all'),
+                        { class: selectedClass, date },
+                        { preserveScroll: true, onFinish: () => setMarkAllOpen(false) },
+                    )
+                }
+            />
         </AppShell>
     );
 }

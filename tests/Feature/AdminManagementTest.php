@@ -3,6 +3,7 @@
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\ActivityLog;
+use App\Models\Attendance;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
@@ -10,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\AccountDecisionNotification;
+use App\Notifications\CheckInRecordedNotification;
 use App\Notifications\MemoPostedNotification;
 use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
@@ -665,6 +667,40 @@ test('the global search is role aware', function () {
     $res = $this->actingAs($parent)->getJson(route('search', ['q' => 'Zaharuddin']))->assertOk();
     $parentLabels = collect($res->json('groups'))->flatMap(fn ($g) => $g['items'])->pluck('label');
     expect($parentLabels)->not->toContain('Zaharuddin Test');
+});
+
+test('mark-all-present marks the class and notifies parents', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $a = Student::factory()->create(['class' => '5tahun', 'parent_id' => $parent->id]);
+    $b = Student::factory()->create(['class' => '5tahun', 'parent_id' => $parent->id]);
+    $other = Student::factory()->create(['class' => '6bintang']);
+
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.mark-all'), ['class' => '5tahun'])
+        ->assertRedirect();
+
+    expect(Attendance::where('student_id', $a->id)->first()->status())->toBe('school')
+        ->and(Attendance::where('student_id', $b->id)->exists())->toBeTrue()
+        ->and(Attendance::where('student_id', $other->id)->exists())->toBeFalse();
+
+    Notification::assertSentTo($parent, CheckInRecordedNotification::class);
+});
+
+test('a child is notified as arrived only once', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $student), ['action' => 'arrive']);
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $student), ['action' => 'arrive']);
+
+    Notification::assertSentToTimes($parent, CheckInRecordedNotification::class, 1);
 });
 
 test('search ignores very short queries', function () {

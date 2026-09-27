@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\AttendancePhoto;
 use App\Models\Conversation;
 use App\Models\Student;
+use App\Notifications\CheckInRecordedNotification;
 use App\Notifications\CheckoutRecordedNotification;
 use App\Services\Images\ImageStore;
 use Illuminate\Http\RedirectResponse;
@@ -73,10 +74,57 @@ class AttendanceController extends Controller
             'date' => $data['date'] ?? today()->toDateString(),
         ]);
 
+        $wasArrived = (bool) $attendance->arrived_at;
+
         $attendance->markArrival($request->user()->id);
         $attendance->save();
 
+        if (! $wasArrived && $student->parent) {
+            Notification::send($student->parent, new CheckInRecordedNotification($student, $attendance));
+        }
+
         return back()->with('success', __('approval.attendance_saved'));
+    }
+
+    /** Mark every student in the class as present for the day. */
+    public function markAll(Request $request): RedirectResponse
+    {
+        $assigned = $request->user()->assignedClass();
+
+        $data = $request->validate([
+            'class' => ['nullable', Rule::in(Student::CLASSES)],
+            'date' => ['nullable', 'date', 'before_or_equal:today'],
+        ]);
+
+        $class = $assigned ?? ($data['class'] ?? Student::CLASSES[0]);
+        $date = $data['date'] ?? today()->toDateString();
+
+        $students = Student::query()->active()->where('class', $class)->with('parent')->get();
+        $existing = Attendance::onDateFor($students->pluck('id'), $date);
+
+        $marked = 0;
+
+        foreach ($students as $student) {
+            $attendance = $existing->get($student->id)
+                ?? new Attendance(['student_id' => $student->id, 'date' => $date]);
+
+            // Skip children already present or already gone home.
+            if ($attendance->arrived_at || $attendance->departed_at) {
+                continue;
+            }
+
+            $attendance->markArrival($request->user()->id);
+            $attendance->save();
+            $marked++;
+
+            if ($student->parent) {
+                Notification::send($student->parent, new CheckInRecordedNotification($student, $attendance));
+            }
+        }
+
+        ActivityLog::record('attendance.mark_all', null, $class, ['date' => $date, 'marked' => $marked]);
+
+        return back()->with('success', __('approval.marked_present', ['count' => $marked]));
     }
 
     /** Check a child out — requires a photo (or a documented override). */
