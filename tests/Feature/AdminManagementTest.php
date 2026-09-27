@@ -4,9 +4,12 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
+use App\Models\Conversation;
+use App\Models\DailyActivity;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
+use App\Models\Message;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
@@ -746,6 +749,50 @@ test('a parent can pay only the selected months', function () {
 
     expect((float) $payment->amount)->toBe(300.0)
         ->and($payment->financial_record_ids)->toBe([$july->id]);
+});
+
+test('recording a daily activity posts it to the parent chat once', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $payload = [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'treatment_notes' => 'Slept well, ate all lunch.',
+        'statuses' => ['afternoon_sleep' => 'yes', 'lunch' => 'yes'],
+    ];
+
+    $this->actingAs($teacher)->post(route('teacher.activities.store'), $payload)->assertRedirect();
+
+    $conversation = Conversation::where('student_id', $student->id)->first();
+    expect($conversation)->not->toBeNull();
+
+    $message = Message::where('conversation_id', $conversation->id)->first();
+    expect($message)->not->toBeNull()
+        ->and($message->body)->toContain('Slept well, ate all lunch.');
+
+    // Re-saving the same day must not duplicate the chat message.
+    $this->actingAs($teacher)->post(route('teacher.activities.store'), $payload);
+
+    expect(Message::count())->toBe(1);
+});
+
+test('parents can see the teacher notes on daily activities', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    DailyActivity::create([
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'treatment_notes' => 'Had a mild fever, monitored.',
+    ]);
+
+    $this->actingAs($parent)->get(route('parent.activities.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Parent/Activities')
+            ->where('children.0.latest_activity.treatment_notes', 'Had a mild fever, monitored.')
+        );
 });
 
 test('admin can bulk approve registrations', function () {

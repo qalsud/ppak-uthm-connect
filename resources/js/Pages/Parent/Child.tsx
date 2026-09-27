@@ -29,6 +29,7 @@ type Update = {
 type Activity = {
     id: number;
     date: string;
+    treatment_notes: string | null;
     teacher: { name: string } | null;
     [key: string]: unknown;
 };
@@ -261,6 +262,14 @@ export default function ParentChild() {
                                             );
                                         })}
                                     </div>
+                                    {a.treatment_notes && (
+                                        <p className="mt-2 rounded-lg bg-muted/50 px-2 py-1.5 text-[11px]">
+                                            <span className="text-muted-foreground">
+                                                {t('treatment_notes')}:{' '}
+                                            </span>
+                                            {a.treatment_notes}
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>

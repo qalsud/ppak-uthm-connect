@@ -15,6 +15,7 @@ type Child = {
     latest_activity: {
         id: number;
         date: string;
+        treatment_notes: string | null;
         teacher: { name: string } | null;
         [key: string]: unknown;
     } | null;
@@ -105,6 +106,14 @@ export default function ParentActivities({
                                                 );
                                             })}
                                         </div>
+                                        {child.latest_activity.treatment_notes && (
+                                            <p className="mt-2 rounded-xl bg-muted/50 px-3 py-2 text-xs">
+                                                <span className="text-muted-foreground">
+                                                    {t('treatment_notes')}:{' '}
+                                                </span>
+                                                {child.latest_activity.treatment_notes}
+                                            </p>
+                                        )}
                                     </>
                                 ) : (
                                     <p className="py-4 text-center text-sm text-muted-foreground">
