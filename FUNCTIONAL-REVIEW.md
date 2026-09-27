@@ -255,3 +255,6 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 ---
 
 *Reviewed against the current code (controllers, models, migrations, routes, components) on 27 Sep 2026.*
+
+> **Continuing this work?** Resume the session (or start fresh) using the handoff section in
+> [`README.md`](README.md#continuing-this-work-handoff).

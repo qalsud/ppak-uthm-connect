@@ -110,3 +110,6 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 - **F12 general/centre thread** — chats are still per-child (needs new schema; deliberately deferred).
 - **U8** richer empty states (parent guidance / first-message CTA).
 - **Typing indicators**, **message pinning/starring**, **archive/mute**, and per-conversation **unread badge polling**.
+
+> **Continuing this work?** Resume the session (or start fresh) using the handoff section in
+> [`README.md`](README.md#continuing-this-work-handoff).

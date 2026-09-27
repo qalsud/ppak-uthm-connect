@@ -174,6 +174,29 @@ lang/en.json · lang/ms.json        bilingual keys
 | [`FUNCTIONAL-REVIEW.md`](FUNCTIONAL-REVIEW.md) | Module-by-module functionality review + prioritized improvements |
 | [`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md) | Messages module sweep (functionality · UX · UI) |
 
+## Continuing this work (handoff)
+
+**Where we left off.** All work is committed and pushed to `main`
+(`git log -1` for the latest commit). **129 tests / 621 assertions** pass
+(`php artisan test`), and the frontend builds clean (`npm run build`).
+
+**Resume the OpenCode session:**
+- **Title:** `PPAK UTHM Connect — build, hardening & messages overhaul`
+- **Session ID:** `ses_f24d11cdbffemlyUgyV13cGVk2`
+- In the TUI press **Ctrl+X** then **L** (or run `/sessions`) and pick that title;
+  **Ctrl+O** lists recent sessions and projects together.
+
+**Or start a fresh session** in `C:\laragon\www\ppak-uthm-connect` and say:
+
+> Read `README.md`, `FUNCTIONAL-REVIEW.md` and `MESSAGES-REVIEW.md`, then continue.
+
+**Good places to pick up:** hosting/deploy (Hostinger) · the still-open items in
+`FUNCTIONAL-REVIEW.md` (guardians, terms, centres, absence requests, fee reminders) ·
+`MESSAGES-REVIEW.md` (true realtime via Pusher/Echo, general thread) ·
+`LITTLELIVES-COMPARISON.md` Tier 1 (health/medication, growth tracking).
+
+---
+
 ## Roadmap
 
 **Next up (see `LITTLELIVES-COMPARISON.md` for detail):**
@@ -182,7 +205,7 @@ check-in **temperature + health check** · **health & medication** (allergies, m
 **progress-report export** · **absence requests** · light **admissions pipeline**.
 
 **Later:** native/push (Pusher or PWA web push), staff attendance & scheduling, multi-centre
-dashboards, message pagination.
+dashboards, **true realtime chat** (Laravel Echo/Pusher — polling is in place for now).
 
 **Hosting:** deploy (Hostinger), configure `.env`, run migrations, set up the scheduler
 (`media:prune-photos` runs daily) and backups.
