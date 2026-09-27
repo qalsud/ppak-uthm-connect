@@ -8,6 +8,14 @@ import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -37,6 +45,7 @@ type ManagedUser = {
     phone: string | null;
     role: 'teacher' | 'parent';
     status: 'pending' | 'active' | 'rejected' | 'awaiting';
+    rejection_reason: string | null;
     created_at: string;
 };
 
@@ -60,6 +69,9 @@ export default function Registrations({
     const rows = users.data;
 
     const [selected, setSelected] = useState<number[]>([]);
+    const [rejectTarget, setRejectTarget] = useState<ManagedUser | null>(null);
+    const [rejectBulk, setRejectBulk] = useState(false);
+    const [reason, setReason] = useState('');
 
     useEffect(() => {
         setSelected([]);
@@ -103,14 +115,56 @@ export default function Registrations({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
-    const act = (user: ManagedUser, action: 'approve' | 'reject') =>
+    const act = (user: ManagedUser, action: 'approve' | 'reject') => {
+        if (action === 'reject') {
+            setRejectBulk(false);
+            setRejectTarget(user);
+            setReason('');
+
+            return;
+        }
+
         router.post(
-            route(action === 'approve' ? 'admin.users.approve' : 'admin.users.reject', {
-                user: user.id,
-            }),
+            route('admin.users.approve', { user: user.id }),
             {},
             { preserveScroll: true },
         );
+    };
+
+    const askRejectBulk = () => {
+        setRejectBulk(true);
+        setRejectTarget(null);
+        setReason('');
+    };
+
+    const confirmReject = () => {
+        if (rejectBulk) {
+            router.post(
+                route('admin.users.bulk'),
+                { action: 'reject', ids: selected, reason },
+                {
+                    preserveScroll: true,
+                    onFinish: () => {
+                        setRejectTarget(null);
+                        setRejectBulk(false);
+                        setSelected([]);
+                    },
+                },
+            );
+
+            return;
+        }
+
+        if (!rejectTarget) {
+            return;
+        }
+
+        router.post(
+            route('admin.users.reject', { user: rejectTarget.id }),
+            { reason },
+            { preserveScroll: true, onFinish: () => setRejectTarget(null) },
+        );
+    };
 
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
@@ -197,7 +251,7 @@ export default function Registrations({
                             size="sm"
                             variant="outline"
                             className="gap-1.5"
-                            onClick={() => runBulk('reject')}
+                            onClick={askRejectBulk}
                         >
                             <X className="size-4" />
                             {t('reject_selected')}
@@ -244,6 +298,11 @@ export default function Registrations({
                                                     {formatDate(user.created_at)}
                                                 </span>
                                             </div>
+                                            {user.status === 'rejected' && user.rejection_reason && (
+                                                <p className="mt-1 text-[11px] text-rose-600">
+                                                    {t('rejected_reason_label')}: {user.rejection_reason}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                     {user.status === 'pending' && (
@@ -348,6 +407,33 @@ export default function Registrations({
                     </>
                 )}
             </Card>
+
+            <Dialog open={rejectBulk || rejectTarget !== null} onOpenChange={(v) => !v && (setRejectTarget(null), setRejectBulk(false))}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t('reject')}</DialogTitle>
+                        <DialogDescription>
+                            {rejectBulk ? `${selected.length} ${t('selected')}` : rejectTarget?.name}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-1.5">
+                        <label className="text-sm font-medium">{t('reject_reason')}</label>
+                        <Input
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            placeholder={t('reject_reason_placeholder')}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => (setRejectTarget(null), setRejectBulk(false))}>
+                            {t('cancel')}
+                        </Button>
+                        <Button variant="destructive" onClick={confirmReject}>
+                            {t('reject')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppShell>
     );
 }

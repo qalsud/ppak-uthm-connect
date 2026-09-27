@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Notifications\AccountDecisionNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -66,6 +67,7 @@ class RegistrationController extends Controller
         $user->update([
             'status' => AccountStatus::Active,
             'activation_token' => null,
+            'rejection_reason' => null,
         ]);
 
         // Teacher accounts also need a verified email for our middleware chain.
@@ -74,6 +76,7 @@ class RegistrationController extends Controller
         }
 
         ActivityLog::record('user.approved', $user, $user->name);
+        $user->notify(new AccountDecisionNotification($user->name, true));
 
         return back()->with('success', __('approval.approved', ['name' => $user->name]));
     }
@@ -83,12 +86,18 @@ class RegistrationController extends Controller
         abort_if($user->status !== AccountStatus::Pending, 422);
         abort_if(in_array($user->role, [UserRole::Parent, UserRole::Teacher], true) === false, 422);
 
+        $reason = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ])['reason'] ?? null;
+
         $user->update([
             'status' => AccountStatus::Rejected,
             'activation_token' => null,
+            'rejection_reason' => $reason,
         ]);
 
-        ActivityLog::record('user.rejected', $user, $user->name);
+        ActivityLog::record('user.rejected', $user, $user->name, ['reason' => $reason]);
+        $user->notify(new AccountDecisionNotification($user->name, false, $reason));
 
         return back()->with('success', __('approval.rejected', ['name' => $user->name]));
     }
@@ -100,6 +109,7 @@ class RegistrationController extends Controller
             'action' => ['required', Rule::in(['approve', 'reject'])],
             'ids' => ['required', 'array'],
             'ids.*' => ['integer', 'exists:users,id'],
+            'reason' => ['nullable', 'string', 'max:255'],
         ]);
 
         $users = User::query()
@@ -109,11 +119,13 @@ class RegistrationController extends Controller
             ->get();
 
         $approving = $data['action'] === 'approve';
+        $reason = $data['reason'] ?? null;
 
         foreach ($users as $user) {
             $user->update([
                 'status' => $approving ? AccountStatus::Active : AccountStatus::Rejected,
                 'activation_token' => null,
+                'rejection_reason' => $approving ? null : $reason,
             ]);
 
             if ($approving && $user->email_verified_at === null) {
@@ -124,8 +136,10 @@ class RegistrationController extends Controller
                 $approving ? 'user.approved' : 'user.rejected',
                 $user,
                 $user->name,
-                ['bulk' => true]
+                ['bulk' => true, 'reason' => $approving ? null : $reason]
             );
+
+            $user->notify(new AccountDecisionNotification($user->name, $approving, $approving ? null : $reason));
         }
 
         return back()->with('success', __('approval.bulk_updated', ['count' => $users->count()]));

@@ -9,6 +9,7 @@ use App\Models\Memo;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\AccountDecisionNotification;
 use App\Notifications\MemoPostedNotification;
 use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
@@ -607,4 +608,28 @@ test('bulk endpoints do not touch accounts of another type', function () {
     ])->assertRedirect();
 
     expect(User::find($parent->id))->not->toBeNull();
+});
+
+test('approving a registration notifies the applicant', function () {
+    Notification::fake();
+
+    $pending = User::factory()->role(UserRole::Parent)->pending()->create();
+
+    $this->actingAs(admin())->post(route('admin.users.approve', $pending))->assertRedirect();
+
+    Notification::assertSentTo($pending, AccountDecisionNotification::class);
+});
+
+test('rejecting a registration stores the reason and notifies the applicant', function () {
+    Notification::fake();
+
+    $pending = User::factory()->role(UserRole::Parent)->pending()->create();
+
+    $this->actingAs(admin())
+        ->post(route('admin.users.reject', $pending), ['reason' => 'Cannot verify details'])
+        ->assertRedirect();
+
+    expect($pending->fresh()->rejection_reason)->toBe('Cannot verify details');
+
+    Notification::assertSentTo($pending, AccountDecisionNotification::class);
 });
