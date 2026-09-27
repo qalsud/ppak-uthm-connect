@@ -177,7 +177,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
                     <main
                         className={`flex-1 px-4 py-6 sm:px-6 lg:px-8 ${
-                            bottomNav.length > 0 ? 'pb-24 lg:pb-6' : ''
+                            bottomNav.length > 0 ? 'pb-28 lg:pb-6' : ''
                         }`}
                     >
                         {children}
@@ -185,10 +185,10 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                 </div>
             </div>
 
-            {/* Mobile bottom tab bar */}
+            {/* Mobile bottom tab bar — floating pill */}
             {bottomNav.length > 0 && (
-                <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card lg:hidden">
-                    <div className="mx-auto flex max-w-md items-stretch justify-around">
+                <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] lg:hidden">
+                    <div className="mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/60 bg-card/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur">
                         {bottomNav.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -197,17 +197,21 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
-                                        active ? 'text-primary' : 'text-muted-foreground'
+                                    className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-full px-1 py-2 text-[10px] font-medium transition-colors ${
+                                        active
+                                            ? 'bg-primary/10 text-primary'
+                                            : 'text-muted-foreground hover:bg-muted'
                                     }`}
                                 >
-                                    <Icon className="size-5" />
-                                    {item.label === 'messages' && unreadMessages > 0 && (
-                                        <span className="absolute right-4 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                                            {unreadMessages > 9 ? '9+' : unreadMessages}
-                                        </span>
-                                    )}
-                                    {t(item.shortLabel ?? item.label)}
+                                    <span className="relative">
+                                        <Icon className="size-5" />
+                                        {item.label === 'messages' && unreadMessages > 0 && (
+                                            <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                                                {unreadMessages > 9 ? '9+' : unreadMessages}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <span className="truncate">{t(item.shortLabel ?? item.label)}</span>
                                 </Link>
                             );
                         })}
