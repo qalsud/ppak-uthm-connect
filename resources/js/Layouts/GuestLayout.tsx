@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react';
 
-import Logo from '@/Components/logo';
+import BrandLockup from '@/Components/brand-lockup';
 
 export default function GuestLayout({ children }: PropsWithChildren) {
     return (
@@ -9,9 +9,8 @@ export default function GuestLayout({ children }: PropsWithChildren) {
             <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-brand-navy p-10 text-white lg:flex">
                 <div className="pointer-events-none absolute -right-24 top-10 size-96 rounded-full bg-brand-accent/20 blur-3xl" />
                 <div className="pointer-events-none absolute -left-24 bottom-0 size-96 rounded-full bg-indigo-500/20 blur-3xl" />
-                <div className="relative flex items-center gap-2.5">
-                    <Logo chip className="size-11" />
-                    <span className="text-base font-bold">PPAK UTHM Connect</span>
+                <div className="relative">
+                    <BrandLockup />
                 </div>
                 <div className="relative">
                     <h2 className="max-w-md text-3xl font-extrabold leading-tight">
@@ -22,8 +21,7 @@ export default function GuestLayout({ children }: PropsWithChildren) {
                         all in one place.
                     </p>
                 </div>
-                <div className="relative flex items-center gap-3">
-                    <Logo variant="uthm" chip className="h-12 w-40" />
+                <div className="relative">
                     <p className="text-xs text-white/40">
                         © {new Date().getFullYear()} Pusat Pendidikan Awal Kanak-Kanak UTHM
                     </p>

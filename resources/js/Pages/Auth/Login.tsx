@@ -4,7 +4,7 @@ import { ArrowRight, Lock, Mail } from 'lucide-react';import { FormEventHandler 
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import Logo from '@/Components/logo';
+import BrandLockup from '@/Components/brand-lockup';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -34,10 +34,9 @@ export default function Login({
         <GuestLayout>
             <Head title="Log in" />
 
-            {/* Logos */}
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-4">
-                <Logo chip className="size-20" />
-                <Logo variant="uthm" chip className="h-20 w-60" />
+            {/* Brand lockup (mobile — desktop shows it in the brand panel) */}
+            <div className="mb-8 flex justify-center lg:hidden">
+                <BrandLockup />
             </div>
 
             {/* Heading */}
