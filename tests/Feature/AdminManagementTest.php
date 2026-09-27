@@ -649,6 +649,31 @@ test('an unrestricted teacher can manage any class', function () {
     $this->actingAs($teacher)->post(route('teacher.attendance.store', $b), ['action' => 'arrive'])->assertRedirect();
 });
 
+test('the global search is role aware', function () {
+    $admin = admin();
+    Student::factory()->create(['name' => 'Zaharuddin Test']);
+    Memo::create(['author_id' => $admin->id, 'title' => 'Zaharuddin Memo', 'description' => 'x']);
+
+    $res = $this->actingAs($admin)->getJson(route('search', ['q' => 'Zaharuddin']))->assertOk();
+
+    $labels = collect($res->json('groups'))->flatMap(fn ($g) => $g['items'])->pluck('label');
+
+    expect($labels)->toContain('Zaharuddin Test')->toContain('Zaharuddin Memo');
+
+    // A parent must not see other children.
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $res = $this->actingAs($parent)->getJson(route('search', ['q' => 'Zaharuddin']))->assertOk();
+    $parentLabels = collect($res->json('groups'))->flatMap(fn ($g) => $g['items'])->pluck('label');
+    expect($parentLabels)->not->toContain('Zaharuddin Test');
+});
+
+test('search ignores very short queries', function () {
+    $this->actingAs(admin())
+        ->getJson(route('search', ['q' => 'a']))
+        ->assertOk()
+        ->assertJson(['groups' => []]);
+});
+
 test('admin can bulk approve registrations', function () {
     $parent = User::factory()->role(UserRole::Parent)->pending()->create();
     $teacher = User::factory()->role(UserRole::Teacher)->pending()->create();

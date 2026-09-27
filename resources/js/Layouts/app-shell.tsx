@@ -1,7 +1,8 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { LifeBuoy, LogOut, Search } from 'lucide-react';
+import { LifeBuoy, LogOut } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import GlobalSearch from '@/Components/global-search';
 import LanguageSwitcher from '@/Components/language-switcher';
 import Logo from '@/Components/logo';
 import NotificationBell from '@/Components/notification-bell';
@@ -117,10 +118,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                             </div>
 
                             <div className="flex items-center gap-1.5">
-                                <div className="relative hidden md:block">
-                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input className="h-9 w-60 pl-9" placeholder="Search…" />
-                                </div>
+                                <GlobalSearch />
                                 <NotificationBell />
                                 {nav.length === 0 && <LanguageSwitcher />}
                                 <DropdownMenu>

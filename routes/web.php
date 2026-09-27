@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
 use App\Http\Controllers\Parent\AttendanceController as ParentAttendanceController;
 use App\Http\Controllers\Parent\ChildController as ParentChildController;
@@ -59,6 +60,9 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
     // Notifications (shared by all roles)
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
+
+    // Global search (shared by all roles)
+    Route::get('/search', SearchController::class)->name('search');
 
     // Stored photos (authorised per role)
     Route::get('/attendance/photos/{photo}', [PhotoController::class, 'attendance'])
