@@ -280,9 +280,9 @@ export default function ChatInbox({
         : null;
 
     return (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid h-[calc(100dvh-17rem)] gap-4 overflow-hidden lg:h-[calc(100dvh-11.5rem)] lg:grid-cols-3">
             {/* Conversation list */}
-            <div className={`flex flex-col rounded-2xl border bg-card ${open ? 'hidden lg:flex' : 'flex'} lg:h-[calc(100dvh-11rem)]`}>
+            <div className={`flex min-h-0 flex-col rounded-2xl border bg-card ${open ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
                     <p className="text-sm font-semibold">{t('messages')}</p>
                     {!readOnly && students.length > 0 && (
@@ -327,7 +327,7 @@ export default function ChatInbox({
                     )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-1.5">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
                     {conversations.length === 0 && (
                         <p className="px-3 py-8 text-center text-xs text-muted-foreground">
                             {t('no_conversations')}
@@ -379,9 +379,9 @@ export default function ChatInbox({
 
             {/* Thread */}
             <div
-                className={`flex flex-col rounded-2xl border bg-card lg:col-span-2 ${
+                className={`flex min-h-0 flex-col rounded-2xl border bg-card lg:col-span-2 ${
                     open ? 'flex' : 'hidden lg:flex'
-                } lg:h-[calc(100dvh-11rem)]`}
+                }`}
             >
                 {!open ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground">
@@ -411,7 +411,7 @@ export default function ChatInbox({
                             </div>
                         </div>
 
-                        <div className="flex-1 space-y-1 overflow-y-auto p-3" role="log" aria-live="polite">
+                        <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-3" role="log" aria-live="polite">
                             {open.has_more && (
                                 <div className="flex justify-center pb-2">
                                     <Button variant="ghost" size="sm" onClick={loadEarlier} className="gap-1.5 text-xs">
