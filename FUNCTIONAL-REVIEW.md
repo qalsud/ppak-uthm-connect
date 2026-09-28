@@ -27,7 +27,7 @@ value · **P3** = nice-to-have.
 **⏳ Still open** (next passes): guardians (F4) · academic terms (F5) · centres (F6) · absence requests +
 absent/sick attendance states · scheduled **fee reminders** · bulk class activities/progress · student
 photo/IC/medical + class-move history + CSV upsert/dry-run · memo attachments/scheduling/read
-receipts · message pagination/attachments/admin oversight · **term progress-report PDF** + monthly
+receipts · ~~message pagination/attachments/admin oversight~~ (done — see `MESSAGES-REVIEW.md`) · **term progress-report PDF** + monthly
 statements · reports/analytics · backups · PWA/push · queueing notifications · audit coverage
 (logins/exports) · accessibility pass.
 

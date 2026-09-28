@@ -98,7 +98,7 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 | F13 | Pruned photos set `photo_expired` → chat shows *"Photo no longer available"* instead of nothing |
 | U1/U2/V1/V2 | **Date separators** (Today/Yesterday/date), **grouped bubbles**, **avatars**, distinct **system-message** style, and **server-formatted times** (app timezone) |
 | U4/V4 | **Multiline composer** (Enter sends, **Shift+Enter** = newline), **attach**, and a counter near the 2000 limit |
-| U5/V7 | **Responsive height** (`100dvh`) so the composer clears the floating bottom nav |
+| U5/V7 | **Pinned chat panel** — fixed height at every breakpoint, so only the message list scrolls and the composer never leaves the screen |
 | U6/U7 | **Optimistic send** + **partial reloads** (`only: ['open','conversations']`) |
 | U9/V5 | Conversation rows show **avatar, time, system preview icon, unread dot/count** |
 | U10 | `role="log"` + `aria-live`, `aria-label`s on icon buttons |

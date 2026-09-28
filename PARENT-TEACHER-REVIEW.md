@@ -101,7 +101,7 @@ Also: notification **worker/queue** — notifications are sent **synchronously**
 - **Any teacher can read/reply** to any conversation (no teacher↔class mapping). Fine for a small centre; flag if teacher scoping is required (P2).
 - **Unread counts are N+1**: each conversation runs its own `count()` query in `list()` (both parent & teacher). Use `withCount(['messages as unread_count' => ...])` (P2, perf).
 - Messages have `read_at` but no typing/receipt UI; not required.
-- No message pagination — `open.messages` loads the whole thread (P3).
+- No message pagination **— resolved**, see [`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md) — `open.messages` loads the whole thread (P3).
 - Bell shows *notifications*, not unread **messages**; the Messages tab has no unread badge (P2 UX).
 
 ---
@@ -173,7 +173,7 @@ These existed in the legacy system / the paper but aren't in the rebuild:
   page) and a class/date register.
 - **Done since:** CSV export (students/teachers/parents), **notify admin on completed payments**,
   class-label consistency, audit log, pagination.
-- **Still open:** message pagination, queued notifications, staff attendance/scheduling.
+- **Still open:** queued notifications, staff attendance/scheduling.
 
 ---
 

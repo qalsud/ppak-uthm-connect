@@ -108,7 +108,7 @@ otherwise `php artisan serve` → http://localhost:8000.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest — 104 tests / 491 assertions
+php artisan test      # Pest - 129 tests / 621 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -180,6 +180,9 @@ lang/en.json · lang/ms.json        bilingual keys
 **Where we left off.** All work is committed and pushed to `main`
 (`git log -1` for the latest commit). **129 tests / 621 assertions** pass
 (`php artisan test`), and the frontend builds clean (`npm run build`).
+
+**Live demo (temporary):** `https://kenneth-either-faq-principal.trycloudflare.com` — accounts and the
+exact start command are in [`DEPLOY.md`](DEPLOY.md).
 
 **Resume the OpenCode session:**
 - **Title:** `PPAK UTHM Connect — build, hardening & messages overhaul`

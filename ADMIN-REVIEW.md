@@ -105,4 +105,4 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 
 ---
 
-*Verified with the browser on all admin pages (no console errors) and 104 Pest tests / 491 assertions.*
+*Verified with the browser on all admin pages (no console errors) and 129 Pest tests / 621 assertions.*

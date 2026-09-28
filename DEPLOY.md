@@ -16,6 +16,18 @@ A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option
 
 ---
 
+## Current live demo (this session)
+
+- **URL:** `https://kenneth-either-faq-principal.trycloudflare.com`
+- **Accounts:** `admin@` / `teacher@` / `parent@ppakuthm.com` — password `Ppak-9ZmBdw-3266`
+- Started with:
+  ```powershell
+  & "$env:TEMP\opencode\cloudflared.exe" tunnel --url http://127.0.0.1:80 --http-host-header ppak-uthm-connect.test --no-autoupdate
+  ```
+  (the `--http-host-header` is required because Laragon uses name-based vhosts)
+- ⚠️ A quick tunnel gets a **new URL on every restart** — update this file and regenerate the demo PDF if you restart it.
+- ⚠️ It only lives while **your laptop + Laragon + the cloudflared process** are running.
+
 ## Option A — a public link in ~2 minutes (no deploy)
 
 Expose your local Laragon site through a tunnel:
