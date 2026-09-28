@@ -134,6 +134,26 @@ and progress → **admin** → registrations, students, payments, activity log, 
 - [ ] Log in once with each of the three demo roles
 - [ ] Open a chat thread and check the composer stays pinned
 
+## Security when the link is public
+
+A tunnel (or any public URL) means strangers *can* reach your dev app if they learn the URL. Before
+sharing:
+
+- [ ] **`APP_DEBUG=false`** — with debug on, error pages can print env vars and **DB credentials**.
+- [ ] **Rotate the demo passwords.** The seeded accounts use `password123`, which is in this repo.
+      Change them for anything public:
+      ```bash
+      php artisan tinker
+      >>> $u = App\Models\User::where('email','admin@ppakuthm.com')->first();
+      >>> $u->password = 'a-strong-password'; $u->save();   // hashed automatically
+      ```
+      (A fresh Railway deploy re-seeds `password123` — rotate there too, or set `DEMO_SEED=false`.)
+- [ ] **Stop the tunnel when you're done:** `Get-Process cloudflared | Stop-Process -Force`
+- [ ] For a link shared with one person, put **Cloudflare Access** (Zero Trust) in front of a *named*
+      tunnel so only their email can open it — free for a few users.
+- [ ] On shared/untrusted Wi-Fi, note that Laragon exposes **Apache (80), MySQL (3306) and Redis
+      (6379)** on all interfaces — allow them through Windows Firewall only on trusted networks.
+
 ## Later: production on Hostinger
 
 The long-term plan in [`README.md`](README.md#roadmap) is a normal VPS deploy (Hostinger) with
