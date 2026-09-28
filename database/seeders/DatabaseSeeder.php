@@ -21,6 +21,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Idempotent: safe to run on every container boot.
+        if (User::query()->exists()) {
+            $this->command?->warn('Data already present — skipping demo seed.');
+
+            return;
+        }
+
         // ---- Pricing -------------------------------------------------------
         FeeSetting::create(['monthly_fee' => 310.00, 'overtime_rate' => 6.00, 'is_active' => true]);
 

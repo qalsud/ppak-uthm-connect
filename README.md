@@ -173,6 +173,7 @@ lang/en.json · lang/ms.json        bilingual keys
 | [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md) | Feature comparison vs LittleLives + gap roadmap |
 | [`FUNCTIONAL-REVIEW.md`](FUNCTIONAL-REVIEW.md) | Module-by-module functionality review + prioritized improvements |
 | [`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md) | Messages module sweep (functionality · UX · UI) |
+| [`DEPLOY.md`](DEPLOY.md) | Deploying a demo (tunnel, Railway/Render, serverless) + demo script |
 
 ## Continuing this work (handoff)
 
