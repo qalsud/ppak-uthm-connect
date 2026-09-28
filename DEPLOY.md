@@ -48,8 +48,17 @@ SESSION_SECURE_COOKIE=true
 
 ## Option B — Railway (recommended for a link you can leave up)
 
+**What it is:** a managed platform ("PaaS"). You connect the GitHub repo once, Railway builds the
+included `Dockerfile` in the cloud and runs it — no server to patch, always on, and it survives your
+laptop being switched off. A `railway.json` is included (Dockerfile builder + `/up` healthcheck +
+restart-on-failure).
+
+**Cost:** a **30-day trial with $5 credits** (no card needed) — plenty for a supervisor demo. After
+that, **Hobby is $5/month** (includes $5 usage); there's also a very limited free plan (~$1/month of
+credit, 1 project, no cron). Plan a Hobby subscription if the demo needs to stay up long-term.
+
 1. Push this repo to GitHub (already done).
-2. [railway.app](https://railway.app) → **New Project → Deploy from GitHub repo** → pick `ppak-uthm-connect`.
+2. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo** → pick `ppak-uthm-connect`.
    Railway detects the **`Dockerfile`** automatically.
 3. **Variables** (Service → Variables):
 
