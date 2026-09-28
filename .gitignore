@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 
 design-ref/
+
+# Demo handout (contains demo credentials - never commit)
+/PPAK-UTHM-Connect-Demo.pdf
