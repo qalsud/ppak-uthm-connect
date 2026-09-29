@@ -121,20 +121,45 @@ The centre names exist today only in the landing copy. Everything is one flat da
 
 Centres: **Tadika Khalifah Junior** · **Taska Hikmah UTHM**
 
+**Order matters.** G3 (access control) must land before any centre-scoped UI, or the
+cross-centre leak in `canManage()` widens with every screen added.
+
+- [ ] **G0 Access-control foundation (do first).** `User::canManage()` compares only a
+      class *string*, so a `5tahun` teacher at one centre can manage the other centre's
+      `5tahun` children. Make centre part of the comparison, and give `assignedClass()`
+      a centre context. Nothing else is safe until this is true.
 - [ ] **G1 `centres` table** + `centre_id` on `students`, `users` (staff), `memos`,
-      `fee_settings`, and anything scoped per centre.
-- [ ] **G2 Backfill** existing records (pick a default centre) — must be idempotent so the
+      `fee_settings`, `list_options`.
+- [ ] **G2 Backfill** existing records to **Tadika Khalifah Junior** — idempotent so the
       seeder stays re-runnable.
-- [ ] **G3 Class becomes centre-scoped.** Replace `Student::CLASSES` with classes belonging
-      to a centre. This is the load-bearing change; it touches attendance, activities,
-      progress, updates, messages, memos, payments and every CSV export.
+- [ ] **G3 Class becomes centre-scoped.** `list_options.centre_id` finally used, `class`
+      keys unique per centre, and every class query filtered through the centre.
+      Touches attendance, activities, progress, updates, messages, memos, payments, CSV.
 - [ ] **G4 Admin centre switcher** — "All centres" vs a specific one, persisted per session.
 - [ ] **G5 Centre CRUD** at `/admin/centres`.
 - [ ] **G6 Centre assignment** on students and staff (forms + bulk).
 - [ ] **G7 Scoped access** — teachers and parents only ever see their own centre.
+      **Teachers may belong to more than one centre** (assigned via `users.centre_id`
+      being nullable or a pivot — decide during G1).
 - [ ] **G8 Per-centre fees** — rates and generation are per centre, not global.
 - [ ] **G9 Per-centre dashboard/reports** — counts and charts split or filtered by centre.
-- [ ] **G10 Memos** — audience gains a centre dimension.
+- [ ] **G10 Memos** — audience gains a centre dimension; fix the existing leak where
+      `Teacher\MemoController` returns *every* class-audience memo to *every* teacher.
+- [ ] **G11 Parents see the centre name** in the portal.
+
+**Known cross-centre leaks to close during G (from the reconnaissance)**
+
+| Leak | Where |
+|---|---|
+| `canManage()` string-only compare | `app/Models/User.php:110-122` |
+| Message fan-out hits the wrong centre's class + all unrestricted staff | `ConversationService::teachersFor():191-194` |
+| Teacher memo list returns every class memo, unfiltered | `app/Http/Controllers/Teacher/MemoController.php:16` |
+| Parent notifications go to **all** active teachers | `Parent/DailyUpdateController:76-84`, `Parent/AbsenceController:81-88` |
+| Memo "class" recipients include **all** teachers | `Admin/MemoController:105-111` |
+| `Student::CLASSES[0]` / `'5tahun'` hardcoded fallbacks | `Teacher/AttendanceController:48,184`, `Teacher/DailyUpdateController:18` |
+| `orderBy('class')->value('class')` picks across centres | `Teacher/AttendanceController:44-48` |
+| CSV `normaliseClass()` cannot disambiguate | `Admin/StudentController:357-370` (also C-i3) |
+| Notification deep-link ambiguous across centres | `DailyUpdateSubmittedNotification:28` |
 
 ## Phase D — Admin account management
 
@@ -148,7 +173,26 @@ Centres: **Tadika Khalifah Junior** · **Taska Hikmah UTHM**
 
 _(All initial questions settled — see "Settled follow-ups" and "Centre decisions" above.)_
 
-## Progress log
+## Issue register
+
+Found during a phase, deliberately **deferred to a later pass** — reviewed after each phase
+completes. Nothing here is a blocker; it is a debt list.
+
+### From Phase C — editable lists
+
+| # | Issue | Impact | Where |
+|---|---|---|---|
+| C-i1 | `rating-chip.tsx` still has a hardcoded `TONES = { Good, Average, Poor }` colour map | A **new** progress grade added via `/admin/lists` validates correctly but renders with no tint | `resources/js/Components/rating-chip.tsx` |
+| C-i2 | `Student::classLabelStatic()` still special-cases `5tahun`/`6bintang` in its `match` | Backend-rendered class labels (PDF receipts, memo audience) ignore an admin rename | `app/Models/Student.php` |
+| C-i3 | CSV student import still normalises `'5'`/`'6'` to the class key | Importing a CSV for a newly-added class silently fails/skips the row | `app/Http/Controllers/Admin/StudentController.php` |
+| C-i4 | The demo seeder writes raw literal values (`5tahun`, `O+`, `Good`, …) rather than list keys | If an admin renames a key, freshly-seeded demo data may not match | `database/seeders/DatabaseSeeder.php` |
+| C-i5 | Migration columns still carry enum-ish defaults (`students.class` default `5tahun`, `progress_records` default `Select`) | A dropped/renamed list value can leave rows with a value no longer in any list | several migrations |
+| C-i6 | `progress_grade` group is validated live but `ProgressRecord::PERMATA/FREE/DEVELOPMENT` are **not** manageable | Those three lists are still code-only | `app/Models/ProgressRecord.php` |
+| C-i7 | `DailyActivity::FIELDS` (the 12 activity checkboxes) is not a manageable list | The 12 fields are fixed in the model and in the `daily_activities` columns | `app/Models/DailyActivity.php` |
+| C-i8 | `PaymentController::MONTHS` is not a manageable list | Months are fixed English names; fine for now, but inconsistent with the new pattern | `app/Http/Controllers/Admin/PaymentController.php` |
+| C-i9 | Emergency contact + collector `relationship` are still free text (not validated against the list) | Data can drift from the approved relationships — and the seeder already uses `Grandparent`/`Uncle` | `StudentContactController`, seeder |
+
+### Progress log
 
 _Append as each phase lands._
 

@@ -119,6 +119,11 @@ class Student extends Model
         return $this->belongsTo(User::class, 'parent_id');
     }
 
+    public function centre(): BelongsTo
+    {
+        return $this->belongsTo(Centre::class);
+    }
+
     public function financialRecords(): HasMany
     {
         return $this->hasMany(FinancialRecord::class);

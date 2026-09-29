@@ -7,6 +7,7 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -92,6 +93,72 @@ class User extends Authenticatable
         return $this->class ?: null;
     }
 
+    /** Centres this user belongs to (staff may work at more than one). */
+    public function centres(): BelongsToMany
+    {
+        return $this->belongsToMany(Centre::class, 'centre_user');
+    }
+
+    /**
+     * Centre ids this user is scoped to. Null means unrestricted — which is
+     * true for admins and for staff who have no centre assignment yet (they
+     * predate centres, and an unassigned teacher was previously unrestricted).
+     *
+     * @return array<int, int>|null
+     */
+    public function centreIds(): ?array
+    {
+        if ($this->isAdmin()) {
+            return null;
+        }
+
+        $ids = $this->centres()->pluck('centres.id')->all();
+
+        return $ids === [] ? null : $ids;
+    }
+
+    /** Whether this user may see/act on the given centre. */
+    public function belongsToCentre(?int $centreId): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $ids = $this->centreIds();
+
+        // Unrestricted (no centre assignment) or the record has no centre.
+        if ($ids === null || $centreId === null) {
+            return true;
+        }
+
+        return in_array($centreId, $ids, true);
+    }
+
+    /**
+     * Whether this user may act on the given student's records.
+     *
+     * IMPORTANT: class alone is not a unique key — "5tahun" exists at both
+     * centres. Access must match the centre as well as the class.
+     */
+    public function canManage(Student $student): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->isTeacher()) {
+            return false;
+        }
+
+        // Centre must match (a teacher may belong to several).
+        if (! $this->belongsToCentre($student->centre_id)) {
+            return false;
+        }
+
+        // Within the right centre, a class assignment narrows it further.
+        return $this->class === null || $this->class === $student->class;
+    }
+
     /**
      * True when this user is acting with admin oversight — the frontend uses
      * this to render the admin shell around teacher screens.
@@ -105,20 +172,6 @@ class User extends Authenticatable
     public function shell(): string
     {
         return $this->isAdmin() ? 'admin' : 'teacher';
-    }
-
-    /** Whether this user may act on the given student's records. */
-    public function canManage(Student $student): bool
-    {
-        if ($this->isAdmin()) {
-            return true;
-        }
-
-        if (! $this->isTeacher()) {
-            return false;
-        }
-
-        return $this->class === null || $this->class === $student->class;
     }
 
     /** Route name this user should be redirected to after login. */

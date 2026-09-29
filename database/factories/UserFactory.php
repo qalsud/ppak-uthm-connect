@@ -56,4 +56,23 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => ['status' => AccountStatus::Pending]);
     }
+
+    /** Attach the created user to a centre once it exists. */
+    public function atCentre(int $centreId): static
+    {
+        return $this->afterCreating(function (User $user) use ($centreId) {
+            $user->centres()->syncWithoutDetaching([$centreId]);
+        });
+    }
+
+    /**
+     * Scope the user to specific centre(s). Without this a user has no centre
+     * assignment, which means unrestricted (as it did before centres existed).
+     */
+    public function atCentres(array $centreIds): static
+    {
+        return $this->afterCreating(function (User $user) use ($centreIds) {
+            $user->centres()->syncWithoutDetaching($centreIds);
+        });
+    }
 }
