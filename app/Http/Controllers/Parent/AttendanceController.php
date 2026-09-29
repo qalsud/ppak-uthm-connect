@@ -27,6 +27,7 @@ class AttendanceController extends Controller
                 ->map(fn (Attendance $a) => $a->historyRow())
                 ->values();
             $child->absences = $child->absenceRequests()
+                ->with('attachments')
                 ->whereIn('status', ['pending', 'approved'])
                 ->orderBy('start_date')
                 ->get()

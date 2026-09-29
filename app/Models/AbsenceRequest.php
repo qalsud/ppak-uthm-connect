@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 class AbsenceRequest extends Model
@@ -52,6 +53,11 @@ class AbsenceRequest extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(AbsenceAttachment::class, 'absence_request_id');
+    }
+
     public function isPending(): bool
     {
         return $this->status === 'pending';
@@ -72,6 +78,15 @@ class AbsenceRequest extends Model
         $period = CarbonPeriod::create($this->start_date, $this->end_date);
 
         return collect($period)->take(self::MAX_DAYS + 1)->values();
+    }
+
+    /** Optional proof documents (medical certificate scans, photos). */
+    public function attachmentPayloads(): array
+    {
+        return $this->attachments
+            ->map(fn (AbsenceAttachment $a) => $a->payload())
+            ->values()
+            ->all();
     }
 
     /**
@@ -127,6 +142,7 @@ class AbsenceRequest extends Model
             'review_note' => $this->review_note,
             'reviewed_by' => $this->reviewedBy?->name,
             'requested_by' => $this->requestedBy?->name,
+            'attachments' => $this->attachmentPayloads(),
         ];
     }
 }

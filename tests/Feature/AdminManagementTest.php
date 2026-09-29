@@ -30,6 +30,7 @@ use App\Services\Payments\StripeCheckoutService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function admin(): User
@@ -938,6 +939,88 @@ test('a parent cannot file an absence for another child, or overlap their own', 
     $absence = AbsenceRequest::firstOrFail();
     $this->actingAs($parent)->delete(route('parent.absences.destroy', $absence))->assertRedirect();
     expect(AbsenceRequest::count())->toBe(0);
+});
+
+test('a parent can attach a medical certificate (image or PDF) to an absence', function () {
+    Storage::fake(config('media.disk'));
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    // 1. A PDF attached while filing the request.
+    $this->actingAs($parent)->post(route('parent.absences.store', $student), [
+        'start_date' => today()->addDay()->toDateString(),
+        'end_date' => today()->addDays(2)->toDateString(),
+        'type' => 'sick',
+        'reason' => 'Chickenpox',
+        'document' => UploadedFile::fake()->create('mc.pdf', 120, 'application/pdf'),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $absence = AbsenceRequest::firstOrFail();
+
+    expect($absence->attachments)->toHaveCount(1)
+        ->and($absence->attachments->first()->isPdf())->toBeTrue();
+
+    // 2. An image attached afterwards to a pending request.
+    $this->actingAs($parent)->post(route('parent.absences.attach', $absence), [
+        'document' => UploadedFile::fake()->image('note.jpg', 400, 400),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $absence->refresh()->load('attachments');
+
+    expect($absence->attachments)->toHaveCount(2)
+        ->and($absence->attachments->last()->isPdf())->toBeFalse()
+        ->and($absence->attachmentPayloads()[0]['is_pdf'])->toBeTrue();
+
+    // 3. The teacher sees the proof on the register, the parent can stream it.
+    //    The absence starts tomorrow, so the register is opened on that day.
+    $this->actingAs($teacher)->get(route('teacher.attendance.index', ['date' => today()->addDay()->toDateString()]))
+        ->assertInertia(fn (Assert $page) => $page->has('absenceRequests', 1));
+
+    $this->actingAs($parent)
+        ->get(route('absence.documents.show', $absence->attachments->first()))
+        ->assertOk();
+});
+
+test('a proof document must be an image or PDF, and only the child\'s parent may attach it', function () {
+    Storage::fake(config('media.disk'));
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $stranger = User::factory()->role(UserRole::Parent)->create();
+
+    $absence = AbsenceRequest::create([
+        'student_id' => $student->id,
+        'requested_by' => $parent->id,
+        'start_date' => today()->addDay()->toDateString(),
+        'end_date' => today()->addDay()->toDateString(),
+        'type' => 'sick',
+        'status' => 'pending',
+    ]);
+
+    // Executables are rejected.
+    $this->actingAs($parent)->post(route('parent.absences.attach', $absence), [
+        'document' => UploadedFile::fake()->create('virus.exe', 10, 'application/x-msdownload'),
+    ])->assertSessionHasErrors('document');
+
+    expect($absence->attachments()->count())->toBe(0);
+
+    // A different parent cannot attach anything.
+    $this->actingAs($stranger)->post(route('parent.absences.attach', $absence), [
+        'document' => UploadedFile::fake()->image('note.jpg'),
+    ])->assertForbidden();
+
+    // Nor can the document be downloaded by an unrelated parent.
+    $this->actingAs($parent)->post(route('parent.absences.attach', $absence), [
+        'document' => UploadedFile::fake()->image('note.jpg', 200, 200),
+    ])->assertRedirect();
+
+    $attachment = $absence->attachments()->firstOrFail();
+
+    $this->actingAs($stranger)
+        ->get(route('absence.documents.show', $attachment))
+        ->assertForbidden();
 });
 
 test('search ignores very short queries', function () {

@@ -62,7 +62,7 @@ class AttendanceController extends Controller
             ->whereIn('status', ['pending', 'approved'])
             ->where('start_date', '<=', $date)
             ->where('end_date', '>=', $date)
-            ->with(['student:id,name', 'reviewedBy:id,name'])
+            ->with(['student:id,name', 'reviewedBy:id,name', 'attachments'])
             ->orderBy('start_date')
             ->get()
             ->map(fn (AbsenceRequest $a) => $a->summary())
@@ -290,6 +290,11 @@ class AttendanceController extends Controller
         );
     }
 
+    /**
+     * Resolve the register day. Past days stay selectable; future days are
+     * allowed up to the absence window so approved absences can be reviewed
+     * (and corrected) ahead of time.
+     */
     private function resolveDate(?string $date): string
     {
         if (! $date) {
@@ -302,6 +307,8 @@ class AttendanceController extends Controller
             return today()->toDateString();
         }
 
-        return $parsed > today()->toDateString() ? today()->toDateString() : $parsed;
+        $latest = today()->addDays(90)->toDateString();
+
+        return $parsed > $latest ? $latest : $parsed;
     }
 }

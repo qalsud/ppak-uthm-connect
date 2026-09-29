@@ -46,6 +46,7 @@ class ChildController extends Controller
                 ->map(fn (Attendance $a) => $a->historyRow())
                 ->values(),
             'absences' => $student->absenceRequests()
+                ->with('attachments')
                 ->latest('start_date')
                 ->limit(6)
                 ->get()

@@ -45,6 +45,7 @@ return [
 
     // Whether a photo is mandatory when a teacher checks a child out.
     'checkout_photo_required' => (bool) env('CHECKOUT_PHOTO_REQUIRED', true),
+    'document_max_upload_kb' => (int) env('MEDIA_DOCUMENT_MAX_UPLOAD_KB', 5120),
 
     // Days to keep checkout photos before pruning (0 = keep forever).
     'retention_days' => (int) env('CHECKOUT_PHOTO_RETENTION_DAYS', 3),

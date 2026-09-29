@@ -15,14 +15,22 @@ trait HasStoredImage
 
     public function url(): string
     {
-        return route($this->imageRouteName(), ['photo' => $this]);
+        // Route parameter differs per model (photo vs attachment); derive it
+        // from the route's own placeholder so HasStoredImage stays generic.
+        return route($this->imageRouteName(), [$this->imageRouteParameter() => $this]);
     }
 
     public function thumbUrl(): string
     {
         return $this->thumb_path
-            ? route($this->imageRouteName(), ['photo' => $this, 'variant' => 'thumb'])
+            ? route($this->imageRouteName(), [$this->imageRouteParameter() => $this, 'variant' => 'thumb'])
             : $this->url();
+    }
+
+    /** The route placeholder this model binds to (defaults to `photo`). */
+    protected function imageRouteParameter(): string
+    {
+        return 'photo';
     }
 
     /** Shape used by the frontend. */
@@ -35,6 +43,8 @@ trait HasStoredImage
             'note' => $this->note,
             'uploaded_by' => $this->uploadedBy?->name,
             'created_at' => $this->created_at?->format('Y-m-d H:i'),
+            'name' => $this->original_name ?? null,
+            'mime' => $this->mime ?? null,
         ];
     }
 

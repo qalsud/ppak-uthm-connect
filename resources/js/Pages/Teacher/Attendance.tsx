@@ -5,6 +5,7 @@ import { useState } from 'react';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import PageHeader from '@/Components/page-header';
+import { ProofLink, type Proof } from '@/Components/proof-upload';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';import {
     Select,
@@ -60,6 +61,7 @@ type Absence = {
     review_note: string | null;
     reviewed_by: string | null;
     requested_by: string | null;
+    attachments: Proof[];
 };
 
 export default function TeacherAttendance({
@@ -201,6 +203,13 @@ export default function TeacherAttendance({
                                             : `${a.start_date} → ${a.end_date}`}
                                         {a.reason ? ` · ${a.reason}` : ''}
                                     </p>
+                                    {a.attachments.length > 0 && (
+                                        <div className="mt-1 flex flex-wrap gap-1.5">
+                                            {a.attachments.map((proof) => (
+                                                <ProofLink key={proof.id} proof={proof} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 {a.status === 'pending' ? (
                                     <div className="flex gap-2">

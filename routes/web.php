@@ -78,6 +78,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('progress.photos.show');
     Route::get('/message-attachments/{photo}', [PhotoController::class, 'message'])
         ->name('message.photos.show');
+    Route::get('/absence-documents/{attachment}', [PhotoController::class, 'absence'])
+        ->name('absence.documents.show');
 
     // Message operations (polling, unread, edit, delete, search)
     Route::get('/messages/unread', [MessageOpsController::class, 'unread'])->name('messages.unread');
@@ -192,6 +194,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
             Route::post('/children/{student}/medications', [ParentMedicationController::class, 'store'])->name('medications.store');
             Route::post('/children/{student}/absences', [ParentAbsenceController::class, 'store'])->name('absences.store');
+            Route::post('/absences/{absence}/document', [ParentAbsenceController::class, 'attach'])->name('absences.attach');
             Route::delete('/absences/{absence}', [ParentAbsenceController::class, 'destroy'])->name('absences.destroy');
             Route::get('/teachers', [ParentContactController::class, 'index'])->name('teachers.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');

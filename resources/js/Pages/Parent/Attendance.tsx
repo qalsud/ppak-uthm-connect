@@ -1,6 +1,7 @@
 import { CalendarClock, History } from 'lucide-react';
 
-import AbsencePanel, { type Absence } from '@/Components/absence-panel';
+import AbsencePanel from '@/Components/absence-panel';
+import type { Proof } from '@/Components/proof-upload';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import PageHeader from '@/Components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -20,6 +21,19 @@ type HistoryRow = {
     health_note: string | null;
     absence_type?: string | null;
     absence_reason?: string | null;
+};
+
+type Absence = {
+    id: number;
+    start_date: string;
+    end_date: string;
+    days: number;
+    type: 'sick' | 'personal' | 'other';
+    reason: string | null;
+    status: 'pending' | 'approved' | 'declined';
+    review_note: string | null;
+    reviewed_by: string | null;
+    attachments: Proof[];
 };
 
 type Child = {
