@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AbsenceAttachment;
 use App\Models\AttendancePhoto;
+use App\Models\AuthorisedCollector;
 use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
 use App\Models\Student;
@@ -29,6 +30,23 @@ class PhotoController extends Controller
     public function message(Request $request, MessageAttachment $photo): StreamedResponse
     {
         return $this->serve($request, $photo);
+    }
+
+    /** Authorised collector's photo (staff only — used for verification). */
+    public function collector(Request $request, AuthorisedCollector $collector): StreamedResponse
+    {
+        $user = $request->user();
+
+        abort_unless(
+            $user !== null && ($user->isAdmin() || $user->isTeacher() || $collector->student?->parent_id === $user->id),
+            403
+        );
+
+        $response = $collector->photoResponse();
+
+        abort_if($response === null, 404);
+
+        return $response;
     }
 
     /** Child profile photo (admin/teacher, or the child's own parent). */

@@ -2,7 +2,7 @@ import { LogIn, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 import CheckInDialog from '@/Components/check-in-dialog';
-import CheckoutDialog from '@/Components/checkout-dialog';
+import CheckoutDialog, { type Collector } from '@/Components/checkout-dialog';
 import PhotoThumb from '@/Components/photo-thumb';
 import { Button } from '@/Components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -16,6 +16,8 @@ export type AttendanceSummary = {
     health_note?: string | null;
     absence_type?: string | null;
     absence_reason?: string | null;
+    collected_by?: string | null;
+    collector_override?: string | null;
     photo?: PhotoInfo | null;
     note?: string | null;
     photo_override?: boolean;
@@ -29,6 +31,8 @@ const empty: AttendanceSummary = {
     health_note: null,
     absence_type: null,
     absence_reason: null,
+    collected_by: null,
+    collector_override: null,
     photo: null,
     note: null,
     photo_override: false,
@@ -41,6 +45,7 @@ export default function AttendanceActions({
     role,
     date,
     showChip = true,
+    collectors = [],
 }: {
     studentId: number;
     studentName?: string;
@@ -50,6 +55,8 @@ export default function AttendanceActions({
     date?: string;
     /** Render the status chip (set false when the caller shows its own). */
     showChip?: boolean;
+    /** Adults authorised to collect this child (teachers only). */
+    collectors?: Collector[];
 }) {
     const { t } = useI18n();
     const [checkInOpen, setCheckInOpen] = useState(false);
@@ -58,7 +65,7 @@ export default function AttendanceActions({
     // Parents are read-only: attendance is marked by teachers.
     const readOnly = role === 'parent';
 
-    const { status, arrived_at, departed_at, temperature, health_note, absence_type, absence_reason, photo, note, photo_override } =
+    const { status, arrived_at, departed_at, temperature, health_note, absence_type, absence_reason, photo, note, photo_override, collected_by, collector_override } =
         attendance;
 
     const elevated = temperature !== null && temperature !== undefined && parseFloat(temperature) >= 37.5;
@@ -94,6 +101,13 @@ export default function AttendanceActions({
             )}
 
             {health_note && <p className="text-[11px] text-muted-foreground">{health_note}</p>}
+
+            {collected_by && (
+                <p className="text-[11px] text-muted-foreground">
+                    {t('collected_by')}: <span className="font-medium">{collected_by}</span>
+                    {collector_override ? ` · ${t('collector_override_short')}` : ''}
+                </p>
+            )}
 
             {status === 'absent' && absence_reason && (
                 <p className="text-[11px] text-muted-foreground">{absence_reason}</p>
@@ -151,6 +165,7 @@ export default function AttendanceActions({
                         studentId={studentId}
                         studentName={studentName ?? ''}
                         date={date}
+                        collectors={collectors}
                         open={checkoutOpen}
                         onOpenChange={setCheckoutOpen}
                     />

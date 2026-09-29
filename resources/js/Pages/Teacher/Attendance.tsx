@@ -3,6 +3,7 @@ import { CalendarClock, CalendarOff, ChevronLeft, ChevronRight, Pill, UserCheck 
 import { useState } from 'react';
 
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
+import type { Collector } from '@/Components/checkout-dialog';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import PageHeader from '@/Components/page-header';
 import { ProofLink, type Proof } from '@/Components/proof-upload';
@@ -33,6 +34,7 @@ type Student = {
     class: string;
     allergies?: string | null;
     alerts?: string[];
+    collectors?: Collector[];
     attendance: AttendanceSummary;
 };
 
@@ -450,6 +452,7 @@ export default function TeacherAttendance({
                                     attendance={s.attendance}
                                     role="teacher"
                                     date={date}
+                                    collectors={s.collectors ?? []}
                                 />
                             </div>
                         ))
@@ -500,6 +503,7 @@ export default function TeacherAttendance({
                                                     role="teacher"
                                                     date={date}
                                                     showChip={false}
+                                                    collectors={s.collectors ?? []}
                                                 />
                                             </div>
                                         </TableCell>

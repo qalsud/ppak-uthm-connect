@@ -4,11 +4,14 @@ namespace Database\Seeders;
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\AuthorisedCollector;
 use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\DailyUpdate;
+use App\Models\EmergencyContact;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
+use App\Models\Guardian;
 use App\Models\Memo;
 use App\Models\Message;
 use App\Models\ProgressRecord;
@@ -165,6 +168,69 @@ class DatabaseSeeder extends Seeder
         });
 
         $demoStudent = $students->first();
+
+        // ---- Guardians, emergency contacts & authorised collectors --------
+        // Every child gets a mother + father; a couple get an extra contact or
+        // collector so the safeguarding flows are demonstrable.
+        $jobs = ['Guru', 'Jurutera', 'Kerani', 'Penolong Kanan', 'Penjaga Kedai', 'Jururawat'];
+
+        foreach ($students as $index => $student) {
+            $father = $student->parent;
+            $family = explode(' ', $father?->name ?? 'Ahmad')[0];
+
+            Guardian::create([
+                'student_id' => $student->id,
+                'user_id' => $father?->id,
+                'name' => $father?->name ?? 'Bapa '.$student->name,
+                'relationship' => 'father',
+                'ic_number' => '80'.random_int(100000, 999999).'01',
+                'phone' => '01'.random_int(10000000, 99999999),
+                'email' => $father?->email,
+                'occupation' => $jobs[array_rand($jobs)],
+                'is_primary' => true,
+                'can_collect' => true,
+            ]);
+
+            Guardian::create([
+                'student_id' => $student->id,
+                'name' => 'Nor '.$family.' binti '.$family,
+                'relationship' => 'mother',
+                'ic_number' => '81'.random_int(100000, 999999).'01',
+                'phone' => '01'.random_int(10000000, 99999999),
+                'occupation' => $jobs[array_rand($jobs)],
+                'is_primary' => false,
+                'can_collect' => true,
+            ]);
+
+            EmergencyContact::create([
+                'student_id' => $student->id,
+                'name' => $family.' bin Hassan',
+                'relationship' => 'Grandparent',
+                'phone' => '01'.random_int(10000000, 99999999),
+                'priority' => 1,
+            ]);
+
+            // A couple of children also have a non-family authorised collector.
+            if ($index % 4 === 0) {
+                EmergencyContact::create([
+                    'student_id' => $student->id,
+                    'name' => 'Puan Selvi a/p Raman',
+                    'relationship' => 'Neighbour',
+                    'phone' => '01'.random_int(10000000, 99999999),
+                    'priority' => 2,
+                ]);
+
+                AuthorisedCollector::create([
+                    'student_id' => $student->id,
+                    'name' => 'Abang '.$family,
+                    'relationship' => 'Uncle',
+                    'phone' => '01'.random_int(10000000, 99999999),
+                    'ic_number' => '90'.random_int(100000, 999999).'01',
+                    'is_active' => true,
+                    'notes' => 'Authorised for Thursday pickups only.',
+                ]);
+            }
+        }
 
         // ---- Memos ---------------------------------------------------------
         Memo::create([

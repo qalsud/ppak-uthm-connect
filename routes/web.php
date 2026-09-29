@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MemoController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Admin\StudentContactController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
@@ -82,6 +83,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('absence.documents.show');
     Route::get('/students/{student}/photo', [PhotoController::class, 'student'])
         ->name('student.photos.show');
+    Route::get('/collectors/{collector}/photo', [PhotoController::class, 'collector'])
+        ->name('collector.photos.show');
 
     // Message operations (polling, unread, edit, delete, search)
     Route::get('/messages/unread', [MessageOpsController::class, 'unread'])->name('messages.unread');
@@ -136,6 +139,17 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
             Route::post('/students/{student}/status', [StudentController::class, 'status'])->name('students.status');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+
+        // Guardians, emergency contacts and authorised collectors.
+        Route::post('/students/{student}/guardians', [StudentContactController::class, 'storeGuardian'])->name('students.guardians.store');
+        Route::put('/guardians/{guardian}', [StudentContactController::class, 'updateGuardian'])->name('guardians.update');
+        Route::delete('/guardians/{guardian}', [StudentContactController::class, 'destroyGuardian'])->name('guardians.destroy');
+        Route::post('/students/{student}/emergency-contacts', [StudentContactController::class, 'storeEmergencyContact'])->name('students.contacts.store');
+        Route::put('/emergency-contacts/{contact}', [StudentContactController::class, 'updateEmergencyContact'])->name('contacts.update');
+        Route::delete('/emergency-contacts/{contact}', [StudentContactController::class, 'destroyEmergencyContact'])->name('contacts.destroy');
+        Route::post('/students/{student}/collectors', [StudentContactController::class, 'storeCollector'])->name('students.collectors.store');
+        Route::post('/collectors/{collector}', [StudentContactController::class, 'updateCollector'])->name('collectors.update');
+        Route::delete('/collectors/{collector}', [StudentContactController::class, 'destroyCollector'])->name('collectors.destroy');
 
             Route::get('/parents', [ParentController::class, 'index'])->name('parents.index');
             Route::get('/parents/export', [ParentController::class, 'export'])->name('parents.export');

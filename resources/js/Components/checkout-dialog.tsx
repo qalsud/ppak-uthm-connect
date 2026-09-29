@@ -16,18 +16,30 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
 
+export type Collector = {
+    id: string;
+    name: string;
+    relationship: string | null;
+    phone: string | null;
+    photo_url: string | null;
+    guardian: boolean;
+};
+
 export default function CheckoutDialog({
     studentId,
     studentName,
     open,
     onOpenChange,
     date,
+    collectors = [],
 }: {
     studentId: number;
     studentName: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     date?: string;
+    /** Adults authorised to collect this child (guardians + listed people). */
+    collectors?: Collector[];
 }) {
     const { t } = useI18n();
     const [skip, setSkip] = useState(false);
@@ -37,8 +49,13 @@ export default function CheckoutDialog({
         note: '',
         skip_photo: false,
         override_reason: '',
+        collected_by: '',
+        collector_override: '',
         ...(date ? { date } : {}),
     });
+
+    const chosen = collectors.find((c) => c.id === form.data.collected_by);
+    const notListed = form.data.collected_by === 'other';
 
     const reset = () => {
         setSkip(false);
@@ -63,9 +80,10 @@ export default function CheckoutDialog({
         }
     };
 
-    const canSubmit = skip
-        ? form.data.override_reason.trim().length > 0
-        : form.data.photo !== null;
+    const canSubmit =
+        (skip ? form.data.override_reason.trim().length > 0 : form.data.photo !== null) &&
+        (form.data.collected_by !== '' &&
+            (!notListed || form.data.collector_override.trim().length > 0));
 
     const submit = () =>
         form.post(route('teacher.attendance.checkout', { student: studentId }), {
@@ -85,6 +103,89 @@ export default function CheckoutDialog({
                 </DialogHeader>
 
                 <div className="space-y-4">
+                    {/* Safeguarding: confirm who is collecting the child. */}
+                    <div className="space-y-2 rounded-xl border border-primary/30 bg-primary/[0.03] p-3">
+                        <Label>{t('select_collector')}</Label>
+
+                        {collectors.length > 0 ? (
+                            <div className="max-h-48 space-y-1.5 overflow-y-auto">
+                                {collectors.map((c) => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => {
+                                            form.setData('collected_by', c.id);
+                                            form.setData('collector_override', '');
+                                        }}
+                                        className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                                            form.data.collected_by === c.id
+                                                ? 'border-primary bg-primary/10'
+                                                : 'hover:bg-muted/60'
+                                        }`}
+                                    >
+                                        {c.photo_url ? (
+                                            <img
+                                                src={c.photo_url}
+                                                alt=""
+                                                className="size-9 shrink-0 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-accent-foreground">
+                                                {c.name.slice(0, 2).toUpperCase()}
+                                            </span>
+                                        )}
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block truncate text-sm font-medium">{c.name}</span>
+                                            <span className="block truncate text-[11px] text-muted-foreground">
+                                                {c.relationship ? t(`relationship.${c.relationship}`, c.relationship) : ''}
+                                                {c.phone ? ` · ${c.phone}` : ''}
+                                            </span>
+                                        </span>
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        form.setData('collected_by', 'other');
+                                        form.setData('collector_override', '');
+                                    }}
+                                    className={`w-full rounded-lg border border-dashed px-2.5 py-2 text-left text-xs transition-colors ${
+                                        notListed ? 'border-amber-400 bg-amber-50' : 'hover:bg-muted/60'
+                                    }`}
+                                >
+                                    {t('not_authorised_label')}
+                                </button>
+                            </div>
+                        ) : (
+                            <p className="text-[11px] text-muted-foreground">{t('no_collectors')}</p>
+                        )}
+
+                        {notListed && (
+                            <div className="space-y-1.5 pt-1">
+                                <Label htmlFor="collector-override">{t('collector_override')}</Label>
+                                <Input
+                                    id="collector-override"
+                                    value={form.data.collector_override}
+                                    onChange={(e) => form.setData('collector_override', e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        {form.errors.collected_by && (
+                            <p className="text-xs text-destructive">{form.errors.collected_by}</p>
+                        )}
+                        {form.errors.collector_override && (
+                            <p className="text-xs text-destructive">{form.errors.collector_override}</p>
+                        )}
+
+                        {chosen && !notListed && (
+                            <p className="text-[11px] text-muted-foreground">
+                                {t('collected_by')}: {chosen.name}
+                            </p>
+                        )}
+                    </div>
+
                     {!skip && (
                         <PhotoUpload
                             value={form.data.photo}

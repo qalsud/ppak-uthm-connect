@@ -25,6 +25,8 @@ class Attendance extends Model
         'health_note',
         'absence_request_id',
         'absence_type',
+        'collected_by',
+        'collector_override_reason',
     ];
 
     protected $casts = [
@@ -131,6 +133,8 @@ class Attendance extends Model
             'photo' => $this->checkoutPhoto()?->payload(),
             'note' => $this->checkout_note,
             'photo_override' => (bool) $this->checkout_photo_override,
+            'collected_by' => $this->collected_by,
+            'collector_override' => $this->collector_override_reason,
         ];
     }
 
@@ -147,6 +151,8 @@ class Attendance extends Model
             'photo' => null,
             'note' => null,
             'photo_override' => false,
+            'collected_by' => null,
+            'collector_override' => null,
         ];
     }
 

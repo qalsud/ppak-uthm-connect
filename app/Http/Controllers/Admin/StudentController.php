@@ -58,7 +58,7 @@ class StudentController extends Controller
 
     public function show(Student $student): Response
     {
-        $student->load('parent:id,name,email');
+        $student->load(['parent:id,name,email', 'guardians', 'emergencyContacts', 'authorisedCollectors']);
 
         return Inertia::render('Admin/Student', [
             'student' => [
@@ -74,6 +74,8 @@ class StudentController extends Controller
                 'unpaid' => (float) $student->financialRecords()->where('status', 'unpaid')->sum('amount'),
             ],
             'profile' => $student->profile(),
+            'contacts' => $student->contacts(),
+            'collectorOptions' => $student->collectorOptions(),
             'attendance' => Attendance::historyFor($student->id, 14)
                 ->map(fn (Attendance $a) => $a->historyRow())
                 ->values(),

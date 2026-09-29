@@ -118,6 +118,21 @@ class Student extends Model
         return $this->hasMany(AbsenceRequest::class);
     }
 
+    public function guardians(): HasMany
+    {
+        return $this->hasMany(Guardian::class)->orderByDesc('is_primary')->orderBy('name');
+    }
+
+    public function emergencyContacts(): HasMany
+    {
+        return $this->hasMany(EmergencyContact::class)->orderBy('priority')->orderBy('name');
+    }
+
+    public function authorisedCollectors(): HasMany
+    {
+        return $this->hasMany(AuthorisedCollector::class)->orderBy('name');
+    }
+
     // Future modules attach here:
     // public function dailyActivities(): HasMany ...
     // public function progressRecords(): HasMany ...
@@ -218,6 +233,49 @@ class Student extends Model
             'medical_consent_at' => $this->medical_consent_at?->format('Y-m-d'),
             'alerts' => $this->alerts(),
         ];
+    }
+
+    /** Guardians, emergency contacts and authorised collectors, for the UI. */
+    public function contacts(): array
+    {
+        return [
+            'guardians' => $this->guardians->map(fn (Guardian $g) => $g->summary())->values()->all(),
+            'emergency_contacts' => $this->emergencyContacts->map(fn (EmergencyContact $c) => $c->summary())->values()->all(),
+            'collectors' => $this->authorisedCollectors->map(fn (AuthorisedCollector $c) => $c->summary())->values()->all(),
+        ];
+    }
+
+    /**
+     * Guardians who are allowed to collect this child, for the checkout
+     * verification list.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function collectorOptions(): array
+    {
+        $guardians = $this->guardians
+            ->where('can_collect', true)
+            ->map(fn (Guardian $g) => [
+                'id' => 'guardian-'.$g->id,
+                'name' => $g->name,
+                'relationship' => $g->relationship,
+                'phone' => $g->phone,
+                'photo_url' => null,
+                'guardian' => true,
+            ]);
+
+        $collectors = $this->authorisedCollectors
+            ->where('is_active', true)
+            ->map(fn (AuthorisedCollector $c) => [
+                'id' => 'collector-'.$c->id,
+                'name' => $c->name,
+                'relationship' => $c->relationship,
+                'phone' => $c->phone,
+                'photo_url' => $c->photoUrl(),
+                'guardian' => false,
+            ]);
+
+        return $guardians->concat($collectors)->values()->all();
     }
 
     public static function classLabelStatic(string $class): string

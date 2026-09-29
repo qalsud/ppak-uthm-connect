@@ -5,6 +5,8 @@ import PageHeader from '@/Components/page-header';
 import PhotoThumb from '@/Components/photo-thumb';
 import RatingChip from '@/Components/rating-chip';
 import StatusBadge from '@/Components/status-badge';
+import StudentProfileCard, { type StudentProfile } from '@/Components/student-profile-card';
+import ChildContactsManager, { type Contacts } from '@/Components/child-contacts-manager';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatDate } from '@/lib/date';
@@ -49,6 +51,8 @@ type Progress = {
 
 type Page = PageProps<{
     student: Student;
+    profile: StudentProfile;
+    contacts: Contacts;
     attendance: HistoryRow[];
     updates: Array<{
         id: number;
@@ -74,7 +78,7 @@ type Page = PageProps<{
 export default function AdminStudent() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { student, attendance, updates, activities, progress, payments, fields } = props;
+    const { student, profile, contacts, attendance, updates, activities, progress, payments, fields } = props;
 
     const statusMeta = (status: HistoryRow['status']) =>
         status === 'school'
@@ -98,6 +102,11 @@ export default function AdminStudent() {
                     </Button>
                 </Link>
             </PageHeader>
+
+            <div className="mb-4 grid gap-4 lg:grid-cols-2">
+                <StudentProfileCard profile={profile} />
+                <ChildContactsManager studentId={student.id} contacts={contacts} />
+            </div>
 
             {/* Summary */}
             <Card className="mb-4 rounded-2xl border-0 shadow-sm">

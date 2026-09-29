@@ -97,6 +97,12 @@ class AttendanceController extends Controller
             $student->setAttribute('alerts', $student->alerts());
         });
 
+        // Authorised collectors per child, for the checkout verification step.
+        $students->loadMissing(['guardians', 'authorisedCollectors']);
+        $students->each(function (Student $student) {
+            $student->setAttribute('collectors', $student->collectorOptions());
+        });
+
         return Inertia::render('Teacher/Attendance', [
             'students' => $students,
             'selectedClass' => $class,
@@ -225,11 +231,32 @@ class AttendanceController extends Controller
             'date' => ['nullable', 'date', 'before_or_equal:today'],
             'skip_photo' => ['nullable', 'boolean'],
             'override_reason' => ['nullable', 'string', 'max:255'],
+            'collected_by' => ['nullable', 'string', 'max:60'],
+            'collector_override' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($skip && ! $hasPhoto && blank($request->input('override_reason'))) {
             throw ValidationException::withMessages([
                 'override_reason' => __('override_reason_required'),
+            ]);
+        }
+
+        // Safeguarding: whoever collects the child must be on the authorised
+        // list, otherwise the release needs a recorded reason.
+        $student->loadMissing(['guardians', 'authorisedCollectors']);
+        $allowed = collect($student->collectorOptions())->pluck('id')->all();
+        $collectedBy = $request->input('collected_by');
+        $collectorOverride = $request->input('collector_override');
+
+        if ($collectedBy && ! in_array($collectedBy, $allowed, true) && blank($collectorOverride)) {
+            throw ValidationException::withMessages([
+                'collector_override' => __('collector_not_authorised'),
+            ]);
+        }
+
+        if (blank($collectedBy) && blank($collectorOverride)) {
+            throw ValidationException::withMessages([
+                'collected_by' => __('collector_required'),
             ]);
         }
 
@@ -249,6 +276,8 @@ class AttendanceController extends Controller
         $attendance->checkout_note = $request->input('note');
         $attendance->checkout_photo_override = ! $hasPhoto;
         $attendance->checkout_override_reason = $hasPhoto ? null : $request->input('override_reason');
+        $attendance->collected_by = $collectorOverride ?: $collectedBy;
+        $attendance->collector_override_reason = $collectorOverride;
         $attendance->save();
 
         $photo = null;

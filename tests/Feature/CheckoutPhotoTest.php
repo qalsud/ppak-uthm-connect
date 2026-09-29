@@ -4,6 +4,7 @@ use App\Enums\UserRole;
 use App\Models\Attendance;
 use App\Models\AttendancePhoto;
 use App\Models\Conversation;
+use App\Models\Guardian;
 use App\Models\Message;
 use App\Models\Student;
 use App\Models\User;
@@ -19,7 +20,24 @@ function checkoutSetup(): array
     $teacher = User::factory()->role(UserRole::Teacher)->create();
     $student = Student::factory()->create(['parent_id' => $parent->id]);
 
+    // Safeguarding: a child must have at least one authorised collector before
+    // they can be released at all.
+    $guardian = Guardian::create([
+        'student_id' => $student->id,
+        'name' => 'Nor Aisyah binti Omar',
+        'relationship' => 'mother',
+        'can_collect' => true,
+    ]);
+
+    $student->setAttribute('test_collector_id', 'guardian-'.$guardian->id);
+
     return [$parent, $teacher, $student];
+}
+
+/** The default "who is collecting" value for these tests. */
+function collectorId($student): string
+{
+    return $student->test_collector_id ?? 'guardian-0';
 }
 
 beforeEach(function () {
@@ -46,6 +64,7 @@ test('a teacher checks out with a photo, notifies the parent and posts to chat',
         ->post(route('teacher.attendance.checkout', $student), [
             'photo' => UploadedFile::fake()->image('child.jpg', 900, 700),
             'note' => 'Collected by grandmother',
+            'collected_by' => collectorId($student),
         ])
         ->assertRedirect()
         ->assertSessionHas('success');
@@ -93,6 +112,7 @@ test('a documented override allows checkout without a photo but needs a reason',
         ->post(route('teacher.attendance.checkout', $student), [
             'skip_photo' => true,
             'override_reason' => 'Camera not working',
+            'collected_by' => collectorId($student),
         ])
         ->assertSessionHas('success');
 
@@ -175,6 +195,7 @@ test('attendance photos are only visible to staff and the child\'s parent', func
     $this->actingAs($teacher)
         ->post(route('teacher.attendance.checkout', $student), [
             'photo' => UploadedFile::fake()->image('child.jpg'),
+            'collected_by' => collectorId($student),
         ]);
 
     $photo = AttendancePhoto::sole();
@@ -193,6 +214,7 @@ test('re-marking arrival reopens a day that was checked out', function () {
 
     $this->actingAs($teacher)->post(route('teacher.attendance.checkout', $student), [
         'photo' => UploadedFile::fake()->image('child.jpg'),
+        'collected_by' => collectorId($student),
     ]);
 
     expect(Attendance::where('student_id', $student->id)->first()->status())->toBe('home');
@@ -208,6 +230,7 @@ test('the prune command deletes old photos and clears the chat attachment', func
     $this->actingAs($teacher)
         ->post(route('teacher.attendance.checkout', $student), [
             'photo' => UploadedFile::fake()->image('child.jpg'),
+            'collected_by' => collectorId($student),
         ]);
 
     $photo = AttendancePhoto::sole();
