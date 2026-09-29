@@ -124,7 +124,7 @@ Centres: **Tadika Khalifah Junior** · **Taska Hikmah UTHM**
 **Order matters.** G3 (access control) must land before any centre-scoped UI, or the
 cross-centre leak in `canManage()` widens with every screen added.
 
-- [ ] **G0 Access-control foundation (do first).** ✅ *done* (`7ac8415`) `User::canManage()` compares only a
+- [x] **G0 Access-control foundation.** *Done* (`7ac8415`) - centre is part of the access check.
       class *string*, so a `5tahun` teacher at one centre can manage the other centre's
       `5tahun` children. Make centre part of the comparison, and give `assignedClass()`
       a centre context. Nothing else is safe until this is true.
@@ -138,14 +138,14 @@ cross-centre leak in `canManage()` widens with every screen added.
 - [x] **G4 Admin centre switcher** — `ActiveCentre` (session-backed) + switcher in the app shell. "All centres" is the default. ✅ `c85d962`
 - [x] **G5 Centre CRUD** at `/admin/centres`. Centres are deactivated, never deleted. ✅ `c85d962`
 - [x] **G6 Centre assignment** on students (form + validation). ✅ `c85d962`
-- [ ] **G7 Scoped access** — teachers and parents only ever see their own centre.
+- [x] **G7 Scoped access** - teachers assigned to one or many centres; parents scoped via their children. *Done* (`4e634f0`)
       **Teachers may belong to more than one centre** (assigned via `users.centre_id`
       being nullable or a pivot — decide during G1).
-- [ ] **G8 Per-centre fees** — rates and generation are per centre, not global.
-- [ ] **G9 Per-centre dashboard/reports** — counts and charts split or filtered by centre.
-- [ ] **G10 Memos** — audience gains a centre dimension; fix the existing leak where
+- [~] **G8 Per-centre fees** - dashboard money is centre-scoped, but fee RATES and generation are still global (see G-i5).
+- [x] **G9 Per-centre dashboard** - class split derives from the live class list; stats/charts respect the active centre. *Done* (`4e634f0`)
+- [x] **G10 Memos** - centre field + centre-aware admin list; the teacher-memo leak was fixed in G3. *Done* (`4e634f0`)
       `Teacher\MemoController` returns *every* class-audience memo to *every* teacher.
-- [ ] **G11 Parents see the centre name** in the portal.
+- [x] **G11 Parents see the centre name** in the portal. *Done* (`4e634f0`)
 
 **Known cross-centre leaks to close during G (from the reconnaissance)**
 
@@ -218,9 +218,9 @@ _Append as each phase lands._
 | F — Delete safety | ✅ **done** (`9a407eb`) |
 | A — Admin acts everywhere | ✅ **done** (`fdaa0c5`) |
 | C — Editable lists | ✅ **done** (architecture + 14 lists + admin screen) |
-| G — Two centres | next |
+| G - Two centres | Done except per-centre fee rates (G8) |
 | C — Editable lists | not started |
-| G — Two centres | not started |
+| G - Two centres | Done except per-centre fee rates (G8) |
 | B — Settings + money | not started |
 | E — Oversight views | not started |
 | D — Admin accounts | not started |
