@@ -3,19 +3,13 @@ import { Check, Inbox, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
+import FormDialog from '@/Components/form-dialog';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
+import { FormField } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -408,32 +402,24 @@ export default function Registrations({
                 )}
             </Card>
 
-            <Dialog open={rejectBulk || rejectTarget !== null} onOpenChange={(v) => !v && (setRejectTarget(null), setRejectBulk(false))}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>{t('reject')}</DialogTitle>
-                        <DialogDescription>
-                            {rejectBulk ? `${selected.length} ${t('selected')}` : rejectTarget?.name}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-1.5">
-                        <label className="text-sm font-medium">{t('reject_reason')}</label>
-                        <Input
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            placeholder={t('reject_reason_placeholder')}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => (setRejectTarget(null), setRejectBulk(false))}>
-                            {t('cancel')}
-                        </Button>
-                        <Button variant="destructive" onClick={confirmReject}>
-                            {t('reject')}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormDialog
+                open={rejectBulk || rejectTarget !== null}
+                onOpenChange={(v) => !v && (setRejectTarget(null), setRejectBulk(false))}
+                title={t('reject')}
+                description={rejectBulk ? `${selected.length} ${t('selected')}` : (rejectTarget?.name ?? '')}
+                onSubmit={confirmReject}
+                submitLabel={t('reject')}
+                destructive
+                maxWidth="max-w-md"
+            >
+                <FormField label={t('reject_reason')}>
+                    <Input
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        placeholder={t('reject_reason_placeholder')}
+                    />
+                </FormField>
+            </FormDialog>
         </AppShell>
     );
 }

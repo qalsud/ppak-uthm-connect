@@ -257,6 +257,7 @@
     "medical_consent_missing": "No medical consent recorded",
     "medical_consent_on": "Recorded on",
     "medical_consent_hint": "Allow staff to seek medical care for your child in an emergency.",
+    "age_optional_hint": "Optional — derived from the date of birth when set.",
     "yes": "Yes",
     "no": "No",
     "my_child_info": "My child's information",

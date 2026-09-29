@@ -4,21 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
+import FormDialog from '@/Components/form-dialog';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
+import { FormField, FormGrid } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -304,96 +298,75 @@ export default function Parents({
                 )}
             </Card>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editing ? `${t('edit')} ${t('parent')}` : `${t('add')} ${t('parent')}`}
-                        </DialogTitle>
-                    </DialogHeader>
+            <FormDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={editing ? `${t('edit')} ${t('parent')}` : `${t('add')} ${t('parent')}`}
+                onSubmit={submit}
+                submitLabel={editing ? t('save') : `${t('add')} ${t('parent')}`}
+                processing={form.processing}
+            >
+                <FormGrid>
+                    <FormField label={t('name')} error={form.errors.name}>
+                        <Input
+                            value={form.data.name}
+                            onChange={(e) => form.setData('name', e.target.value)}
+                        />
+                    </FormField>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-1">
-                            <Label>{t('name')}</Label>
-                            <Input
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                            />
-                            {form.errors.name && (
-                                <p className="text-xs text-destructive">{form.errors.name}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('ic')}</Label>
-                            <Input
-                                value={form.data.ic_number}
-                                onChange={(e) => form.setData('ic_number', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('email')}</Label>
-                            <Input
-                                type="email"
-                                value={form.data.email}
-                                onChange={(e) => form.setData('email', e.target.value)}
-                            />
-                            {form.errors.email && (
-                                <p className="text-xs text-destructive">{form.errors.email}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('phone')}</Label>
-                            <Input
-                                value={form.data.phone}
-                                onChange={(e) => form.setData('phone', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('password')}</Label>
-                            <Input
-                                type="password"
-                                value={form.data.password}
-                                onChange={(e) => form.setData('password', e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                {editing ? t('leave_blank_password') : ''}
-                            </p>
-                            {form.errors.password && (
-                                <p className="text-xs text-destructive">{form.errors.password}</p>
-                            )}
-                        </div>
-                        {editing && (
-                            <div className="space-y-1 sm:col-span-2">
-                                <Label>{t('status')}</Label>
-                                <Select
-                                    value={form.data.status}
-                                    onValueChange={(v) => form.setData('status', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {STATUSES.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {t(s)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </div>
+                    <FormField label={t('ic')}>
+                        <Input
+                            value={form.data.ic_number}
+                            onChange={(e) => form.setData('ic_number', e.target.value)}
+                        />
+                    </FormField>
 
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                            {t('cancel')}
-                        </Button>
-                        <Button onClick={submit} disabled={form.processing}>
-                            {editing ? t('save') : `${t('add')} ${t('parent')}`}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    <FormField label={t('email')} error={form.errors.email}>
+                        <Input
+                            type="email"
+                            value={form.data.email}
+                            onChange={(e) => form.setData('email', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('phone')}>
+                        <Input
+                            value={form.data.phone}
+                            onChange={(e) => form.setData('phone', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField
+                        label={t('password')}
+                        error={form.errors.password}
+                        hint={editing ? t('leave_blank_password') : undefined}
+                        className="sm:col-span-2"
+                    >
+                        <Input
+                            type="password"
+                            value={form.data.password}
+                            onChange={(e) => form.setData('password', e.target.value)}
+                        />
+                    </FormField>
+
+                    {editing && (
+                        <FormField label={t('status')} className="sm:col-span-2">
+                            <Select value={form.data.status} onValueChange={(v) => form.setData('status', v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {STATUSES.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {t(s)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                    )}
+                </FormGrid>
+            </FormDialog>
 
             <ConfirmDialog
                 open={deleteTarget !== null}

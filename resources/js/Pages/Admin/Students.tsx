@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
+import FormDialog from '@/Components/form-dialog';
 import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
@@ -12,15 +13,8 @@ import Pagination from '@/Components/pagination';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
+import { FormCheckbox, FormField, FormSection } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import {
     Select,
@@ -74,6 +68,8 @@ type Student = {
 type Parent = { id: number; name: string; email: string };
 
 const CLASSES = ['5tahun', '6bintang'];
+const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const IMMUNISATION_STATUSES = ['complete', 'partial', 'none', 'exempt', 'unknown'];
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Students({
@@ -556,300 +552,263 @@ export default function Students({
                 )}
             </Card>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader className="sticky -top-6 z-10 -mx-6 -mt-6 rounded-t-2xl border-b bg-background px-6 pb-4 pt-6">
-                        <DialogTitle>
-                            {editing ? `${t('edit')} ${t('student')}` : `${t('add')} ${t('student')}`}
-                        </DialogTitle>
-                    </DialogHeader>
+            <FormDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={editing ? `${t('edit')} ${t('student')}` : `${t('add')} ${t('student')}`}
+                onSubmit={submit}
+                submitLabel={editing ? t('save') : `${t('add')} ${t('student')}`}
+                processing={form.processing}
+                maxWidth="max-w-3xl"
+            >
+                <FormSection title={t('child_details')}>
+                    <FormField label={t('name')} error={form.errors.name} className="sm:col-span-2">
+                        <Input
+                            value={form.data.name}
+                            onChange={(e) => form.setData('name', e.target.value)}
+                        />
+                    </FormField>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('name')}</Label>
-                            <Input
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                            />
-                            {form.errors.name && (
-                                <p className="text-xs text-destructive">{form.errors.name}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('age')}</Label>
-                            <Input
-                                type="number"
-                                min={3}
-                                max={10}
-                                value={form.data.age}
-                                onChange={(e) => form.setData('age', e.target.value)}
-                            />
-                            {form.errors.age && (
-                                <p className="text-xs text-destructive">{form.errors.age}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('class')}</Label>
-                            <Select value={form.data.class} onValueChange={(v) => form.setData('class', v)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CLASSES.map((c) => (
-                                        <SelectItem key={c} value={c}>
-                                            {classLabel(c)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('parent')}</Label>
-                            <Select
-                                value={form.data.parent_id || 'none'}
-                                onValueChange={(v) => form.setData('parent_id', v === 'none' ? '' : v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('select_parent')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">{t('unassigned')}</SelectItem>
-                                    {parents.map((p) => (
-                                        <SelectItem key={p.id} value={p.id.toString()}>
-                                            {p.name} · {p.email}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {form.errors.parent_id && (
-                                <p className="text-xs text-destructive">{form.errors.parent_id}</p>
-                            )}
-                        </div>
-                        {/* Identity */}
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('mykid')}</Label>
-                            <Input
-                                value={form.data.mykid}
-                                onChange={(e) => form.setData('mykid', e.target.value)}
-                                placeholder="080101-14-1234"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('date_of_birth')}</Label>
-                            <Input
-                                type="date"
-                                max={localDate()}
-                                value={form.data.date_of_birth}
-                                onChange={(e) => form.setData('date_of_birth', e.target.value)}
-                            />
-                            {form.errors.date_of_birth && (
-                                <p className="text-xs text-destructive">{form.errors.date_of_birth}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('gender')}</Label>
-                            <Select
-                                value={form.data.gender || 'none'}
-                                onValueChange={(v) => form.setData('gender', v === 'none' ? '' : v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="—" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">—</SelectItem>
-                                    <SelectItem value="male">{t('gender.male')}</SelectItem>
-                                    <SelectItem value="female">{t('gender.female')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('nationality')}</Label>
-                            <Select
-                                value={form.data.nationality || 'none'}
-                                onValueChange={(v) => form.setData('nationality', v === 'none' ? '' : v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="—" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">—</SelectItem>
-                                    <SelectItem value="malaysian">{t('nationality.malaysian')}</SelectItem>
-                                    <SelectItem value="non_malaysian">
-                                        {t('nationality.non_malaysian')}
+                    <FormField label={t('class')}>
+                        <Select value={form.data.class} onValueChange={(v) => form.setData('class', v)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {CLASSES.map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {classLabel(c)}
                                     </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('ethnicity')}</Label>
-                            <Input
-                                value={form.data.ethnicity}
-                                onChange={(e) => form.setData('ethnicity', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('religion')}</Label>
-                            <Input
-                                value={form.data.religion}
-                                onChange={(e) => form.setData('religion', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('address')}</Label>
-                            <Textarea
-                                rows={2}
-                                value={form.data.address}
-                                onChange={(e) => form.setData('address', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('enrolment_date')}</Label>
-                            <Input
-                                type="date"
-                                max={localDate()}
-                                value={form.data.enrolment_date}
-                                onChange={(e) => form.setData('enrolment_date', e.target.value)}
-                            />
-                        </div>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormField>
 
-                        {/* Medical */}
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('allergies')}</Label>
-                            <Textarea
-                                rows={2}
-                                value={form.data.allergies}
-                                onChange={(e) => form.setData('allergies', e.target.value)}
-                                placeholder={t('allergies_placeholder')}
-                            />
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('medical_notes')}</Label>
-                            <Textarea
-                                rows={2}
-                                value={form.data.medical_notes}
-                                onChange={(e) => form.setData('medical_notes', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('blood_type')}</Label>
-                            <Select
-                                value={form.data.blood_type || 'none'}
-                                onValueChange={(v) => form.setData('blood_type', v === 'none' ? '' : v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="—" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">—</SelectItem>
-                                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => (
-                                        <SelectItem key={b} value={b}>
-                                            {b}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('immunisation_status')}</Label>
-                            <Select
-                                value={form.data.immunisation_status || 'none'}
-                                onValueChange={(v) => form.setData('immunisation_status', v === 'none' ? '' : v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="—" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">—</SelectItem>
-                                    {['complete', 'partial', 'none', 'exempt', 'unknown'].map((s) => (
-                                        <SelectItem key={s} value={s}>
-                                            {t(`immunisation.${s}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('immunisation_notes')}</Label>
-                            <Textarea
-                                rows={2}
-                                value={form.data.immunisation_notes}
-                                onChange={(e) => form.setData('immunisation_notes', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1 sm:col-span-2">
-                            <Label>{t('dietary_restrictions')}</Label>
-                            <Textarea
-                                rows={2}
-                                value={form.data.dietary_restrictions}
-                                onChange={(e) => form.setData('dietary_restrictions', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('doctor_name')}</Label>
-                            <Input
-                                value={form.data.doctor_name}
-                                onChange={(e) => form.setData('doctor_name', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('doctor_phone')}</Label>
-                            <Input
-                                value={form.data.doctor_phone}
-                                onChange={(e) => form.setData('doctor_phone', e.target.value)}
-                            />
-                        </div>
+                    <FormField label={t('parent')} error={form.errors.parent_id}>
+                        <Select
+                            value={form.data.parent_id || 'none'}
+                            onValueChange={(v) => form.setData('parent_id', v === 'none' ? '' : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('select_parent')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">{t('unassigned')}</SelectItem>
+                                {parents.map((p) => (
+                                    <SelectItem key={p.id} value={p.id.toString()}>
+                                        {p.name} · {p.email}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormField>
 
-                        <label className="flex items-start gap-2.5 rounded-xl border p-3 sm:col-span-2">
-                            <input
-                                type="checkbox"
-                                className="mt-0.5 size-4"
-                                checked={form.data.has_special_needs}
-                                onChange={(e) => form.setData('has_special_needs', e.target.checked)}
-                            />
-                            <span>
-                                <span className="block text-sm font-medium">{t('special_needs')}</span>
-                                <span className="block text-[11px] text-muted-foreground">
-                                    {t('special_needs_notes')}
-                                </span>
-                            </span>
-                        </label>
-                        {form.data.has_special_needs && (
-                            <div className="space-y-1 sm:col-span-2">
-                                <Label>{t('special_needs_notes')}</Label>
-                                <Textarea
-                                    rows={2}
-                                    value={form.data.special_needs_notes}
-                                    onChange={(e) => form.setData('special_needs_notes', e.target.value)}
-                                />
-                            </div>
-                        )}
+                    <FormField label={t('mykid')}>
+                        <Input
+                            value={form.data.mykid}
+                            onChange={(e) => form.setData('mykid', e.target.value)}
+                            placeholder="080101-14-1234"
+                        />
+                    </FormField>
 
-                        <label className="flex items-start gap-2.5 rounded-xl border p-3 sm:col-span-2">
-                            <input
-                                type="checkbox"
-                                className="mt-0.5 size-4"
-                                checked={form.data.medical_consent}
-                                onChange={(e) => form.setData('medical_consent', e.target.checked)}
-                            />
-                            <span>
-                                <span className="block text-sm font-medium">{t('medical_consent')}</span>
-                                <span className="block text-[11px] text-muted-foreground">
-                                    {t('medical_consent_hint')}
-                                </span>
-                            </span>
-                        </label>
-                    </div>
+                    <FormField label={t('date_of_birth')} error={form.errors.date_of_birth}>
+                        <Input
+                            type="date"
+                            max={localDate()}
+                            value={form.data.date_of_birth}
+                            onChange={(e) => form.setData('date_of_birth', e.target.value)}
+                        />
+                    </FormField>
 
-                    <DialogFooter className="sticky -bottom-6 z-10 -mx-6 -mb-6 rounded-b-2xl border-t bg-background px-6 pb-6 pt-4">
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                            {t('cancel')}
-                        </Button>
-                        <Button onClick={submit} disabled={form.processing}>
-                            {editing ? t('save') : `${t('add')} ${t('student')}`}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    <FormField label={t('gender')}>
+                        <Select
+                            value={form.data.gender || 'none'}
+                            onValueChange={(v) => form.setData('gender', v === 'none' ? '' : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">—</SelectItem>
+                                <SelectItem value="male">{t('gender.male')}</SelectItem>
+                                <SelectItem value="female">{t('gender.female')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+
+                    <FormField label={t('nationality')}>
+                        <Select
+                            value={form.data.nationality || 'none'}
+                            onValueChange={(v) => form.setData('nationality', v === 'none' ? '' : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">—</SelectItem>
+                                <SelectItem value="malaysian">{t('nationality.malaysian')}</SelectItem>
+                                <SelectItem value="non_malaysian">
+                                    {t('nationality.non_malaysian')}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+
+                    <FormField label={t('ethnicity')}>
+                        <Input
+                            value={form.data.ethnicity}
+                            onChange={(e) => form.setData('ethnicity', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('religion')}>
+                        <Input
+                            value={form.data.religion}
+                            onChange={(e) => form.setData('religion', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('address')} className="sm:col-span-2">
+                        <Textarea
+                            rows={2}
+                            value={form.data.address}
+                            onChange={(e) => form.setData('address', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('enrolment_date')}>
+                        <Input
+                            type="date"
+                            max={localDate()}
+                            value={form.data.enrolment_date}
+                            onChange={(e) => form.setData('enrolment_date', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('age')} error={form.errors.age} hint={t('age_optional_hint')}>
+                        <Input
+                            type="number"
+                            min={3}
+                            max={10}
+                            value={form.data.age}
+                            onChange={(e) => form.setData('age', e.target.value)}
+                        />
+                    </FormField>
+                </FormSection>
+
+                <FormSection title={t('health_information')}>
+                    <FormField label={t('allergies')} className="sm:col-span-2">
+                        <Textarea
+                            rows={2}
+                            value={form.data.allergies}
+                            onChange={(e) => form.setData('allergies', e.target.value)}
+                            placeholder={t('allergies_placeholder')}
+                        />
+                    </FormField>
+
+                    <FormField label={t('medical_notes')} className="sm:col-span-2">
+                        <Textarea
+                            rows={2}
+                            value={form.data.medical_notes}
+                            onChange={(e) => form.setData('medical_notes', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('blood_type')}>
+                        <Select
+                            value={form.data.blood_type || 'none'}
+                            onValueChange={(v) => form.setData('blood_type', v === 'none' ? '' : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">—</SelectItem>
+                                {BLOOD_TYPES.map((b) => (
+                                    <SelectItem key={b} value={b}>
+                                        {b}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+
+                    <FormField label={t('immunisation_status')}>
+                        <Select
+                            value={form.data.immunisation_status || 'none'}
+                            onValueChange={(v) => form.setData('immunisation_status', v === 'none' ? '' : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">—</SelectItem>
+                                {IMMUNISATION_STATUSES.map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                        {t(`immunisation.${s}`)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+
+                    <FormField label={t('immunisation_notes')} className="sm:col-span-2">
+                        <Textarea
+                            rows={2}
+                            value={form.data.immunisation_notes}
+                            onChange={(e) => form.setData('immunisation_notes', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('dietary_restrictions')} className="sm:col-span-2">
+                        <Textarea
+                            rows={2}
+                            value={form.data.dietary_restrictions}
+                            onChange={(e) => form.setData('dietary_restrictions', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('doctor_name')}>
+                        <Input
+                            value={form.data.doctor_name}
+                            onChange={(e) => form.setData('doctor_name', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormField label={t('doctor_phone')}>
+                        <Input
+                            value={form.data.doctor_phone}
+                            onChange={(e) => form.setData('doctor_phone', e.target.value)}
+                        />
+                    </FormField>
+
+                    <FormCheckbox
+                        label={t('special_needs')}
+                        description={t('special_needs_notes')}
+                        checked={form.data.has_special_needs}
+                        onChange={(v) => form.setData('has_special_needs', v)}
+                        className="sm:col-span-2"
+                    />
+
+                    {form.data.has_special_needs && (
+                        <FormField label={t('special_needs_notes')} className="sm:col-span-2">
+                            <Textarea
+                                rows={2}
+                                value={form.data.special_needs_notes}
+                                onChange={(e) => form.setData('special_needs_notes', e.target.value)}
+                            />
+                        </FormField>
+                    )}
+
+                    <FormCheckbox
+                        label={t('medical_consent')}
+                        description={t('medical_consent_hint')}
+                        checked={form.data.medical_consent}
+                        onChange={(v) => form.setData('medical_consent', v)}
+                        className="sm:col-span-2"
+                    />
+                </FormSection>
+            </FormDialog>
 
             <CsvImportDialog
                 open={importing}

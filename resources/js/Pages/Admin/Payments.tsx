@@ -4,22 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
+import FormDialog from '@/Components/form-dialog';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
+import { FormField } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -381,112 +374,85 @@ export default function Payments({ records, months, classes, students, fee, summ
             </Card>
 
             {/* Add payment */}
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {t('add')} {t('payment')}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                        <div className="space-y-1">
-                            <Label>{t('student')}</Label>
-                            <Select
-                                value={addForm.data.student_id}
-                                onValueChange={(v) => addForm.setData('student_id', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('select_student')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {students.map((s) => (
-                                        <SelectItem key={s.id} value={s.id.toString()}>
-                                            {s.name} · {classLabel(s.class)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {addForm.errors.student_id && (
-                                <p className="text-xs text-destructive">{addForm.errors.student_id}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('month')}</Label>
-                            <Select
-                                value={addForm.data.month}
-                                onValueChange={(v) => addForm.setData('month', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('month')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {months.map((m) => (
-                                        <SelectItem key={m} value={m}>
-                                            {m}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {addForm.errors.month && (
-                                <p className="text-xs text-destructive">{addForm.errors.month}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('overtime')}</Label>
-                            <Input
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={addForm.data.overtime_hours}
-                                onChange={(e) => addForm.setData('overtime_hours', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                            {t('cancel')}
-                        </Button>
-                        <Button onClick={submit} disabled={addForm.processing}>
-                            {t('create')}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={`${t('add')} ${t('payment')}`}
+                onSubmit={submit}
+                submitLabel={t('create')}
+                processing={addForm.processing}
+                maxWidth="max-w-lg"
+            >
+                <FormField label={t('student')} error={addForm.errors.student_id}>
+                    <Select
+                        value={addForm.data.student_id}
+                        onValueChange={(v) => addForm.setData('student_id', v)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={t('select_student')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {students.map((s) => (
+                                <SelectItem key={s.id} value={s.id.toString()}>
+                                    {s.name} · {classLabel(s.class)}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </FormField>
+
+                <FormField label={t('month')} error={addForm.errors.month}>
+                    <Select value={addForm.data.month} onValueChange={(v) => addForm.setData('month', v)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={t('month')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {months.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </FormField>
+
+                <FormField label={t('overtime')}>
+                    <Input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={addForm.data.overtime_hours}
+                        onChange={(e) => addForm.setData('overtime_hours', e.target.value)}
+                    />
+                </FormField>
+            </FormDialog>
 
             {/* Generate monthly fees */}
-            <Dialog open={genOpen} onOpenChange={setGenOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{t('generate_fees')}</DialogTitle>
-                        <DialogDescription>
-                            {t('generate_fees_desc').replace(':month', genForm.data.month)}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-1">
-                        <Label>{t('month')}</Label>
-                        <Select value={genForm.data.month} onValueChange={(v) => genForm.setData('month', v)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {months.map((m) => (
-                                    <SelectItem key={m} value={m}>
-                                        {m}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setGenOpen(false)}>
-                            {t('cancel')}
-                        </Button>
-                        <Button onClick={generate} disabled={genForm.processing}>
-                            {t('generate')}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormDialog
+                open={genOpen}
+                onOpenChange={setGenOpen}
+                title={t('generate_fees')}
+                description={t('generate_fees_desc').replace(':month', genForm.data.month)}
+                onSubmit={generate}
+                submitLabel={t('generate')}
+                processing={genForm.processing}
+                maxWidth="max-w-lg"
+            >
+                <FormField label={t('month')}>
+                    <Select value={genForm.data.month} onValueChange={(v) => genForm.setData('month', v)}>
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {months.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </FormField>
+            </FormDialog>
 
             <ConfirmDialog
                 open={deleteTarget !== null}

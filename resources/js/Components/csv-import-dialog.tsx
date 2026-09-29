@@ -2,14 +2,8 @@ import { useForm } from '@inertiajs/react';
 import { Download, FileUp } from 'lucide-react';
 import { useRef, useState } from 'react';
 
+import FormDialog from '@/Components/form-dialog';
 import { Button } from '@/Components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
 import { useI18n } from '@/lib/i18n';
 
 /** Shared CSV import dialog with a client-side template download. */
@@ -58,47 +52,39 @@ export default function CsvImportDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>{t('import_csv')}</DialogTitle>
-                </DialogHeader>
-
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-6 text-center">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                        <FileUp className="size-5" />
-                    </span>
-                    <p className="text-xs text-muted-foreground">{hint}</p>
-                    <input
-                        ref={inputRef}
-                        type="file"
-                        accept=".csv,text/csv"
-                        className="block w-full max-w-xs cursor-pointer rounded-md border border-input text-sm file:mr-3 file:rounded-none file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0] ?? null;
-                            form.setData('file', file);
-                            setFileName(file?.name ?? '');
-                        }}
-                    />
-                    {fileName && <p className="text-xs font-medium">{fileName}</p>}
-                    {form.errors.file && (
-                        <p className="text-xs text-destructive">{form.errors.file}</p>
-                    )}
-                    <Button type="button" variant="link" size="sm" className="gap-1" onClick={downloadTemplate}>
-                        <Download className="size-3.5" />
-                        {t('download_template')}
-                    </Button>
-                </div>
-
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        {t('cancel')}
-                    </Button>
-                    <Button onClick={submit} disabled={form.processing || !form.data.file}>
-                        {form.processing ? t('importing') : t('import')}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <FormDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            title={t('import_csv')}
+            onSubmit={submit}
+            submitLabel={form.processing ? t('importing') : t('import')}
+            processing={form.processing}
+            submitDisabled={!form.data.file}
+            maxWidth="max-w-md"
+        >
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-6 text-center">
+                <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                    <FileUp className="size-5" />
+                </span>
+                <p className="text-xs text-muted-foreground">{hint}</p>
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="block w-full max-w-xs cursor-pointer rounded-md border border-input text-sm file:mr-3 file:rounded-none file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm"
+                    onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null;
+                        form.setData('file', file);
+                        setFileName(file?.name ?? '');
+                    }}
+                />
+                {fileName && <p className="text-xs font-medium">{fileName}</p>}
+                {form.errors.file && <p className="text-xs text-destructive">{form.errors.file}</p>}
+                <Button type="button" variant="link" size="sm" className="gap-1" onClick={downloadTemplate}>
+                    <Download className="size-3.5" />
+                    {t('download_template')}
+                </Button>
+            </div>
+        </FormDialog>
     );
 }

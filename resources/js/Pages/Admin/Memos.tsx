@@ -4,19 +4,13 @@ import { useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
+import FormDialog from '@/Components/form-dialog';
 import PageHeader from '@/Components/page-header';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/Components/ui/dialog';
+import { FormField } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import {
     Select,
     SelectContent,
@@ -182,86 +176,60 @@ export default function Memos({ memos, classes }: { memos: Memo[]; classes: stri
                 </div>
             )}
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editing ? `${t('edit')} ${t('memo')}` : `${t('add')} ${t('memo')}`}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                        <div className="space-y-1">
-                            <Label>{t('title')}</Label>
-                            <Input
-                                value={form.data.title}
-                                onChange={(e) => form.setData('title', e.target.value)}
-                            />
-                            {form.errors.title && (
-                                <p className="text-xs text-destructive">{form.errors.title}</p>
-                            )}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>{t('audience')}</Label>
-                            <Select
-                                value={form.data.audience}
-                                onValueChange={(v) => form.setData('audience', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('audience_all')}</SelectItem>
-                                    <SelectItem value="parents">{t('parents')}</SelectItem>
-                                    <SelectItem value="teachers">{t('teachers')}</SelectItem>
-                                    <SelectItem value="class">{t('audience_class')}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {form.data.audience === 'class' && (
-                            <div className="space-y-1">
-                                <Label>{t('class')}</Label>
-                                <Select
-                                    value={form.data.class}
-                                    onValueChange={(v) => form.setData('class', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('class')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {classes.map((c) => (
-                                            <SelectItem key={c} value={c}>
-                                                {classLabel(c)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {form.errors.class && (
-                                    <p className="text-xs text-destructive">{form.errors.class}</p>
-                                )}
-                            </div>
-                        )}
-                        <div className="space-y-1">
-                            <Label>{t('description')}</Label>
-                            <Textarea
-                                rows={6}
-                                value={form.data.description}
-                                onChange={(e) => form.setData('description', e.target.value)}
-                            />
-                            {form.errors.description && (
-                                <p className="text-xs text-destructive">{form.errors.description}</p>
-                            )}
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpen(false)}>
-                            {t('cancel')}
-                        </Button>
-                        <Button onClick={submit} disabled={form.processing}>
-                            {editing ? t('save') : t('create')}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <FormDialog
+                open={open}
+                onOpenChange={setOpen}
+                title={editing ? `${t('edit')} ${t('memo')}` : `${t('add')} ${t('memo')}`}
+                onSubmit={submit}
+                submitLabel={editing ? t('save') : t('create')}
+                processing={form.processing}
+            >
+                <FormField label={t('title')} error={form.errors.title}>
+                    <Input
+                        value={form.data.title}
+                        onChange={(e) => form.setData('title', e.target.value)}
+                    />
+                </FormField>
+
+                <FormField label={t('audience')}>
+                    <Select value={form.data.audience} onValueChange={(v) => form.setData('audience', v)}>
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('audience_all')}</SelectItem>
+                            <SelectItem value="parents">{t('parents')}</SelectItem>
+                            <SelectItem value="teachers">{t('teachers')}</SelectItem>
+                            <SelectItem value="class">{t('audience_class')}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </FormField>
+
+                {form.data.audience === 'class' && (
+                    <FormField label={t('class')} error={form.errors.class}>
+                        <Select value={form.data.class} onValueChange={(v) => form.setData('class', v)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('class')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {classes.map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {classLabel(c)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormField>
+                )}
+
+                <FormField label={t('description')} error={form.errors.description}>
+                    <Textarea
+                        rows={6}
+                        value={form.data.description}
+                        onChange={(e) => form.setData('description', e.target.value)}
+                    />
+                </FormField>
+            </FormDialog>
 
             <ConfirmDialog
                 open={deleteTarget !== null}
