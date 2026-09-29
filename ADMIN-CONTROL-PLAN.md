@@ -154,8 +154,8 @@ _Append as each phase lands._
 
 | Phase | Status |
 |---|---|
-| F — Delete safety | not started |
-| A — Admin acts everywhere | not started |
+| F — Delete safety | ✅ **done** (`9a407eb`) |
+| A — Admin acts everywhere | next |
 | C — Editable lists | not started |
 | G — Two centres | not started |
 | B — Settings + money | not started |
