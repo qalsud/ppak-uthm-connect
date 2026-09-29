@@ -10,6 +10,25 @@ export function localDate(date: Date = new Date()): string {
 
 export default localDate;
 
+/** `YYYY-MM-DD` for today plus N days (local timezone). */
+export function futureDate(daysAhead: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + daysAhead);
+
+    return localDate(d);
+}
+
+/** Shift a `YYYY-MM-DD` string by N days, returning the same format. */
+export function shiftDate(value: string, days: number): string {
+    const [y, m, d] = value.slice(0, 10).split('-').map(Number);
+
+    if (!y || !m || !d) {
+        return value;
+    }
+
+    return localDate(new Date(y, m - 1, d + days));
+}
+
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

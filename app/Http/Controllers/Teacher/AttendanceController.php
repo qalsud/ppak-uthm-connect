@@ -79,6 +79,19 @@ class AttendanceController extends Controller
             ->map(fn (AbsenceRequest $a) => $a->summary())
             ->values();
 
+        // Everything still to come (or awaiting review) for this class, so a
+        // request can be actioned without hunting for the exact date it covers.
+        $upcomingAbsences = AbsenceRequest::query()
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereIn('status', ['pending', 'approved'])
+            ->where('end_date', '>=', today()->toDateString())
+            ->with(['student:id,name', 'reviewedBy:id,name', 'attachments'])
+            ->orderBy('start_date')
+            ->limit(25)
+            ->get()
+            ->map(fn (AbsenceRequest $a) => $a->summary())
+            ->values();
+
         $students->each(function (Student $student) use ($records) {
             $student->attendance = $records->get($student->id)?->summary() ?? Attendance::emptySummary();
         });
@@ -91,10 +104,11 @@ class AttendanceController extends Controller
             'isToday' => $date === today()->toDateString(),
             'medications' => $medications,
             'absenceRequests' => $absenceRequests,
+            'upcomingAbsences' => $upcomingAbsences,
             // The cards sit above the summary, so give them their own counts.
             'absenceCounts' => [
-                'pending' => $absenceRequests->where('status', 'pending')->count(),
-                'approved' => $absenceRequests->where('status', 'approved')->count(),
+                'pending' => $upcomingAbsences->where('status', 'pending')->count(),
+                'approved' => $upcomingAbsences->where('status', 'approved')->count(),
             ],
             'counts' => [
                 'school' => $students->filter(fn ($s) => $s->attendance['status'] === 'school')->count(),

@@ -1023,6 +1023,81 @@ test('a proof document must be an image or PDF, and only the child\'s parent may
         ->assertForbidden();
 });
 
+test('an absence request and its review post into the child chat thread', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $from = today()->addDay()->toDateString();
+
+    $this->actingAs($parent)->post(route('parent.absences.store', $student), [
+        'start_date' => $from,
+        'end_date' => today()->addDays(2)->toDateString(),
+        'type' => 'sick',
+    ])->assertRedirect();
+
+    $absence = AbsenceRequest::firstOrFail();
+
+    // The request lands in the thread as a system message.
+    $posted = Message::where('type', 'system')->latest('id')->first();
+
+    expect($posted)->not->toBeNull()
+        ->and($posted->conversation->student_id)->toBe($student->id)
+        ->and($posted->body)->toContain($student->name);
+
+    $this->actingAs($teacher)->post(route('teacher.absences.update', $absence), [
+        'status' => 'approved',
+    ])->assertRedirect();
+
+    $review = Message::where('type', 'system')->latest('id')->first();
+
+    expect($review->id)->not->toBe($posted->id)
+        ->and($review->body)->toContain($student->name);
+
+    // Both sides see the thread.
+    $this->actingAs($teacher)->get(route('teacher.messages.index'))
+        ->assertOk();
+
+    $this->actingAs($parent)->get(route('parent.messages.index'))
+        ->assertOk();
+});
+
+test('the register can be viewed on a future day and lists upcoming absences', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id, 'class' => '5tahun']);
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+
+    $future = today()->addDays(10)->toDateString();
+
+    AbsenceRequest::create([
+        'student_id' => $student->id,
+        'requested_by' => $parent->id,
+        'start_date' => $future,
+        'end_date' => today()->addDays(12)->toDateString(),
+        'type' => 'personal',
+        'status' => 'pending',
+    ]);
+
+    // Viewing a future day must work (it used to be clamped back to today).
+    $this->actingAs($teacher)->get(route('teacher.attendance.index', ['date' => $future]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('date', $future)
+            ->has('absenceRequests', 1)
+            ->has('upcomingAbsences', 1)
+        );
+
+    // And the request is actionable from *today* too, without hunting for its date.
+    $this->actingAs($teacher)->get(route('teacher.attendance.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('date', today()->toDateString())
+            ->has('absenceRequests', 0)
+            ->has('upcomingAbsences', 1)
+            ->where('absenceCounts.pending', 1)
+        );
+});
+
 test('search ignores very short queries', function () {
     $this->actingAs(admin())
         ->getJson(route('search', ['q' => 'a']))

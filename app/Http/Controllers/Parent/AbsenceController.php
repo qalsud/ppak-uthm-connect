@@ -7,10 +7,12 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceAttachment;
 use App\Models\AbsenceRequest;
+use App\Models\Message;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\AbsenceRequestedNotification;
 use App\Services\Files\DocumentStore;
+use App\Services\Messaging\ConversationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -20,6 +22,8 @@ use RuntimeException;
 
 class AbsenceController extends Controller
 {
+    public function __construct(private ConversationService $chat) {}
+
     /** A parent reports that their child will be away. */
     public function store(Request $request, Student $student, DocumentStore $documents): RedirectResponse
     {
@@ -82,6 +86,8 @@ class AbsenceController extends Controller
             Notification::send($teachers, new AbsenceRequestedNotification($absence->load('student')));
         }
 
+        $this->postToChat($absence, $request->user());
+
         return back()->with('success', __('approval.absence_submitted'));
     }
 
@@ -103,6 +109,30 @@ class AbsenceController extends Controller
         $this->storeDocument($request, $documents, $absence);
 
         return back()->with('success', __('approval.absence_document_added'));
+    }
+
+    /** Post the absence into the child's chat thread as a system message. */
+    private function postToChat(AbsenceRequest $absence, User $parent): void
+    {
+        $student = $absence->student;
+
+        if (! $student) {
+            return;
+        }
+
+        $this->chat->post(
+            $this->chat->conversationFor($student),
+            $parent,
+            __('approval.absence_chat_message', [
+                'name' => $student->name,
+                'from' => $absence->start_date?->format('d/m/Y'),
+                'to' => $absence->end_date?->format('d/m/Y'),
+                'type' => __('absence.'.$absence->type),
+            ]),
+            [],
+            Message::TYPE_SYSTEM,
+            false,
+        );
     }
 
     /** Store the optional document that arrived with a request/attach call. */

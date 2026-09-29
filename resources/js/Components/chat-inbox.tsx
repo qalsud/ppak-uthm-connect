@@ -78,7 +78,9 @@ type Props = {
 
 const initials = (name: string) =>
     name
-        .split(' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
         .map((p) => p[0])
         .slice(0, 2)
         .join('')

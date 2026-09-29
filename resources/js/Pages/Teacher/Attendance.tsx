@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { CalendarClock, CalendarOff, Pill, UserCheck } from 'lucide-react';
+import { CalendarClock, CalendarOff, ChevronLeft, ChevronRight, Pill, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
@@ -22,7 +22,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { localDate } from '@/lib/date';
+import { localDate, shiftDate, futureDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
@@ -73,6 +73,7 @@ export default function TeacherAttendance({
     counts,
     medications,
     absenceRequests,
+    upcomingAbsences,
     absenceCounts,
 }: {
     students: Student[];
@@ -83,6 +84,7 @@ export default function TeacherAttendance({
     counts: { school: number; home: number; absent: number; none: number };
     medications: Medication[];
     absenceRequests: Absence[];
+    upcomingAbsences: Absence[];
     absenceCounts: { pending: number; approved: number };
 }) {
     const { t } = useI18n();
@@ -151,13 +153,38 @@ export default function TeacherAttendance({
                         <UserCheck className="size-4" />
                         {t('mark_all_present')}
                     </Button>
-                    <input
-                        type="date"
-                        value={date}
-                        max={localDate()}
-                        onChange={(e) => reload({ date: e.target.value })}
-                        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                    />
+                    <div className="flex items-center gap-1.5">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="size-10"
+                            aria-label={t('previous_day')}
+                            onClick={() => reload({ date: shiftDate(date, -1) })}
+                        >
+                            <ChevronLeft className="size-4" />
+                        </Button>
+                        <input
+                            type="date"
+                            value={date}
+                            max={futureDate(90)}
+                            onChange={(e) => reload({ date: e.target.value })}
+                            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        />
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="size-10"
+                            aria-label={t('next_day')}
+                            onClick={() => reload({ date: shiftDate(date, 1) })}
+                        >
+                            <ChevronRight className="size-4" />
+                        </Button>
+                    </div>
+                    {!isToday && (
+                        <Button variant="outline" size="sm" className="h-10" onClick={() => reload({ date: localDate() })}>
+                            {t('today')}
+                        </Button>
+                    )}
                 </div>
             </PageHeader>
 
@@ -173,8 +200,8 @@ export default function TeacherAttendance({
                 ))}
             </div>
 
-            {/* Absences covering this day */}
-            {(absenceRequests.length > 0 || absenceCounts.pending > 0) && (
+            {/* Absences: today's, plus everything upcoming for this class */}
+            {(absenceRequests.length > 0 || upcomingAbsences.length > 0) && (
                 <Card className="mb-4 rounded-2xl border-0 shadow-sm">
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">
@@ -188,60 +215,131 @@ export default function TeacherAttendance({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                        {absenceRequests.map((a) => (
-                            <div
-                                key={a.id}
-                                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3"
-                            >
-                                <div className="min-w-0">
-                                    <p className="text-sm font-medium">
-                                        {a.student} · {t(`absence.${a.type}`)} · {a.days} {t('absence_days')}
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        {a.start_date === a.end_date
-                                            ? a.start_date
-                                            : `${a.start_date} → ${a.end_date}`}
-                                        {a.reason ? ` · ${a.reason}` : ''}
-                                    </p>
-                                    {a.attachments.length > 0 && (
-                                        <div className="mt-1 flex flex-wrap gap-1.5">
-                                            {a.attachments.map((proof) => (
-                                                <ProofLink key={proof.id} proof={proof} />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {a.status === 'pending' ? (
-                                    <div className="flex gap-2">
-                                        <Button
-                                            size="sm"
-                                            className="h-8 rounded-lg text-xs"
-                                            onClick={() => review(a.id, 'approved')}
-                                        >
-                                            {t('approve')}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-8 rounded-lg text-xs"
-                                            onClick={() => review(a.id, 'declined')}
-                                        >
-                                            {t('decline')}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                                            a.status === 'approved'
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : 'bg-rose-100 text-rose-700'
-                                        }`}
+                        {/* Anything still to come — actionable from any date. */}
+                        {upcomingAbsences.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t('upcoming_absences')}
+                                </p>
+                                {upcomingAbsences.map((a) => (
+                                    <div
+                                        key={a.id}
+                                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dashed p-3"
                                     >
-                                        {t(a.status)}
-                                    </span>
-                                )}
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium">
+                                                {a.student} · {t(`absence.${a.type}`)} · {a.days}{' '}
+                                                {t('absence_days')}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {a.start_date === a.end_date
+                                                    ? a.start_date
+                                                    : `${a.start_date} → ${a.end_date}`}
+                                                {a.reason ? ` · ${a.reason}` : ''}
+                                            </p>
+                                            {a.attachments.length > 0 && (
+                                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                                    {a.attachments.map((proof) => (
+                                                        <ProofLink key={proof.id} proof={proof} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-xs"
+                                                onClick={() => reload({ date: a.start_date })}
+                                            >
+                                                {t('view_day')}
+                                            </Button>
+                                            {a.status === 'pending' ? (
+                                                <>
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 rounded-lg text-xs"
+                                                        onClick={() => review(a.id, 'approved')}
+                                                    >
+                                                        {t('approve')}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 rounded-lg text-xs"
+                                                        onClick={() => review(a.id, 'declined')}
+                                                    >
+                                                        {t('decline')}
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                                                    {t(a.status)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
+
+                        {/* The absences actually covering the day being viewed. */}
+                        {absenceRequests.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t('absences_this_day')}
+                                </p>
+                                {absenceRequests.map((a) => (
+                                    <div
+                                        key={a.id}
+                                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium">
+                                                {a.student} · {t(`absence.${a.type}`)} · {a.days}{' '}
+                                                {t('absence_days')}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {a.start_date === a.end_date
+                                                    ? a.start_date
+                                                    : `${a.start_date} → ${a.end_date}`}
+                                                {a.reason ? ` · ${a.reason}` : ''}
+                                            </p>
+                                            {a.attachments.length > 0 && (
+                                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                                    {a.attachments.map((proof) => (
+                                                        <ProofLink key={proof.id} proof={proof} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {a.status === 'pending' ? (
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    className="h-8 rounded-lg text-xs"
+                                                    onClick={() => review(a.id, 'approved')}
+                                                >
+                                                    {t('approve')}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 rounded-lg text-xs"
+                                                    onClick={() => review(a.id, 'declined')}
+                                                >
+                                                    {t('decline')}
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                                                {t(a.status)}
+                                            </span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
