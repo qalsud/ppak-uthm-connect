@@ -32,9 +32,20 @@ class AttendanceController extends Controller
     {
         $assigned = $request->user()->assignedClass();
 
-        $class = $assigned ?? (in_array($request->query('class'), Student::CLASSES, true)
+        $requested = in_array($request->query('class'), Student::CLASSES, true)
             ? $request->query('class')
-            : Student::CLASSES[0]);
+            : null;
+
+        // Prefer the explicit choice, then the teacher's class, then the first
+        // class that actually has children (never a hardcoded 5tahun, which can
+        // leave an unassigned teacher staring at an empty register).
+        $class = $assigned
+            ?? $requested
+            ?? Student::query()
+                ->active()
+                ->orderBy('class')
+                ->value('class')
+            ?? Student::CLASSES[0];
 
         $date = $this->resolveDate($request->query('date'));
 
