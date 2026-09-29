@@ -124,15 +124,15 @@ Centres: **Tadika Khalifah Junior** · **Taska Hikmah UTHM**
 **Order matters.** G3 (access control) must land before any centre-scoped UI, or the
 cross-centre leak in `canManage()` widens with every screen added.
 
-- [ ] **G0 Access-control foundation (do first).** `User::canManage()` compares only a
+- [ ] **G0 Access-control foundation (do first).** ✅ *done* (`7ac8415`) `User::canManage()` compares only a
       class *string*, so a `5tahun` teacher at one centre can manage the other centre's
       `5tahun` children. Make centre part of the comparison, and give `assignedClass()`
       a centre context. Nothing else is safe until this is true.
-- [ ] **G1 `centres` table** + `centre_id` on `students`, `users` (staff), `memos`,
+- [x] **G1 `centres` table** + `centre_id` on `students`, `users` (staff), `memos`,
       `fee_settings`, `list_options`.
-- [ ] **G2 Backfill** existing records to **Tadika Khalifah Junior** — idempotent so the
+- [x] **G2 Backfill** existing records to **Tadika Khalifah Junior** — idempotent so the
       seeder stays re-runnable.
-- [ ] **G3 Class becomes centre-scoped.** `list_options.centre_id` finally used, `class`
+- [x] **G3 Class becomes centre-scoped.** `list_options.centre_id` finally used, `class`
       keys unique per centre, and every class query filtered through the centre.
       Touches attendance, activities, progress, updates, messages, memos, payments, CSV.
 - [ ] **G4 Admin centre switcher** — "All centres" vs a specific one, persisted per session.
@@ -177,6 +177,23 @@ _(All initial questions settled — see "Settled follow-ups" and "Centre decisio
 
 Found during a phase, deliberately **deferred to a later pass** — reviewed after each phase
 completes. Nothing here is a blocker; it is a debt list.
+
+### From Phase G — centres
+
+| # | Issue | Impact | Where |
+|---|---|---|---|
+| G-i1 | `Student::classLabelStatic()` still hardcodes the two original keys | Backend class labels (PDF receipts, Stripe description) ignore renames **and** can't say which centre | `app/Models/Student.php` |
+| G-i2 | CSV student import `normaliseClass()` coerces `'5'`/`'6'` | Cannot disambiguate the same class across centres; imports will mis-file or skip (also C-i3) | `Admin/StudentController:357-370` |
+| G-i3 | Admin student/teacher lists have **no centre column or filter yet** | Two "5 Tahun" rows are indistinguishable in the UI | `Admin/Students.tsx`, `Admin/Teachers.tsx` |
+| G-i4 | Admin dashboard class donut is **hardcoded to two classes** with no centre split | Under-counts / merges both centres (G9) | `Admin/DashboardController:56-59` |
+| G-i5 | `FeeSetting` is global — one rate for both centres | Different rates per centre impossible until G8 | `Admin/PaymentController`, `FeeSetting` |
+| G-i6 | `Parent/DashboardController` and `Teacher/DashboardController` use `Memo::count()` (global) | Memo badge is wrong once memos are centre-scoped | both dashboards |
+| G-i7 | `DailyUpdateSubmittedNotification` deep-links `?class=` with no centre | A link can land on the wrong centre's register | `app/Notifications/DailyUpdateSubmittedNotification:28` |
+| G-i8 | Report `data` counts (`stats.students` etc.) are global, not centre-split | G9 | `Admin/DashboardController:29-39` |
+| G-i9 | Teachers/staff with **no centre assignment are unrestricted** (kept for backwards compatibility) | Correct today, but an admin could accidentally leave a teacher seeing all centres — worth surfacing in the UI | `User::centreIds()` |
+| G-i10 | Memo `centre_id` is accepted by the API but the **memo form has no centre field yet** | Admin can't target a centre from the UI until G10 | `Admin/Memos.tsx` |
+| G-i11 | `list_options` is still global — classes aren't yet scoped per centre | Both centres share one class list (G3 part 2) | `app/Support/Lists.php`, `ListController` |
+| G-i12 | Local dev DB required a re-seed after adding centres (backfill ran, but tests use fresh DBs) | Not a bug — noted so it isn't a surprise | — |
 
 ### From Phase C — editable lists
 
