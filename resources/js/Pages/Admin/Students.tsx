@@ -558,7 +558,7 @@ export default function Students({
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent className="max-w-2xl">
-                    <DialogHeader className="sticky -top-6 z-10 -mx-6 -mt-6 border-b bg-background px-6 pb-4 pt-6">
+                    <DialogHeader className="sticky -top-6 z-10 -mx-6 -mt-6 rounded-t-2xl border-b bg-background px-6 pb-4 pt-6">
                         <DialogTitle>
                             {editing ? `${t('edit')} ${t('student')}` : `${t('add')} ${t('student')}`}
                         </DialogTitle>
@@ -840,7 +840,7 @@ export default function Students({
                         </label>
                     </div>
 
-                    <DialogFooter className="sticky -bottom-6 z-10 -mx-6 -mb-6 border-t bg-background px-6 pb-6 pt-4">
+                    <DialogFooter className="sticky -bottom-6 z-10 -mx-6 -mb-6 rounded-b-2xl border-t bg-background px-6 pb-6 pt-4">
                         <Button variant="outline" onClick={() => setOpen(false)}>
                             {t('cancel')}
                         </Button>
