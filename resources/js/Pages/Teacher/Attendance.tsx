@@ -25,6 +25,7 @@ import {
 } from '@/Components/ui/table';
 import { localDate, shiftDate, futureDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
@@ -38,7 +39,6 @@ type Student = {
     attendance: AttendanceSummary;
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 type Medication = {
     id: number;
@@ -93,6 +93,7 @@ export default function TeacherAttendance({
     absenceCounts: { pending: number; approved: number };
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const shell = shellFor(shellProp);
     const [markAllOpen, setMarkAllOpen] = useState(false);
 

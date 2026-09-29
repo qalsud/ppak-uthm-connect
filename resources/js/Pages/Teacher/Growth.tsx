@@ -17,6 +17,7 @@ import {
 } from '@/Components/ui/table';
 import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
@@ -33,7 +34,6 @@ type Record = {
     recorded_by: string | null;
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function TeacherGrowth({
     students,
@@ -53,6 +53,7 @@ export default function TeacherGrowth({
     assignedClass?: string | null;
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const shell = shellFor(shellProp);
 
     const reload = (params: { class?: string }) =>

@@ -156,7 +156,8 @@ _Append as each phase lands._
 |---|---|
 | F — Delete safety | ✅ **done** (`9a407eb`) |
 | A — Admin acts everywhere | ✅ **done** (`fdaa0c5`) |
-| C — Editable lists | next |
+| C — Editable lists | ✅ **done** (architecture + 14 lists + admin screen) |
+| G — Two centres | next |
 | C — Editable lists | not started |
 | G — Two centres | not started |
 | B — Settings + money | not started |

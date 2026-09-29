@@ -21,6 +21,8 @@ import {
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import { useList } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -34,10 +36,10 @@ type Memo = {
     author: { id: number; name: string } | null;
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Memos({ memos, classes }: { memos: Memo[]; classes: string[] }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Memo | null>(null);
     const [expanded, setExpanded] = useState<number[]>([]);
@@ -196,12 +198,13 @@ export default function Memos({ memos, classes }: { memos: Memo[]; classes: stri
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">{t('audience_all')}</SelectItem>
-                            <SelectItem value="parents">{t('parents')}</SelectItem>
-                            <SelectItem value="teachers">{t('teachers')}</SelectItem>
-                            <SelectItem value="class">{t('audience_class')}</SelectItem>
-                        </SelectContent>
+                            <SelectContent>
+                                {useList('memo_audience').map((a) => (
+                                    <SelectItem key={a.value} value={a.value}>
+                                        {a.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
                     </Select>
                 </FormField>
 

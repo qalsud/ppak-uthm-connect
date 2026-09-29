@@ -29,6 +29,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -58,10 +59,10 @@ type Props = {
     filters: { month: string; class: string; status: string; search: string };
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Payments({ records, months, classes, students, fee, summary, filters }: Props) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
     const [genOpen, setGenOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<PaymentRecord | null>(null);

@@ -62,7 +62,7 @@ class TeacherController extends Controller
             'ic_number' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
-            'class' => ['nullable', Rule::in(Student::CLASSES)],
+            'class' => ['nullable', Rule::in(Student::classKeys())],
         ]);
 
         $teacher = User::create([
@@ -88,7 +88,7 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
             'status' => ['required', Rule::enum(AccountStatus::class)],
             'password' => 'nullable|string|min:8',
-            'class' => ['nullable', Rule::in(Student::CLASSES)],
+            'class' => ['nullable', Rule::in(Student::classKeys())],
         ]);
 
         if (empty($data['password'])) {

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Messaging\ConversationService;
+use App\Support\Lists;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -53,6 +54,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
             ],
+            // Admin-editable lists — the one source of truth for form options,
+            // so frontend constants can never drift from backend validation.
+            'lists' => $user ? Lists::all() : [],
             'unreadMessages' => $unreadMessages,
             'flash' => [
                 'success' => session('success'),

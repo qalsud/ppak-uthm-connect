@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import PageHeader from '@/Components/page-header';
 import { actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
@@ -33,7 +34,6 @@ type Student = {
     attendance?: AttendanceSummary;
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 
 export default function DailyUpdates({
     students,
@@ -47,6 +47,7 @@ export default function DailyUpdates({
     assignedClass?: string | null;
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const shell = shellFor(shellProp);
 
     const changeClass = (value: string) => {

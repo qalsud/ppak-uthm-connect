@@ -33,6 +33,8 @@ export type PageProps<
     };
     locale?: 'en' | 'ms';
     translations?: Record<'en' | 'ms', Record<string, string>>;
+    /** Admin-editable option lists, keyed by group. */
+    lists?: Record<string, Array<{ value: string; label: string }>>;
     unreadMessages?: number;
     flash?: {
         success?: string | null;

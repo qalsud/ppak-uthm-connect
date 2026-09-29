@@ -15,13 +15,13 @@ import {
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { actionRoute, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
 type FieldMap = Record<string, string>;
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Activities({
     students,
@@ -42,6 +42,7 @@ export default function Activities({
     }>;
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const shell = shellFor(shellProp);
 
     const form = useForm({

@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Notifications\ProgressRecordedNotification;
 use App\Services\Images\ImageStore;
 use App\Services\Messaging\ConversationService;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -94,8 +95,8 @@ class ProgressController extends Controller
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date|before_or_equal:today',
             'sub_theme' => 'nullable|string|max:255',
-            'activity_done' => ['required', Rule::in(ProgressRecord::GRADES)],
-            'child_proficiency' => ['required', Rule::in(ProgressRecord::GRADES)],
+            'activity_done' => ['required', Rule::in(Lists::keys('progress_grade'))],
+            'child_proficiency' => ['required', Rule::in(Lists::keys('progress_grade'))],
             'permata_activity' => ['required', Rule::in(ProgressRecord::PERMATA)],
             'free_activity' => ['required', Rule::in(ProgressRecord::FREE)],
             'development_proficiency' => ['required', Rule::in(ProgressRecord::DEVELOPMENT)],

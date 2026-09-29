@@ -10,6 +10,7 @@ use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\MemoPostedNotification;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -74,8 +75,8 @@ class MemoController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'audience' => ['nullable', Rule::in(Memo::AUDIENCES)],
-            'class' => ['nullable', Rule::in(Student::CLASSES)],
+            'audience' => ['nullable', Rule::in(Lists::keys('memo_audience'))],
+            'class' => ['nullable', Rule::in(Student::classKeys())],
         ]);
 
         $data['audience'] ??= 'all';

@@ -7,6 +7,7 @@ import PageHeader from '@/Components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -45,10 +46,10 @@ type Child = {
     absences: Absence[];
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function ParentAttendance({ children }: { children: Child[] }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
 
     const statusMeta = (status: HistoryRow['status']) =>
         status === 'school'

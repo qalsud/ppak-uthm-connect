@@ -8,6 +8,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
+import { useList } from '@/lib/lists';
 
 export type Guardian = {
     id: number;
@@ -238,9 +239,9 @@ export default function ChildContactsManager({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {RELATIONSHIPS.map((r) => (
-                                                <SelectItem key={r} value={r}>
-                                                    {t(`relationship.${r}`)}
+                                            {useList('guardian_relationship').map((r) => (
+                                                <SelectItem key={r.value} value={r.value}>
+                                                    {r.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

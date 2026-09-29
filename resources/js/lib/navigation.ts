@@ -8,6 +8,7 @@ import {
     GraduationCap,
     History,
     LayoutDashboard,
+    ListChecks,
     MessageSquare,
     Ruler,
     Settings,
@@ -43,6 +44,7 @@ export const adminNav: NavItem[] = [
     { label: 'memos', href: '/admin/memos', icon: FileText },
     { label: 'activity_log', href: '/admin/activity', icon: History },
     { label: 'recently_deleted', href: '/admin/trash', icon: Trash2 },
+    { label: 'lists', href: '/admin/lists', icon: ListChecks },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
 ];
 

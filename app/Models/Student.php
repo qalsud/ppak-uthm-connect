@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Lists;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +58,41 @@ class Student extends Model
     public const IMMUNISATION_STATUSES = ['complete', 'partial', 'none', 'exempt', 'unknown'];
 
     public const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+    /**
+     * Live, admin-editable versions of the constants above. Prefer these in
+     * controllers/validation so an admin's edits take effect; the constants
+     * remain as the shipped defaults for the seeder and migrations.
+     */
+    public static function classKeys(): array
+    {
+        return Lists::keys('class');
+    }
+
+    public static function statusKeys(): array
+    {
+        return Lists::keys('student_status');
+    }
+
+    public static function genderKeys(): array
+    {
+        return Lists::keys('gender');
+    }
+
+    public static function nationalityKeys(): array
+    {
+        return Lists::keys('nationality');
+    }
+
+    public static function immunisationKeys(): array
+    {
+        return Lists::keys('immunisation_status');
+    }
+
+    public static function bloodTypeKeys(): array
+    {
+        return Lists::keys('blood_type');
+    }
 
     protected $casts = [
         'withdrawn_at' => 'datetime',

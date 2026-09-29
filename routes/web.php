@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
+use App\Http\Controllers\Admin\ListController;
 use App\Http\Controllers\Admin\MemoController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\PaymentController;
@@ -169,6 +170,12 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
             Route::get('/fees', [FeeSettingController::class, 'show'])->name('fees.show');
             Route::put('/fees', [FeeSettingController::class, 'update'])->name('fees.update');
+
+            // Admin-editable fixed lists (classes, blood types, …).
+            Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
+            Route::post('/lists', [ListController::class, 'store'])->name('lists.store');
+            Route::put('/lists/{option}', [ListController::class, 'update'])->name('lists.update');
+            Route::delete('/lists/{option}', [ListController::class, 'destroy'])->name('lists.destroy');
 
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
             Route::get('/payments/{record}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');

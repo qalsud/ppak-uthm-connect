@@ -35,6 +35,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { teacherBottomNav, teacherNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -58,10 +59,10 @@ type Page = PageProps<{
     assignedClass?: string | null;
 }>;
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 
 export default function TeacherDashboard() {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const { props } = usePage<Page>();
 
     const students = props.students as Page['students'];

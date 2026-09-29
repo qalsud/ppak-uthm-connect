@@ -177,7 +177,7 @@ class AttendanceController extends Controller
         $assigned = $request->user()->assignedClass();
 
         $data = $request->validate([
-            'class' => ['nullable', Rule::in(Student::CLASSES)],
+            'class' => ['nullable', Rule::in(Student::classKeys())],
             'date' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
 

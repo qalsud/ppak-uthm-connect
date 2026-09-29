@@ -31,6 +31,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -48,7 +49,6 @@ type Teacher = {
 
 const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Teachers({
     teachers,
@@ -62,6 +62,7 @@ export default function Teachers({
     classes: string[];
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Teacher | null>(null);
     const [search, setSearch] = useState(filters.search);

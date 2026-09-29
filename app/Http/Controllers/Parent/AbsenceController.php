@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Notifications\AbsenceRequestedNotification;
 use App\Services\Files\DocumentStore;
 use App\Services\Messaging\ConversationService;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -36,7 +37,7 @@ class AbsenceController extends Controller
                 'before_or_equal:'.today()->addDays(90)->toDateString(),
             ],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'type' => ['required', Rule::in(AbsenceRequest::TYPES)],
+            'type' => ['required', Rule::in(Lists::keys('absence_type'))],
             'reason' => ['nullable', 'string', 'max:1000'],
             // Optional proof (medical certificate scan, photo or PDF).
             'document' => [

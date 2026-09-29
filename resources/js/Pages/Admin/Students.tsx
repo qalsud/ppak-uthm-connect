@@ -32,6 +32,8 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import { useList } from '@/lib/lists';
 import { localDate } from '@/lib/date';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps, Paginator } from '@/types';
@@ -67,10 +69,6 @@ type Student = {
 
 type Parent = { id: number; name: string; email: string };
 
-const CLASSES = ['5tahun', '6bintang'];
-const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-const IMMUNISATION_STATUSES = ['complete', 'partial', 'none', 'exempt', 'unknown'];
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 export default function Students({
     students,
@@ -84,6 +82,7 @@ export default function Students({
     filters: { search: string; class: string; status: string };
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Student | null>(null);
     const [search, setSearch] = useState(filters.search);
@@ -575,9 +574,9 @@ export default function Students({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {CLASSES.map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {classLabel(c)}
+                                {useList('class').map((c) => (
+                                    <SelectItem key={c.value} value={c.value}>
+                                        {c.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -630,8 +629,11 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                <SelectItem value="male">{t('gender.male')}</SelectItem>
-                                <SelectItem value="female">{t('gender.female')}</SelectItem>
+                                {useList('gender').map((g) => (
+                                    <SelectItem key={g.value} value={g.value}>
+                                        {g.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </FormField>
@@ -646,10 +648,11 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                <SelectItem value="malaysian">{t('nationality.malaysian')}</SelectItem>
-                                <SelectItem value="non_malaysian">
-                                    {t('nationality.non_malaysian')}
-                                </SelectItem>
+                                {useList('nationality').map((n) => (
+                                    <SelectItem key={n.value} value={n.value}>
+                                        {n.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </FormField>
@@ -724,9 +727,9 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {BLOOD_TYPES.map((b) => (
-                                    <SelectItem key={b} value={b}>
-                                        {b}
+                                {useList('blood_type').map((b) => (
+                                    <SelectItem key={b.value} value={b.value}>
+                                        {b.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -743,9 +746,9 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {IMMUNISATION_STATUSES.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                        {t(`immunisation.${s}`)}
+                                {useList('immunisation_status').map((s) => (
+                                    <SelectItem key={s.value} value={s.value}>
+                                        {s.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

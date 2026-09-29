@@ -9,6 +9,7 @@ use App\Models\EmergencyContact;
 use App\Models\Guardian;
 use App\Models\Student;
 use App\Services\Images\ImageStore;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -166,7 +167,7 @@ class StudentContactController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'relationship' => ['required', Rule::in(Guardian::RELATIONSHIPS)],
+            'relationship' => ['required', Rule::in(Lists::keys('guardian_relationship'))],
             'ic_number' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:255'],

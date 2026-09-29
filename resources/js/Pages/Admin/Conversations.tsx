@@ -18,6 +18,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps, Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -33,7 +34,6 @@ type Row = {
     last_date: string | null;
 };
 
-const classLabel = (c: string | null) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : (c ?? '—'));
 
 const initials = (name: string) =>
     name
@@ -45,6 +45,7 @@ const initials = (name: string) =>
 
 export default function AdminConversations() {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const { props } = usePage<PageProps<{ conversations: Paginator<Row>; filters: { search: string } }>>();
     const conversations = props.conversations;
     const [search, setSearch] = useState(props.filters.search);

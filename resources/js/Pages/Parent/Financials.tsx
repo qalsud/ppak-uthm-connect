@@ -8,6 +8,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -29,7 +30,6 @@ type Child = {
     financial_records: FeeRecord[];
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 
 export default function ParentFinancials({
     children,
@@ -39,6 +39,7 @@ export default function ParentFinancials({
     fee: { monthly_fee: string; overtime_rate: string };
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const [paying, setPaying] = useState<number | null>(null);
     const [selected, setSelected] = useState<Record<number, number[]>>({});
     const today = localDate();

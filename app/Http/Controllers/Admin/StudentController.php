@@ -217,7 +217,7 @@ class StudentController extends Controller
     public function status(Request $request, Student $student): RedirectResponse
     {
         $status = $request->validate([
-            'status' => ['required', Rule::in(Student::STATUSES)],
+            'status' => ['required', Rule::in(Student::statusKeys())],
         ])['status'];
 
         $student->update([
@@ -272,7 +272,7 @@ class StudentController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'age' => 'nullable|integer|min:3|max:10',
-            'class' => ['required', Rule::in(Student::CLASSES)],
+            'class' => ['required', Rule::in(Student::classKeys())],
             'parent_id' => [
                 'nullable',
                 Rule::exists('users', 'id')->where('role', UserRole::Parent->value),
@@ -281,8 +281,8 @@ class StudentController extends Controller
             // Identity & admin.
             'mykid' => ['nullable', 'string', 'max:30'],
             'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
-            'gender' => ['nullable', Rule::in(Student::GENDERS)],
-            'nationality' => ['nullable', Rule::in(Student::NATIONALITIES)],
+            'gender' => ['nullable', Rule::in(Student::genderKeys())],
+            'nationality' => ['nullable', Rule::in(Student::nationalityKeys())],
             'ethnicity' => ['nullable', 'string', 'max:60'],
             'religion' => ['nullable', 'string', 'max:60'],
             'address' => ['nullable', 'string', 'max:1000'],
@@ -291,8 +291,8 @@ class StudentController extends Controller
             // Safety & medical.
             'allergies' => ['nullable', 'string', 'max:1000'],
             'medical_notes' => ['nullable', 'string', 'max:1000'],
-            'blood_type' => ['nullable', Rule::in(Student::BLOOD_TYPES)],
-            'immunisation_status' => ['nullable', Rule::in(Student::IMMUNISATION_STATUSES)],
+            'blood_type' => ['nullable', Rule::in(Student::bloodTypeKeys())],
+            'immunisation_status' => ['nullable', Rule::in(Student::immunisationKeys())],
             'immunisation_notes' => ['nullable', 'string', 'max:1000'],
             'has_special_needs' => ['nullable', 'boolean'],
             'special_needs_notes' => ['nullable', 'string', 'max:1000'],

@@ -9,6 +9,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useList } from '@/lib/lists';
 
 export type Absence = {
     id: number;
@@ -240,9 +241,11 @@ export default function AbsencePanel({ child }: { child: { id: number; name: str
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="sick">{t('absence.sick')}</SelectItem>
-                                <SelectItem value="personal">{t('absence.personal')}</SelectItem>
-                                <SelectItem value="other">{t('absence.other')}</SelectItem>
+                                {useList('absence_type').map((a) => (
+                                    <SelectItem key={a.value} value={a.value}>
+                                        {a.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

@@ -18,6 +18,7 @@ import AttendanceActions, { type AttendanceSummary } from '@/Components/attendan
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -38,10 +39,10 @@ type Page = PageProps<{
     unreadCount: number;
 }>;
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : '6 Bintang');
 
 export default function ParentDashboard() {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const { props } = usePage<Page>();
 
     const children = props.children as Page['children'];

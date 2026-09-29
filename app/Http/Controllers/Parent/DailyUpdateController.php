@@ -9,6 +9,7 @@ use App\Models\DailyUpdate;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\DailyUpdateSubmittedNotification;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -46,8 +47,8 @@ class DailyUpdateController extends Controller
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date|before_or_equal:today',
             'arrival_time' => ['required', 'regex:/^\d{1,2}:\d{2}(:\d{2})?$/'],
-            'sleep_status' => ['required', Rule::in(['Good', 'Poor'])],
-            'bath_status' => ['required', Rule::in(['Done', 'Not Done'])],
+            'sleep_status' => ['required', Rule::in(Lists::keys('sleep_status'))],
+            'bath_status' => ['required', Rule::in(Lists::keys('bath_status'))],
             'health_status' => 'nullable|string|max:50',
             'parent_notes' => 'nullable|string|max:1000',
         ]);

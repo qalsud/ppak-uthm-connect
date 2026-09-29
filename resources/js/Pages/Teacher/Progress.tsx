@@ -19,6 +19,7 @@ import {
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDate, localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import type { PhotoInfo } from '@/lib/photo';
 import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
@@ -50,7 +51,6 @@ type Summary = {
     } | null;
 };
 
-const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
 const emptyForm = {
     student_id: '',
@@ -89,6 +89,7 @@ export default function Progress({
     filters: { student: string; class: string };
 }) {
     const { t } = useI18n();
+    const classLabel = useClassLabelHook();
     const shell = shellFor(shellProp);
 
     const form = useForm({ ...emptyForm, student_id: filters.student || '' });
