@@ -9,7 +9,7 @@ value · **P3** = nice-to-have.
 
 ---
 
-## Progress (updated 27 Sep 2026)
+## Progress (updated 29 Sep 2026)
 
 **✅ Done in this pass**
 
@@ -24,12 +24,21 @@ value · **P3** = nice-to-have.
 | **Fees** | **Due dates** on fee records, **overdue** flags, and parents can **pay only the months they choose**. |
 | **Auth/registrations** | Decision emails + reasons (above). |
 
+**✅ Health & safety + growth pass (29 Sep 2026)**
+
+| Item | What shipped |
+|---|---|
+| **Check-in health** | Optional **temperature (°C)** + **health note** when a teacher marks a child arrived; the status chip turns amber with an "Elevated" tag at ≥ 37.5 °C; parents see the reading in their attendance history. |
+| **Allergies / medical notes** | On the child profile (admin-editable) and shown as a **red warning in the teacher's attendance register**. |
+| **Medication requests** | Parent requests (date, medicine, dosage, time, notes) → teacher logs **given / declined** with staff, time and note; the parent is notified. The day's requests appear as a card on the attendance register. |
+| **Growth tracking** | Teacher records **height/weight → BMI** (same-day re-entry updates rather than duplicates), **class average BMI**, latest-per-child and full history tables; parents get tiles + a trend list on the child page. |
+| **Fee reminders** | `fees:send-reminders` scheduled **daily 08:00** — one notification per family for fees due within 3 days or overdue. |
+
 **⏳ Still open** (next passes): guardians (F4) · academic terms (F5) · centres (F6) · absence requests +
-absent/sick attendance states · scheduled **fee reminders** · bulk class activities/progress · student
-photo/IC/medical + class-move history + CSV upsert/dry-run · memo attachments/scheduling/read
-receipts · ~~message pagination/attachments/admin oversight~~ (done — see `MESSAGES-REVIEW.md`) · **term progress-report PDF** + monthly
-statements · reports/analytics · backups · PWA/push · queueing notifications · audit coverage
-(logins/exports) · accessibility pass.
+absent/sick attendance states · bulk class activities/progress · student **photo/IC** (medical ✅) +
+class-move history + CSV upsert/dry-run · memo attachments/scheduling/read receipts · **term
+progress-report PDF** + monthly statements · growth **chart** (data ✅) · reports/analytics · backups ·
+PWA/push · queueing notifications · audit coverage (logins/exports) · accessibility pass.
 
 ---
 
@@ -87,7 +96,7 @@ statements · reports/analytics · backups · PWA/push · queueing notifications
 | Gap | Priority | Suggested |
 |---|---|---|
 | No archive/withdraw status (F2) | P1 | `status = active/withdrawn/graduated`, filter in list, keep all history. |
-| No child photo / IC / medical notes | P2 | Add fields; show on the detail page; expose allergies to teachers. |
+| No child photo / IC (medical notes + allergies ✅ done) | P2 | Add photo/IC fields; show on the detail page. |
 | No class-move history | P2 | `student_class_history` (from → to, date). |
 | CSV import only creates (no update/dry-run) | P2 | Upsert mode keyed on a column; preview + confirm before writing. |
 | Detail page is read-only | P2 | Inline edit + quick actions (record attendance, add payment) from the detail page. |
@@ -122,10 +131,10 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 
 | Gap | Priority | Suggested |
 |---|---|---|
-| **Parent can't choose which month to pay** — always pays the whole balance | P1 | Let parents select records/months (or partial amount) at checkout. |
+| ~~**Parent can't choose which month to pay**~~ ✅ done | — | Parents now select the months to settle. |
 | One global fee for everyone | P2 | Per-class / per-child fee overrides; registration fee; discounts (sibling, staff); subsidies. |
-| No fee reminders | P2 | Scheduled reminder N days before due (needs mail + scheduler). |
-| No due dates / overdue concept | P2 | `due_on` on records; "overdue" badge + filter. |
+| ~~No fee reminders~~ ✅ done | — | `fees:send-reminders` daily 08:00 (needs the scheduler running). |
+| ~~No due dates / overdue concept~~ ✅ done | — | `due_on` on records; "overdue" badge + filter. |
 | No payment method/notes on mark-paid | P2 | Record method (cash/transfer/online) + reference; show on receipt. |
 | No invoice (only receipts) | P2 | Invoice PDF + invoice numbers; monthly **statement** per child. |
 | No refund/void (delete loses history) | P2 | Void with reason + audit entry. |
@@ -155,17 +164,32 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 
 ## 10. Teacher — attendance
 
-**Flow today:** class + date register, mark "At school", check out with a **watermarked photo**
-(override + reason allowed), parents notified on check-out.
+**Flow today:** class + date register, mark "At school" (**with optional temperature + health note**),
+check out with a **watermarked photo** (override + reason allowed), parents notified on check-in and
+check-out, plus the day's **medication requests** with mark-given/not-given.
 
 | Gap | Priority | Suggested |
 |---|---|---|
-| **No bulk "mark all present"** | P1 | One tap to set the whole class at school, then adjust exceptions — big daily time-saver. |
-| No arrival notification to parents | P2 | Notify on check-in too (we already notify on check-out). |
-| No temperature / health check at check-in | P2 | Fields on arrival (temp, quick health checklist) — LittleLives' headline feature. |
+| ~~**No bulk "mark all present"**~~ ✅ done | — | One tap sets the whole class at school, then adjust exceptions. |
+| ~~No arrival notification to parents~~ ✅ done | — | Parents are notified on check-in too (single + bulk). |
+| ~~No temperature / health check at check-in~~ ✅ done | — | Optional temperature + health note on arrival; "Elevated" flag at ≥ 37.5 °C. |
 | Only 3 states (`none/school/home`) | P2 | Add **absent (with reason)**, **sick**, **holiday**; half-day/session support. |
 | Photos stored only for checkout | P3 | Optional arrival photo. |
 | Attendance is per-day, single session | P3 | AM/PM sessions if the centres run half-days. |
+
+---
+
+## 10b. Teacher — health, medication & growth  ✅ (new, 29 Sep 2026)
+
+| Where | What |
+|---|---|
+| Attendance register | Temperature + health note at **check-in**; **allergies** flagged per child; a **medications** card for the day with **Mark as given / Not given** (staff, time and note recorded; parent notified). |
+| **Growth** (`/teacher/growth`, sidebar) | Record height/weight per child/day (BMI auto-calculated; same-day re-entry updates), **class average BMI**, latest-per-child and full history tables. Scoped to the teacher's class. |
+
+| Gap | Priority | Suggested |
+|---|---|---|
+| No growth chart | P2 | Plot height/weight/BMI over time per child. |
+| Pending medication past its time isn't chased | P3 | Nudge staff when a request passes `time_due`. |
 
 ---
 
@@ -217,6 +241,8 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 |---|---|---|
 | Financials: pay-all only (see §7) | P1 | Choose months/partial. |
 | No **absence request** | P2 | Parent files absence → teacher acknowledges → reflects in attendance. |
+| ~~No medication request~~ ✅ done | — | Parent requests from the child page; teacher logs administration. |
+| ~~No growth / measurement view~~ ✅ done | — | Height/weight/BMI tiles + trend list on the child page. |
 | No statement download | P2 | Monthly/term statement PDF. |
 | Daily update can't be corrected after submit | P3 | Allow edit until a cut-off. |
 | Can't see teacher's class or timetable | P3 | Class info page. |
@@ -230,7 +256,7 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 |---|---|---|
 | **Header search box does nothing** | P1 | Either implement a real global search (students/memos/payments) or remove it. |
 | No push/mobile; PWA disabled | P2 | Enable PWA + web push, or Pusher; optional native wrapper. |
-| Scheduler not running in dev/prod | P2 | Ensure cron → `schedule:run` (drives reminders + photo pruning). |
+| Scheduler not running in dev/prod | P2 | Ensure cron → `schedule:run` (drives **fee reminders** + photo pruning). |
 | Notifications send synchronously | P2 | Queue them (`ShouldQueue`) once many recipients. |
 | No reports/analytics beyond the dashboard | P2 | Attendance %, fee collection by class/month, progress summaries; CSV/PDF export. |
 | No backups or full data export | P2 | Nightly DB + media backup; admin-triggered export. |
@@ -241,20 +267,21 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 
 ## Top 10, ranked
 
-1. **F1 — turn on email** (approval, reminders, resets). *Everything else depends on it.*
-2. **F2 — stop hard-deleting children**; add **withdrawn/archived** status.
-3. **F3 — assign teachers to classes** and scope their access.
-4. **Bulk attendance + bulk class activities** (daily time-savers).
-5. **Parent chooses which months/amount to pay** + due dates & overdue.
-6. **Real global search** (or remove the dead box).
+1. **F1 — turn on email** (approval, reminders, resets). *Everything else depends on it.* ✅ *channel built — set a real `MAIL_MAILER` for production*
+2. **F2 — stop hard-deleting children**; add **withdrawn/archived** status. ✅ *done*
+3. **F3 — assign teachers to classes** and scope their access. ✅ *done*
+4. **Bulk class activities/progress** (bulk attendance ✅ done).
+5. **Parent chooses which months/amount to pay** + due dates & overdue. ✅ *done*
+6. **Real global search** (or remove the dead box). ✅ *done*
 7. **Absence requests** + absent/sick attendance states.
 8. **F4/F5 — guardians & terms** (structural, enables proper reports).
 9. **Term progress report PDF** + monthly statement.
-10. **Fee reminders** (scheduled) once mail + scheduler are live.
+10. **Growth chart** + reports/analytics (fee reminders ✅ done, scheduler must run).
 
 ---
 
-*Reviewed against the current code (controllers, models, migrations, routes, components) on 27 Sep 2026.*
+*Reviewed against the current code (controllers, models, migrations, routes, components) on 27 Sep 2026;
+health & safety + growth pass added 29 Sep 2026.*
 
 > **Continuing this work?** Resume the session (or start fresh) using the handoff section in
 > [`README.md`](README.md#continuing-this-work-handoff).

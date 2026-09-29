@@ -1,8 +1,9 @@
 # LittleLives vs PPAK UTHM Connect — feature comparison
 
-*Research pass, 27 Sep 2026. Sources: littlelives.com (home, School Management System, pricing), the
-Little Family Room parent app listing (App Store), and LittleLives reviews/roundups (G2, Classroom,
-Brightwheel/Lillio guides). Marketing copy is treated as a claim, not a spec.*
+*Research pass, 27 Sep 2026. Updated 29 Sep 2026 after the Tier-1 feature pass. Sources: littlelives.com
+(home, School Management System, pricing), the Little Family Room parent app listing (App Store), and
+LittleLives reviews/roundups (G2, Classroom, Brightwheel/Lillio guides). Marketing copy is treated as a
+claim, not a spec.*
 
 ---
 
@@ -44,15 +45,15 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 |---|---|---|---|
 | Single login, role-based (admin/teacher/parent) | ✅ | ✅ admin · teacher · parent | ✅ |
 | Account approval workflow | ✅ | ✅ pending → approve/reject (+ bulk) | ✅ |
-| Student/child records | Full (photo, IC, medical, emergency contacts) | Basic (name, age, class, parent) | 🟡 |
-| **Attendance** | Digital, temperature, visual health check | Teacher-marked arrive/depart, class+date register | 🟡 |
+| Student/child records | Full (photo, IC, medical, emergency contacts) | Basic (name, age, class, parent) + **allergies / medical notes** | 🟡 |
+| **Attendance** | Digital, temperature, visual health check | Teacher-marked arrive/depart, class+date register, **temperature + health note at check-in** | ✅ |
 | **Check-in / check-out photos** | Yes (parent selfie/wefie at kiosk) | Yes — teacher photo, **watermarked** with name+date/time, **auto-deleted after 3 days**, auto-posted to chat | 🟢 |
 | Parent notified on check-out | ✅ | ✅ notification + chat message with photo | ✅ |
-| Parent notified on check-**in** | ✅ | — | 🔴 |
+| Parent notified on check-**in** | ✅ | ✅ notification on arrival (single + bulk), with the temperature shown in the child's history | ✅ |
 | Parent daily updates (sleep, bath, health, arrival) | ✅ | ✅ parent-submitted morning check-in + teacher view | ✅ |
-| Medication requests + administration log | ✅ | — | 🔴 |
-| Allergies / medical notes | ✅ | — | 🔴 |
-| **Growth tracking (height/weight/BMI)** | ✅ | — | 🔴 |
+| Medication requests + administration log | ✅ | ✅ parent request → teacher **given/declined** log (staff + time + note), parent notified | ✅ |
+| Allergies / medical notes | ✅ | ✅ on the child profile, admin-editable, **flagged in the teacher's attendance register** | ✅ |
+| **Growth tracking (height/weight/BMI)** | ✅ | ✅ height/weight → BMI per child + **class average BMI** + history (no chart yet) | 🟡 |
 | **Portfolio (photos/videos + evaluation)** | ✅ strong (video too) | Progress records + photos (no video, no portfolio feed) | 🟡 |
 | Progress reports against curriculum | ✅ configurable checklist | ✅ PERMATA + KSPK, configurable per record | 🟢 local fit |
 | Term/child **progress report export** | ✅ portfolio report | — | 🔴 |
@@ -60,7 +61,7 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 | Announcements / bulletins | ✅ + virtual whiteboard | ✅ memos with **audience targeting** (all/parents/teachers/class) | ✅ |
 | **School calendar / events** | ✅ (sync to phone) | — | 🔴 |
 | **Fees: invoicing + receipts** | ✅ | ✅ monthly records, Stripe Checkout, **PDF receipts** | ✅ |
-| **Fee reminders (scheduled)** | ✅ | — | 🔴 |
+| **Fee reminders (scheduled)** | ✅ | ✅ `fees:send-reminders` — daily 08:00, fees due within 3 days or overdue | ✅ |
 | Flexible billing (discounts, subsidies, late fees, autopay) | ✅ | Fixed fee + overtime; no discounts/autopay | 🔴 |
 | Revenue / outstanding reporting | ✅ account reports | ✅ collected / outstanding / unpaid summary | 🟡 |
 | **Admin analytics & reports** | ✅ graphs, audit-ready | Dashboard (income chart, class split) + **activity log** | 🟡 |
@@ -86,6 +87,9 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
   ≤1 MB, stored on a **private disk behind an authorised route**, auto-pruned after 3 days, and
   delivered straight into the parent's chat.
 - **Admin audit log** of who changed what.
+- **Health & safety in the flow, not bolted on** — temperature + health note captured at check-in,
+  allergies surfaced in the teacher's register, and a parent-initiated medication request feeding a
+  teacher administration log with a parent notification.
 - **Data ownership** — self-hosted, no per-child subscription, no vendor lock-in.
 - **Purpose-built**: two named centres (Taska Hikmah UTHM, Tadika Khalifah Junior) and the exact
   PPAK roles, instead of a generic multi-tenant product.
@@ -94,27 +98,28 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 
 ## 4. Gaps worth closing (ranked for a Malaysian kindy/taska)
 
-### Tier 1 — high impact, fits our stack
-1. **Arrival notification** to parents (we only notify check-out) + optional end-of-day summary.
-2. **Health & medication** — allergy/medical notes on the child profile; parent **medication
-   request** → teacher **administration log**; temperature + quick health check on check-in
-   (LittleLives' headline attendance feature).
-3. **Growth tracking** — height/weight entries → BMI + a simple growth chart per child.
-4. **Fee reminders** — scheduled notifications before the due date (needs queues/cron, which we
-   already have scaffolding for).
+### Tier 1 — shipped ✅ (29 Sep 2026)
+1. ~~Arrival notification~~ — ✅ parents are notified on check-in, including the bulk "mark all present" action.
+2. ~~Health & medication~~ — ✅ allergies/medical notes on the child profile (admin-editable and flagged
+   in the teacher's register); parent **medication request** → teacher **administration log**
+   (given/declined + staff + time + note, parent notified); optional **temperature + health note at check-in**.
+3. ~~Growth tracking~~ — ✅ height/weight entries → BMI per child, **class average BMI**, latest + history
+   tables, parent view.
+4. ~~Fee reminders~~ — ✅ `fees:send-reminders` scheduled daily at 08:00 for fees due within 3 days or overdue.
 
 ### Tier 2 — clear value, moderate effort
-5. **School calendar / events** with bulletins and "add to calendar" links.
-6. **Term progress report** — generate a per-child PDF from existing progress records and share it
+5. **Growth chart** — plot height/weight/BMI over time per child (the numbers are already recorded).
+6. **Absence requests** — parent files an absence, teacher acknowledges; ties into attendance.
+7. **Term progress report** — generate a per-child PDF from existing progress records and share it
    to the parent chat (reuses our PDF + image/chat plumbing).
-7. **Absence requests** — parent files an absence, teacher acknowledges; ties into attendance.
-8. **Light admissions pipeline** — enquiry form → admin list → convert to student.
+8. **School calendar / events** with bulletins and "add to calendar" links.
+9. **Light admissions pipeline** — enquiry form → admin list → convert to student.
 
 ### Tier 3 — larger, decide if needed
-9. **Real push / mobile** — enable Pusher or add PWA **web push** (our PWA is currently disabled).
-10. **Staff attendance & scheduling / ratio monitoring.**
-11. **Multi-centre** dashboards.
-12. **Video support** in progress/portfolio.
+10. **Real push / mobile** — enable Pusher or add PWA **web push** (our PWA is currently disabled).
+11. **Staff attendance & scheduling / ratio monitoring.**
+12. **Multi-centre** dashboards.
+13. **Video support** in progress/portfolio.
 
 ### Probably out of scope
 - LittleAcademy (staff training/performance), payroll, food-program menus — HR/catering suites that
@@ -124,9 +129,17 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 
 ## 5. Suggested next step
 
-Do **Tier 1** as one focused pass: it directly closes LittleLives' most visible features
-(temperature/health at check-in, medication, growth, reminders) and reuses everything we've built
-(notifications, images, chat, queues, PDFs).
+**Tier 1 is shipped** (see §4): temperature/health at check-in, allergies/medical notes, medication
+requests + administration log, growth tracking, and scheduled fee reminders.
+
+Next best value, in order:
+
+1. **Absence requests** — parent files, teacher acknowledges; slots straight into the attendance module
+   and reuses the existing notification + chat plumbing.
+2. **Term progress report PDF** — reuses the PDF + chat plumbing for a LittleLives-style portfolio report.
+3. **Growth chart** — the data is already collected and we already compute the class average; a per-child
+   trend chart completes the feature.
+4. **School calendar / events**.
 
 ---
 

@@ -42,6 +42,7 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 - **Real CSV import** (columns: `name, age, class, parent_email`) with a downloadable template; links parents by email; skips blank/invalid rows.
 - `parent_id` now validated to be an actual **parent** account.
 - Age aligned to 3–10.
+- **Allergies / medical notes** fields on the create/edit form — surfaced as a red warning in the teacher's attendance register.
 - Delete uses a proper **ConfirmDialog**.
 
 **Teachers**
@@ -99,10 +100,10 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 
 ## Still open (backlog)
 
-- **Email/SMS notifications** — everything is in-app (database + broadcast); add mail/SMS channels.
+- **SMS notifications** — in-app (database + broadcast) plus an **email channel** for approve/reject, messages (opt-in per parent) and fee/medication events; **SMS** is still open.
 - **Further audit coverage** — logins, exports and profile changes aren't logged yet.
 - **Admin attendance register** — admins can view a child's attendance but not a whole-class register.
 
 ---
 
-*Verified with the browser on all admin pages (no console errors) and 129 Pest tests / 621 assertions.*
+*Verified with the browser on all admin pages (no console errors) and 133 Pest tests / 664 assertions.*

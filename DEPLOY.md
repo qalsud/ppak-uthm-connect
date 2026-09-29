@@ -16,17 +16,22 @@ A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option
 
 ---
 
-## Current live demo (this session)
+## Live demo — currently stopped
 
-- **URL:** `https://kenneth-either-faq-principal.trycloudflare.com`
-- **Accounts:** `admin@` / `teacher@` / `parent@ppakuthm.com` — password `Ppak-9ZmBdw-3266`
-- Started with:
-  ```powershell
-  & "$env:TEMP\opencode\cloudflared.exe" tunnel --url http://127.0.0.1:80 --http-host-header ppak-uthm-connect.test --no-autoupdate
-  ```
-  (the `--http-host-header` is required because Laragon uses name-based vhosts)
-- ⚠️ A quick tunnel gets a **new URL on every restart** — update this file and regenerate the demo PDF if you restart it.
+The last quick tunnel (`https://kenneth-either-faq-principal.trycloudflare.com`) is **dead** — nothing is
+being served publicly right now. To bring one back:
+
+```powershell
+& "$env:TEMP\opencode\cloudflared.exe" tunnel --url http://127.0.0.1:80 --http-host-header ppak-uthm-connect.test --no-autoupdate
+```
+
+(the `--http-host-header` is required because Laragon uses name-based vhosts)
+
+- **Accounts:** `admin@` / `teacher@` / `parent@ppakuthm.com`
+- ⚠️ A quick tunnel gets a **new URL on every restart** — update this file and regenerate the demo PDF when you restart it.
 - ⚠️ It only lives while **your laptop + Laragon + the cloudflared process** are running.
+- ⚠️ Re-apply the public-demo hardening in **Security when the link is public** below (`APP_DEBUG=false`,
+  rotate the seeded passwords).
 
 ## Option A — a public link in ~2 minutes (no deploy)
 
@@ -107,8 +112,12 @@ available"*). For a demo that's fine. To keep them, either:
 
 ### What's not needed for a demo
 
-- **No scheduler** — `media:prune-photos` (3-day retention) simply doesn't run; nothing breaks.
+- **No scheduler** — `media:prune-photos` (3-day retention) and `fees:send-reminders` simply don't run;
+  nothing breaks. Fee reminders are the only shipped feature that depends on the scheduler (Railway's
+  free plan has no cron; Hobby does).
 - **No queue worker** — notifications are sent synchronously.
+- **No mailer** — the bell always works; **email** (approve/reject, messages, medication given, fee
+  reminders) only sends once `MAIL_MAILER` points at a real SMTP/API provider.
 - **No Stripe/Pusher keys** — payments show a graceful "unavailable" notice and the bell works
   without realtime (chat polls).
 
@@ -132,9 +141,17 @@ available"*). For a demo that's fine. To keep them, either:
 | Parent | `parent@ppakuthm.com` | `password123` |
 | Pending parent | `pending@ppakuthm.com` | `password123` |
 
-A short demo script: log in as **teacher** → take attendance and **check a child out with a photo**
-(it appears in the parent's chat) → log in as **parent** → see attendance, the photo, daily updates
-and progress → **admin** → registrations, students, payments, activity log, conversations oversight.
+A short demo script:
+
+1. **Teacher** → attendance register → mark a child **"At school"** with a **temperature** (watch the chip
+   turn amber with an "Elevated" flag) → the child's **allergy warning** shows on the register.
+2. Still as teacher → **check a child out with a photo** (it posts into the parent's chat) → and, if the
+   parent requested medicine, mark it **given** on the medications card.
+3. Teacher → **Growth** → record a height/weight (BMI appears) and show the **class average**.
+4. **Parent** → child page → see the attendance + **temperature**, the **medication request + status**, and
+   the **growth** tiles/trend; submit a **medication request**.
+5. **Admin** → registrations, students (add **allergies**), payments, activity log, conversations
+   oversight — and the **fee reminder** command (`php artisan fees:send-reminders`).
 
 ---
 
@@ -145,6 +162,8 @@ and progress → **admin** → registrations, students, payments, activity log, 
 - [ ] `DEMO_SEED=true` for a fresh instance (seeding is idempotent — it skips when data exists)
 - [ ] Log in once with each of the three demo roles
 - [ ] Open a chat thread and check the composer stays pinned
+- [ ] Optional: set `MAIL_MAILER` (email) and run the scheduler (`schedule:run`) so fee reminders +
+      photo pruning fire
 
 ## Security when the link is public
 

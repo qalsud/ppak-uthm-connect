@@ -6,7 +6,8 @@ Junior**.
 
 Built on **Laravel 12 + Inertia.js + React (TypeScript) + Tailwind CSS v4 + shadcn/ui**, with a
 single role-based login for **Admin · Teacher · Parent**, a **bilingual (BM/EN)** UI, attendance with
-**watermarked check-out photos**, real **Stripe** payments + PDF receipts, and an **audit log**.
+**temperature/health screening** and **watermarked check-out photos**, **medication** and **growth**
+records, real **Stripe** payments + PDF receipts, and an **audit log**.
 
 ---
 
@@ -41,7 +42,8 @@ single role-based login for **Admin · Teacher · Parent**, a **bilingual (BM/EN
 
 ### Teacher (`/teacher`)
 - **Dashboard** — quick actions, KPIs, student list with class/status/update filters and attendance controls.
-- **Attendance register** — by class + date, live counts, mark **"At school"**, **check out with a photo** (watermarked; documented override when a photo isn't possible), and history.
+- **Attendance register** — by class + date, live counts, mark **"At school"** with an optional **temperature + health note** (amber **"Elevated"** flag at ≥ 37.5 °C), **allergies** flagged per child, **check out with a photo** (watermarked; documented override when a photo isn't possible), and history. Also carries the day's **medication requests** with mark-given / not-given.
+- **Growth** — record height/weight per child/day with automatic **BMI** (same-day re-entry updates), a **class average BMI**, and latest-per-child + full history tables.
 - **Daily activities** — PERMATA/KSPK checklist per child.
 - **Daily updates** — see parent-submitted morning check-ins per class.
 - **Progress** — grouped Lesson / Activities / Assessment form with helper text + rating chips, **optional photo**, per-student history with filters and a summary.
@@ -52,14 +54,15 @@ single role-based login for **Admin · Teacher · Parent**, a **bilingual (BM/EN
 - **Attendance** — read-only status + history with photos (marking is teacher-only).
 - **Daily update** — submit a child's morning check-in (arrival, sleep, bath, health, notes).
 - **Activities & progress** — latest activity and progress with rating chips and photos.
-- **Child page** — updates, activities, progress, attendance history, and **Pay**.
+- **Child page** — updates, activities, progress, attendance history (**with the check-in temperature**), **medication requests + status**, **growth (height/weight/BMI)**, and **Pay**.
 - **Financials** — unpaid records, **Stripe Checkout**, payment history, **PDF receipts**.
 - **Messages · Memos · Teachers** (contact list).
 
 ### Cross-cutting
 - **Single login, role-based**, with a **pending → approved** registration flow.
 - **Bilingual** English / Bahasa Melayu (full UI + landing).
-- **Notifications** — in-app bell (database + broadcast), unread badges; parents are notified on fee records, progress, memos, chat, and **check-out (with the photo posted into the chat)**.
+- **Notifications** — in-app bell (database + broadcast) with an optional **email channel for messages**; unread badges. Parents are notified on **check-in**, **medication given**, fee records (+ **scheduled fee reminders**), progress, memos, chat, and **check-out (with the photo posted into the chat)**.
+- **Scheduled tasks** — `media:prune-photos` (daily 03:00) and `fees:send-reminders` (daily 08:00).
 - **Image pipeline** — re-encode + **EXIF/GPS stripped**, **timestamp watermark**, **≤1 MB** compression, thumbnail, **private storage served only through an authorising route**, and **3-day auto-retention** (`media:prune-photos`).
 - **Audit log** of admin mutations.
 
@@ -108,7 +111,7 @@ otherwise `php artisan serve` → http://localhost:8000.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 129 tests / 621 assertions
+php artisan test      # Pest - 133 tests / 664 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -147,17 +150,18 @@ CHECKOUT_PHOTO_RETENTION_DAYS=3
 routes/web.php                     all routes (admin, teacher, parent, photos, webhook)
 app/Http/Controllers/Admin/        dashboard, registrations, students, teachers, parents,
                                    payments, memos, fees, activity log
-app/Http/Controllers/Teacher/      dashboard, attendance, activities, progress, daily updates,
-                                   messages, memos
+app/Http/Controllers/Teacher/      dashboard, attendance, activities, progress, growth, daily updates,
+                                   messages, memos, medications
 app/Http/Controllers/Parent/       dashboard, attendance, daily update, activities, child,
-                                   financials, messages, memos, contact
+                                   financials, messages, memos, contact, medications
 app/Services/Images/ImageStore.php watermark + compression pipeline (reusable)
 app/Models/                        User, Student, Attendance, AttendancePhoto, ProgressRecord,
                                    ProgressPhoto, FinancialRecord, FeeSetting, Memo, Message,
-                                   Conversation, ActivityLog
+                                   Conversation, ActivityLog, MedicationRequest, GrowthRecord
 resources/js/Pages/                Admin · Teacher · Parent · Auth · Welcome
 resources/js/Components/           app-shell, photo-upload/photo-thumb, rating-chip, pagination,
-                                   checkout-dialog, confirm-dialog, csv-import-dialog, …
+                                   check-in-dialog, checkout-dialog, confirm-dialog,
+                                   csv-import-dialog, …
 resources/views/pdf/               receipt templates
 config/media.php                   photo pipeline + retention settings
 lang/en.json · lang/ms.json        bilingual keys
@@ -178,11 +182,11 @@ lang/en.json · lang/ms.json        bilingual keys
 ## Continuing this work (handoff)
 
 **Where we left off.** All work is committed and pushed to `main`
-(`git log -1` for the latest commit). **129 tests / 621 assertions** pass
+(`git log -1` for the latest commit). **133 tests / 664 assertions** pass
 (`php artisan test`), and the frontend builds clean (`npm run build`).
 
-**Live demo (temporary):** `https://kenneth-either-faq-principal.trycloudflare.com` — accounts and the
-exact start command are in [`DEPLOY.md`](DEPLOY.md).
+**Live demo:** stopped/finished — the Cloudflare quick tunnel URL is no longer live. To bring it back,
+follow [`DEPLOY.md`](DEPLOY.md) (the URL changes on each restart, so regenerate the demo PDF too).
 
 **Resume the OpenCode session:**
 - **Title:** `PPAK UTHM Connect — build, hardening & messages overhaul`
@@ -194,25 +198,27 @@ exact start command are in [`DEPLOY.md`](DEPLOY.md).
 
 > Read `README.md`, `FUNCTIONAL-REVIEW.md` and `MESSAGES-REVIEW.md`, then continue.
 
-**Good places to pick up:** hosting/deploy (Hostinger) · the still-open items in
-`FUNCTIONAL-REVIEW.md` (guardians, terms, centres, absence requests, fee reminders) ·
-`MESSAGES-REVIEW.md` (true realtime via Pusher/Echo, general thread) ·
-`LITTLELIVES-COMPARISON.md` Tier 1 (health/medication, growth tracking).
+**Good places to pick up:** hosting/deploy (Hostinger or Railway — see `DEPLOY.md`) · the still-open
+items in `FUNCTIONAL-REVIEW.md` (guardians, terms, centres, **absence requests**, bulk class
+activities) · `MESSAGES-REVIEW.md` (true realtime via Pusher/Echo, general thread) ·
+`LITTLELIVES-COMPARISON.md` Tier 2 (**growth chart**, absence requests, term report PDF, calendar).
 
 ---
 
 ## Roadmap
 
-**Next up (see `LITTLELIVES-COMPARISON.md` for detail):**
-check-in **temperature + health check** · **health & medication** (allergies, medication requests) ·
-**growth tracking** (height/weight/BMI) · **fee reminders** · school **calendar/events** · term
-**progress-report export** · **absence requests** · light **admissions pipeline**.
+**Shipped (Tier 1 — see `LITTLELIVES-COMPARISON.md`):** check-in **temperature + health check** ·
+**health & medication** (allergies/medical notes, medication requests + administration log) ·
+**growth tracking** (height/weight/BMI + class average) · scheduled **fee reminders**.
+
+**Next up:** school **calendar/events** · term **progress-report export** · **absence requests** ·
+growth **chart** · light **admissions pipeline**.
 
 **Later:** native/push (Pusher or PWA web push), staff attendance & scheduling, multi-centre
 dashboards, **true realtime chat** (Laravel Echo/Pusher — polling is in place for now).
 
-**Hosting:** deploy (Hostinger), configure `.env`, run migrations, set up the scheduler
-(`media:prune-photos` runs daily) and backups.
+**Hosting:** deploy (Hostinger or Railway), configure `.env`, run migrations, and ensure the scheduler
+runs (`schedule:run` → `media:prune-photos` + `fees:send-reminders`), plus backups.
 
 ## Notes for contributors
 

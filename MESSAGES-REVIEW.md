@@ -74,7 +74,9 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 ---
 
 *Reviewed against `Conversation`/`Message` models, `Parent\MessageController`, `Teacher\MessageController`,
-`ChatInbox`, the two Messages pages, routes and the `conversations`/`messages` schema on 28 Sep 2026.*
+`ChatInbox`, the two Messages pages, routes and the `conversations`/`messages` schema on 28 Sep 2026.
+Re-checked 29 Sep 2026 after the health/medication/growth pass — the messages module was unchanged, so
+everything above still holds.*
 
 ---
 
@@ -89,7 +91,7 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 | F3 | Notifications **deep-link to the thread** |
 | F4 | **Teacher fan-out** — parents' messages reach every active teacher of the class until claimed; an inactive assignee **falls back**; the assignee is shown in the header |
 | F5 | **Read receipts** — ✓ sent / ✓✓ *Seen* on the last outbound message |
-| F6 | **Attachments** — parents/teachers can attach up to 3 photos (ENTERPRISE via `ImageStore`, private disk) |
+| F6 | **Attachments** — parents/teachers can attach up to 3 photos (re-encoded + EXIF-stripped via `ImageStore`, private disk) |
 | F7 | **Edit** (own, ≤15 min) and **delete** (soft, with a "message deleted" placeholder) |
 | F8 | **Admin oversight** — `/admin/conversations` (search + pagination + read-only thread) and a **CSV transcript export** |
 | F9 | **Email is opt-in** per user (Profile toggle) — the bell always fires, inboxes aren't flooded |

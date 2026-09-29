@@ -190,4 +190,26 @@ The progress module was confusing: six flat selects with no grouping, misleading
 
 ---
 
-*Generated from a full read of `app/Http/Controllers/{Parent,Teacher}`, `app/Models`, `database/migrations`, `routes/web.php`, `app/Notifications`, `app/Services/Payments`, and the shared React components.*
+## Health & safety + growth (later pass — 29 Sep 2026)
+
+Added after the audit above, so any overlapping "still open" notes here are superseded:
+
+- **Check-in health** — teachers can capture an optional **temperature + health note** when marking a
+  child arrived; ≥ 37.5 °C is flagged **"Elevated"**. Parents see the reading in their attendance history.
+- **Allergies / medical notes** — on the child profile (admin-editable) and flagged as a red warning in
+  the teacher's attendance register.
+- **Medication requests** — parent requests (date, medicine, dosage, time, notes) → teacher logs
+  **given / declined** with the staff member, time and note; the parent is notified (bell + email if opted in).
+- **Growth tracking** — teacher records height/weight per child/day (BMI auto-calculated; same-day
+  re-entry updates) plus a **class average BMI**; parents get tiles + a trend list on the child page.
+- **Fee reminders** — `fees:send-reminders` runs **daily at 08:00** for fees due within 3 days or overdue.
+
+Superseded above: §5.4 (health records) is **partly resolved** — allergies, medical notes, temperature and
+medication are structured now; immunisation records are still open.
+
+**Still open from this audit:** absence requests, structured immunisation records, reports/exports beyond
+CSV, queued notifications, staff attendance/scheduling.
+
+---
+
+*Generated from a full read of `app/Http/Controllers/{Parent,Teacher}`, `app/Models`, `database/migrations`, `routes/web.php`, `app/Notifications`, `app/Services/Payments`, and the shared React components. Health/safety + growth section added 29 Sep 2026.*

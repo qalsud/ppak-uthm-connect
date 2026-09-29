@@ -1,12 +1,13 @@
 # Feature Plan — Checkout Photo (image uploads)
 
-**Status:** ✅ Implemented (Phase 0 + Phase 1). Phases 2–3 tracked at the bottom.
+**Status:** ✅ Implemented (Phase 0 + Phase 1). Phase 2 partly shipped, Phase 3 partly shipped (both tracked at the bottom). Updated 29 Sep 2026.
 **Scope:** Teacher submits a photo when checking a child out ("Back home"). Built as the first consumer of a reusable image-upload capability.
 
 **Addendum (implemented):**
 - **Timestamp watermark** — every stored photo is stamped bottom-left with `PPAK UTHM · Check out`, the **child's name** and the **date/time** (`d/m/Y H:i`, app timezone), Shopee-style, on a translucent band. Drawn with FreeType (`resources/fonts/DejaVuSans-Bold.ttf`).
 - **Auto-compression to ≤ 1 MB** — the pipeline lowers JPEG quality (down to 40) then shrinks dimensions (area-based estimate) until the file fits `media.target_kb` (default 1 MB).
 - **Progress photos (Phase 3, done)** — the pipeline is now shared: `ImageStore`, `PhotoController` (authorised streaming), `HasStoredImage` trait, `PhotoUpload`/`PhotoThumb` components and `media:prune-photos`. Teachers can attach a photo when recording progress; it's watermarked, shown on the teacher/parent views and **posted to the parent chat**. Progress photos are **optional**.
+- **Chat attachments (done)** — parents and teachers can attach up to **3 photos per message** through the same pipeline (re-encode, EXIF/GPS stripped, thumbnail, private disk). A pruned photo degrades gracefully to *"Photo no longer available"* instead of a broken bubble.
 
 ---
 
@@ -279,26 +280,34 @@ CHECKOUT_PHOTO_RETENTION_DAYS=0   # 0 = keep forever
 
 ## 13. Phased delivery
 
-**Phase 0 — Teacher-only attendance (ship now, independent of photos)**
+**Phase 0 — Teacher-only attendance (ship now, independent of photos)** ✅ *shipped*
 Remove `parent.attendance.store` + controller action · `AttendanceActions` renders a **read-only status chip** for the parent role · parent dashboard child cards lose the two buttons · parent attendance/child pages become read-only · update tests + copy.
 
-**Phase 1 — MVP (the photo feature)**
+**Phase 1 — MVP (the photo feature)** ✅ *shipped*
 `attendance_photos` + `ImageStore` + private disk + authz route · teacher checkout dialog (required photo) · override w/ reason · thumbnails · teacher/parent visibility · tests + i18n.
 
-**Phase 2 — Hardening**
-Undo/delete photo (audited) · multiple photos · arrival (drop-off) photo · parent notification · retention/cleanup command · admin attendance page with photo review.
+**Phase 2 — Hardening** 🟡 *partly shipped*
+- ✅ Parent notification on **check-out** (with the photo posted into the chat) **and on check-in**
+- ✅ Retention/cleanup command — `media:prune-photos` (default 3 days)
+- ✅ Admins can review photos on the student detail page
+- ✅ **Check-in health** — optional **temperature + health note** captured on arrival (amber "Elevated"
+  flag at ≥ 37.5 °C); the closest thing to the "arrival photo" without the extra friction
+- ⬜ Undo/delete photo (audited) · ⬜ multiple photos per checkout · ⬜ arrival (drop-off) photo ·
+  ⬜ dedicated admin photo-review page
 
-**Phase 3 — Generalise**
-Promote to a `media` table / reusable upload UI across daily activities, progress, profile avatars, memos.
+**Phase 3 — Generalise** 🟡 *partly shipped*
+- ✅ `ImageStore` reused for **progress photos** and **chat attachments** (re-encode + EXIF strip +
+  watermark + ≤1 MB + thumbnail + private disk)
+- ⬜ Promote to a `media` table and a shared upload UI across daily activities, profile avatars, memos
 
 ---
 
-## 14. Open questions
+## 14. Open questions — resolved
 
-1. Teacher-only checkout, or keep parent "Bring home" (photo-free)?
-2. Photo always required, or allow a documented override?
-3. Private disk + authorised route — confirmed?
-4. Copy: child alone, or child + the person collecting?
-5. Any retention limit (e.g., delete after 1 year)?
-6. Want arrival (drop-off) photos in the same pass?
-7. Notify parents on checkout with a photo?
+1. Teacher-only check-in/out? **Yes** — parents are read-only ✅ *(Phase 0)*
+2. Photo always required, or a documented override? **Required, with an override + reason** ✅
+3. Private disk + authorised route? **Yes** ✅
+4. Copy: child alone, or child + the person collecting? **Child + the person collecting** ✅
+5. Retention limit? **3 days by default** (`CHECKOUT_PHOTO_RETENTION_DAYS`) ✅
+6. Arrival (drop-off) photos in the same pass? **No** — arrival instead captures **temperature + health note** ✅
+7. Notify parents on checkout with a photo? **Yes** ✅
