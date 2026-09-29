@@ -19,11 +19,17 @@ class Memo extends Model
         'description',
         'audience',
         'class',
+        'centre_id',
     ];
 
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function centre(): BelongsTo
+    {
+        return $this->belongsTo(Centre::class);
     }
 
     public function audienceLabel(): string

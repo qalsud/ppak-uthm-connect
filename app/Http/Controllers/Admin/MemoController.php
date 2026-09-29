@@ -77,6 +77,7 @@ class MemoController extends Controller
             'description' => 'required|string',
             'audience' => ['nullable', Rule::in(Lists::keys('memo_audience'))],
             'class' => ['nullable', Rule::in(Student::classKeys())],
+            'centre_id' => ['nullable', 'integer', Rule::exists('centres', 'id')],
         ]);
 
         $data['audience'] ??= 'all';
@@ -99,15 +100,34 @@ class MemoController extends Controller
     {
         $active = User::query()->where('status', AccountStatus::Active);
 
+        // Restrict to the memo's centre when it has one.
+        $inCentre = fn ($q) => $memo->centre_id
+            ? $q->where(fn ($w) => $w
+                ->whereHas('centres', fn ($c) => $c->where('centres.id', $memo->centre_id))
+                ->orWhereDoesntHave('centres'))
+            : $q;
+
         return match ($memo->audience) {
-            'parents' => (clone $active)->where('role', UserRole::Parent)->get(),
-            'teachers' => (clone $active)->where('role', UserRole::Teacher)->get(),
+            'parents' => $inCentre((clone $active)->where('role', UserRole::Parent))->get(),
+            'teachers' => $inCentre((clone $active)->where('role', UserRole::Teacher))->get(),
             'class' => (clone $active)
                 ->whereIn('role', [UserRole::Parent, UserRole::Teacher])
                 ->where(function ($q) use ($memo) {
-                    $q->where('role', UserRole::Teacher)
-                        ->orWhereHas('students', fn ($s) => $s->where('class', $memo->class));
+                    // Parents of that class (in the memo's centre)...
+                    $q->orWhereHas('students', fn ($s) => $s
+                        ->where('class', $memo->class)
+                        ->when($memo->centre_id, fn ($c) => $c->where('centre_id', $memo->centre_id)));
+
+                    // ...plus teachers of that class at that centre. A teacher
+                    // with no class assigned is unrestricted, so include them.
+                    $q->orWhere(fn ($w) => $w
+                        ->where('role', UserRole::Teacher)
+                        ->where(fn ($c) => $c->where('class', $memo->class)->orWhereNull('class')));
                 })
+                ->when($memo->centre_id, fn ($q) => $q->where(fn ($w) => $w
+                    ->where('role', UserRole::Parent)
+                    ->orWhereHas('centres', fn ($c) => $c->where('centres.id', $memo->centre_id))
+                    ->orWhereDoesntHave('centres')))
                 ->get(),
             default => (clone $active)->whereIn('role', [UserRole::Parent, UserRole::Teacher])->get(),
         };

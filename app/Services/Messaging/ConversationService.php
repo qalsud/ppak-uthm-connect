@@ -188,9 +188,18 @@ class ConversationService
             }
         }
 
-        $class = $conversation->student?->class;
+        $student = $conversation->student;
+        $class = $student?->class;
+        $centreId = $student?->centre_id;
 
+        // Only teachers who actually work at the child's centre — a class key
+        // like "5tahun" exists at EVERY centre, so without this the message
+        // would reach the same-named class at the other centre.
         return (clone $base)
+            ->when($centreId, fn ($q) => $q->where(fn ($w) => $w
+                ->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId))
+                ->orWhereDoesntHave('centres') // unassigned = unrestricted
+            ))
             ->when($class, fn ($q) => $q->where(fn ($w) => $w->where('class', $class)->orWhereNull('class')))
             ->get();
     }
@@ -205,7 +214,9 @@ class ConversationService
         if ($user->isParent()) {
             $query->whereHas('conversation', fn ($q) => $q->whereIn('student_id', $user->students()->pluck('id')));
         } elseif ($user->isTeacher() && $user->assignedClass()) {
-            $query->whereHas('conversation.student', fn ($q) => $q->where('class', $user->assignedClass()));
+            $query->whereHas('conversation.student', fn ($q) => $q
+                ->visibleTo($user)
+                ->where('class', $user->assignedClass()));
         }
 
         return $query->count();

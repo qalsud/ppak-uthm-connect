@@ -15,13 +15,16 @@ class DailyUpdateController extends Controller
     public function index(Request $request): Response
     {
         $assigned = $request->user()->assignedClass();
-        $selectedClass = $assigned ?? $request->input('class', '5tahun');
+        $selectedClass = $assigned
+            ?? $request->input('class')
+            ?? Student::defaultClassFor($request->user());
 
         $students = Student::query()
             ->active()
-            ->where('class', $selectedClass)
+            ->visibleTo($request->user())
+            ->inClass($selectedClass)
             ->orderBy('name')
-            ->get(['id', 'name', 'class']);
+            ->get(['id', 'name', 'class', 'centre_id']);
 
         $updates = DailyUpdate::query()
             ->whereIn('student_id', $students->pluck('id'))

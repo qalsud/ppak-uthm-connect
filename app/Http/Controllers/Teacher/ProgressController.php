@@ -30,7 +30,7 @@ class ProgressController extends Controller
 
         $students = Student::query()
             ->active()
-            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->visibleTo($request->user())
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
 
@@ -47,7 +47,7 @@ class ProgressController extends Controller
             $query->where('student_id', $studentId);
         }
 
-        if (in_array($class, Student::CLASSES, true)) {
+        if (in_array($class, Student::classKeys(), true)) {
             $query->whereHas('student', fn ($q) => $q->where('class', $class));
         }
 

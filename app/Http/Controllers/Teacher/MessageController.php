@@ -82,7 +82,7 @@ class MessageController extends Controller
     {
         return Student::query()
             ->active()
-            ->when($request->user()->assignedClass(), fn ($q) => $q->where('class', $request->user()->assignedClass()))
+            ->visibleTo($request->user())
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
     }

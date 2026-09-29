@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 
 class User extends Authenticatable
 {
@@ -178,5 +179,24 @@ class User extends Authenticatable
     public function homeRoute(): string
     {
         return $this->role->homeRoute();
+    }
+
+    /**
+     * Staff who should be notified about a given student: teachers at that
+     * child's centre, plus any teacher with no centre assignment (who was
+     * previously unrestricted). Never staff from another centre.
+     *
+     * @return Collection<int, User>
+     */
+    public static function staffForStudent(Student $student): Collection
+    {
+        return static::query()
+            ->where('role', UserRole::Teacher)
+            ->where('status', AccountStatus::Active)
+            ->when($student->centre_id, fn ($q) => $q->where(fn ($w) => $w
+                ->whereHas('centres', fn ($c) => $c->where('centres.id', $student->centre_id))
+                ->orWhereDoesntHave('centres')
+            ))
+            ->get();
     }
 }

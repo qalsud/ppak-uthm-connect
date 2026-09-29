@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Parent;
 
-use App\Enums\AccountStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceAttachment;
 use App\Models\AbsenceRequest;
@@ -78,13 +76,13 @@ class AbsenceController extends Controller
 
         $this->storeDocument($request, $documents, $absence);
 
-        $teachers = User::query()
-            ->where('role', UserRole::Teacher)
-            ->where('status', AccountStatus::Active)
-            ->get();
+        $absence->loadMissing('student');
+        $teachers = $absence->student
+            ? User::staffForStudent($absence->student)
+            : collect();
 
         if ($teachers->isNotEmpty()) {
-            Notification::send($teachers, new AbsenceRequestedNotification($absence->load('student')));
+            Notification::send($teachers, new AbsenceRequestedNotification($absence));
         }
 
         $this->postToChat($absence, $request->user());

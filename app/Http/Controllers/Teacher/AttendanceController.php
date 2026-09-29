@@ -30,30 +30,28 @@ class AttendanceController extends Controller
 
     public function index(Request $request): Response
     {
-        $assigned = $request->user()->assignedClass();
+        $user = $request->user();
+        $assigned = $user->assignedClass();
 
-        $requested = in_array($request->query('class'), Student::CLASSES, true)
+        $requested = in_array($request->query('class'), Student::classKeys(), true)
             ? $request->query('class')
             : null;
 
         // Prefer the explicit choice, then the teacher's class, then the first
-        // class that actually has children (never a hardcoded 5tahun, which can
-        // leave an unassigned teacher staring at an empty register).
+        // class that actually has children *within their centre scope* — never
+        // a hardcoded class, which may belong to another centre.
         $class = $assigned
             ?? $requested
-            ?? Student::query()
-                ->active()
-                ->orderBy('class')
-                ->value('class')
-            ?? Student::CLASSES[0];
+            ?? Student::defaultClassFor($user);
 
         $date = $this->resolveDate($request->query('date'));
 
         $students = Student::query()
             ->active()
-            ->where('class', $class)
+            ->visibleTo($user)
+            ->inClass($class)
             ->orderBy('name')
-            ->get(['id', 'name', 'class', 'allergies', 'has_special_needs', 'dietary_restrictions', 'medical_notes']);
+            ->get(['id', 'name', 'class', 'centre_id', 'allergies', 'has_special_needs', 'dietary_restrictions', 'medical_notes']);
 
         $records = Attendance::onDateFor($students->pluck('id'), $date);
 
@@ -181,10 +179,16 @@ class AttendanceController extends Controller
             'date' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
 
-        $class = $assigned ?? ($data['class'] ?? Student::CLASSES[0]);
+        $class = $assigned
+            ?? ($data['class'] ?? Student::defaultClassFor($request->user()));
         $date = $data['date'] ?? today()->toDateString();
 
-        $students = Student::query()->active()->where('class', $class)->with('parent')->get();
+        $students = Student::query()
+            ->active()
+            ->visibleTo($request->user())
+            ->inClass($class)
+            ->with('parent')
+            ->get();
         $existing = Attendance::onDateFor($students->pluck('id'), $date);
 
         $marked = 0;

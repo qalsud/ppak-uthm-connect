@@ -17,13 +17,13 @@ class GrowthController extends Controller
     {
         $assigned = $request->user()->assignedClass();
 
-        $class = $assigned ?? (in_array($request->query('class'), Student::CLASSES, true)
+        $class = $assigned ?? (in_array($request->query('class'), Student::classKeys(), true)
             ? $request->query('class')
             : null);
 
         $students = Student::query()
             ->active()
-            ->when($class, fn ($q) => $q->where('class', $class))
+            ->visibleTo($request->user())->inClass($class)
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
 

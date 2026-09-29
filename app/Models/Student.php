@@ -109,6 +109,66 @@ class Student extends Model
         return $query->where('status', 'active');
     }
 
+    /**
+     * Scope to what a given user may see. Admins see everything; a teacher sees
+     * only their centre(s) and, if they have a class, only that class.
+     *
+     * This is the ONE place centre+class scoping lives, so no controller can
+     * forget half of it.
+     */
+    public function scopeVisibleTo($query, ?User $user)
+    {
+        if (! $user || $user->isAdmin()) {
+            return $query;
+        }
+
+        $centreIds = $user->centreIds();
+
+        if ($centreIds !== null) {
+            $query->whereIn('centre_id', $centreIds);
+        }
+
+        if ($user->isTeacher() && $user->class) {
+            $query->where('class', $user->class);
+        }
+
+        if ($user->isParent()) {
+            $query->where('parent_id', $user->id);
+        }
+
+        return $query;
+    }
+
+    /** Limit to a centre (no-op when null, i.e. "all centres"). */
+    public function scopeInCentre($query, ?int $centreId)
+    {
+        return $centreId ? $query->where('centre_id', $centreId) : $query;
+    }
+
+    /** Limit to a class key within whatever centre scope is already applied. */
+    public function scopeInClass($query, ?string $class)
+    {
+        return $class ? $query->where('class', $class) : $query;
+    }
+
+    /**
+     * The class to open by default when none is chosen. Prefers the user's own
+     * class, then the first class that actually has children *within scope* —
+     * never a hardcoded '5tahun', which could belong to another centre.
+     */
+    public static function defaultClassFor(?User $user): ?string
+    {
+        if ($user?->isTeacher() && $user->class) {
+            return $user->class;
+        }
+
+        return static::query()
+            ->active()
+            ->visibleTo($user)
+            ->orderBy('class')
+            ->value('class');
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

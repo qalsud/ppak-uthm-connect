@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
         $students = Student::query()
             ->active()
-            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->visibleTo(auth()->user())
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
 

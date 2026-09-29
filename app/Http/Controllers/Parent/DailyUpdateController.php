@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Parent;
 
-use App\Enums\AccountStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\DailyUpdate;
 use App\Models\Student;
@@ -72,14 +70,13 @@ class DailyUpdateController extends Controller
             $record = DailyUpdate::create($validated);
         }
 
-        // Notify the teaching team.
-        $teachers = User::query()
-            ->where('role', UserRole::Teacher)
-            ->where('status', AccountStatus::Active)
-            ->get();
+        // Notify the teaching team *at this child's centre* — a class key like
+        // "5tahun" exists at every centre, so notifying all teachers would reach
+        // the wrong one.
+        $student = Student::find($validated['student_id']);
+        $teachers = $student ? User::staffForStudent($student) : collect();
 
         if ($teachers->isNotEmpty()) {
-            $student = Student::find($validated['student_id']);
             Notification::send($teachers, new DailyUpdateSubmittedNotification($student, $record));
         }
 

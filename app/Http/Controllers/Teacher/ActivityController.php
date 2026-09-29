@@ -26,7 +26,7 @@ class ActivityController extends Controller
 
         $students = Student::query()
             ->active()
-            ->when($assigned, fn ($q) => $q->where('class', $assigned))
+            ->visibleTo($request->user())
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
 
