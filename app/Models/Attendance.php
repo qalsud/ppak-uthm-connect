@@ -23,6 +23,8 @@ class Attendance extends Model
         'checkout_override_reason',
         'temperature',
         'health_note',
+        'absence_request_id',
+        'absence_type',
     ];
 
     protected $casts = [
@@ -43,6 +45,11 @@ class Attendance extends Model
         return $this->hasMany(AttendancePhoto::class);
     }
 
+    public function absenceRequest(): BelongsTo
+    {
+        return $this->belongsTo(AbsenceRequest::class, 'absence_request_id');
+    }
+
     /** Latest checkout photo, if any. */
     public function checkoutPhoto(): ?AttendancePhoto
     {
@@ -52,7 +59,7 @@ class Attendance extends Model
             ->first();
     }
 
-    /** none | school | home */
+    /** none | school | home | absent */
     public function status(): string
     {
         if ($this->departed_at) {
@@ -61,6 +68,10 @@ class Attendance extends Model
 
         if ($this->arrived_at) {
             return 'school';
+        }
+
+        if ($this->absence_request_id) {
+            return 'absent';
         }
 
         return 'none';
@@ -74,6 +85,7 @@ class Attendance extends Model
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
             ...$this->healthPayload(),
+            ...$this->absencePayload(),
             ...$this->checkoutPayload(),
         ];
     }
@@ -89,6 +101,7 @@ class Attendance extends Model
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
             ...$this->healthPayload(),
+            ...$this->absencePayload(),
             ...$this->checkoutPayload(),
         ];
     }
@@ -99,6 +112,15 @@ class Attendance extends Model
         return [
             'temperature' => $this->temperature !== null ? number_format((float) $this->temperature, 1) : null,
             'health_note' => $this->health_note,
+        ];
+    }
+
+    /** @return array{absence_type: string|null, absence_reason: string|null} */
+    private function absencePayload(): array
+    {
+        return [
+            'absence_type' => $this->absence_type,
+            'absence_reason' => $this->absenceRequest?->reason,
         ];
     }
 
@@ -120,6 +142,8 @@ class Attendance extends Model
             'departed_at' => null,
             'temperature' => null,
             'health_note' => null,
+            'absence_type' => null,
+            'absence_reason' => null,
             'photo' => null,
             'note' => null,
             'photo_override' => false,
@@ -136,6 +160,10 @@ class Attendance extends Model
         $this->arrived_by = $userId;
         $this->departed_at = null;
         $this->departed_by = null;
+
+        // The child turned up, so any approved absence no longer applies.
+        $this->absence_request_id = null;
+        $this->absence_type = null;
     }
 
     /** Mark the child as departed (auto-fills arrival if it was never set). */
@@ -158,7 +186,7 @@ class Attendance extends Model
     public static function todayFor(Collection|array $studentIds): Collection
     {
         return static::query()
-            ->with('photos.uploadedBy:id,name')
+            ->with(['photos.uploadedBy:id,name', 'absenceRequest:id,type,reason'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('date', today())
             ->get()
@@ -169,7 +197,7 @@ class Attendance extends Model
     public static function historyFor(int $studentId, int $limit = 21): Collection
     {
         return static::query()
-            ->with('photos.uploadedBy:id,name')
+            ->with(['photos.uploadedBy:id,name', 'absenceRequest:id,type,reason'])
             ->where('student_id', $studentId)
             ->orderByDesc('date')
             ->limit($limit)
@@ -180,7 +208,7 @@ class Attendance extends Model
     public static function onDateFor(Collection|array $studentIds, string $date): Collection
     {
         return static::query()
-            ->with('photos.uploadedBy:id,name')
+            ->with(['photos.uploadedBy:id,name', 'absenceRequest:id,type,reason'])
             ->whereIn('student_id', $studentIds)
             ->whereDate('date', $date)
             ->get()

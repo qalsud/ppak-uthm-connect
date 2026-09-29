@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { CalendarClock, Pill, UserCheck } from 'lucide-react';
+import { CalendarClock, CalendarOff, Pill, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
@@ -48,6 +48,20 @@ type Medication = {
     given_by: string | null;
 };
 
+type Absence = {
+    id: number;
+    student: string | null;
+    start_date: string;
+    end_date: string;
+    days: number;
+    type: 'sick' | 'personal' | 'other';
+    reason: string | null;
+    status: 'pending' | 'approved' | 'declined';
+    review_note: string | null;
+    reviewed_by: string | null;
+    requested_by: string | null;
+};
+
 export default function TeacherAttendance({
     students,
     selectedClass,
@@ -56,14 +70,18 @@ export default function TeacherAttendance({
     isToday,
     counts,
     medications,
+    absenceRequests,
+    absenceCounts,
 }: {
     students: Student[];
     selectedClass: string;
     assignedClass?: string | null;
     date: string;
     isToday: boolean;
-    counts: { school: number; home: number; none: number };
+    counts: { school: number; home: number; absent: number; none: number };
     medications: Medication[];
+    absenceRequests: Absence[];
+    absenceCounts: { pending: number; approved: number };
 }) {
     const { t } = useI18n();
     const [markAllOpen, setMarkAllOpen] = useState(false);
@@ -71,6 +89,13 @@ export default function TeacherAttendance({
     const act = (id: number, status: 'given' | 'declined') =>
         router.post(
             route('teacher.medications.update', { medication: id }),
+            { status },
+            { preserveScroll: true },
+        );
+
+    const review = (id: number, status: 'approved' | 'declined') =>
+        router.post(
+            route('teacher.absences.update', { absence: id }),
             { status },
             { preserveScroll: true },
         );
@@ -88,11 +113,14 @@ export default function TeacherAttendance({
             ? { label: t('at_school'), cls: 'bg-sky-100 text-sky-700' }
             : status === 'home'
               ? { label: t('back_home'), cls: 'bg-emerald-100 text-emerald-700' }
-              : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
+              : status === 'absent'
+                ? { label: t('absent'), cls: 'bg-rose-100 text-rose-700' }
+                : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
 
     const summary = [
         { label: t('at_school'), value: counts.school, cls: 'text-sky-600' },
         { label: t('back_home'), value: counts.home, cls: 'text-emerald-600' },
+        { label: t('absent'), value: counts.absent, cls: 'text-rose-600' },
         { label: t('not_arrived'), value: counts.none, cls: 'text-slate-500' },
     ];
 
@@ -132,7 +160,7 @@ export default function TeacherAttendance({
             </PageHeader>
 
             {/* Summary */}
-            <div className="mb-6 grid grid-cols-3 gap-3">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {summary.map((s) => (
                     <Card key={s.label} className="rounded-2xl border-0 shadow-sm">
                         <CardContent className="py-4 text-center">
@@ -142,6 +170,72 @@ export default function TeacherAttendance({
                     </Card>
                 ))}
             </div>
+
+            {/* Absences covering this day */}
+            {(absenceRequests.length > 0 || absenceCounts.pending > 0) && (
+                <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <CalendarOff className="size-4 text-primary" />
+                            {t('absences')}
+                            {absenceCounts.pending > 0 && (
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                    {absenceCounts.pending} {t('pending')}
+                                </span>
+                            )}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {absenceRequests.map((a) => (
+                            <div
+                                key={a.id}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3"
+                            >
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">
+                                        {a.student} · {t(`absence.${a.type}`)} · {a.days} {t('absence_days')}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {a.start_date === a.end_date
+                                            ? a.start_date
+                                            : `${a.start_date} → ${a.end_date}`}
+                                        {a.reason ? ` · ${a.reason}` : ''}
+                                    </p>
+                                </div>
+                                {a.status === 'pending' ? (
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="h-8 rounded-lg text-xs"
+                                            onClick={() => review(a.id, 'approved')}
+                                        >
+                                            {t('approve')}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-8 rounded-lg text-xs"
+                                            onClick={() => review(a.id, 'declined')}
+                                        >
+                                            {t('decline')}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <span
+                                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                            a.status === 'approved'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-rose-100 text-rose-700'
+                                        }`}
+                                    >
+                                        {t(a.status)}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Today's medication requests */}
             {medications.length > 0 && (

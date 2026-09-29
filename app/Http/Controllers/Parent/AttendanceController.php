@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbsenceRequest;
 use App\Models\Attendance;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -24,6 +25,12 @@ class AttendanceController extends Controller
             $child->attendance = $today->get($child->id)?->summary() ?? Attendance::emptySummary();
             $child->history = Attendance::historyFor($child->id)
                 ->map(fn (Attendance $a) => $a->historyRow())
+                ->values();
+            $child->absences = $child->absenceRequests()
+                ->whereIn('status', ['pending', 'approved'])
+                ->orderBy('start_date')
+                ->get()
+                ->map(fn (AbsenceRequest $a) => $a->summary())
                 ->values();
         });
 

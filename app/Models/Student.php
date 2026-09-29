@@ -77,6 +77,11 @@ class Student extends Model
         return $this->hasMany(GrowthRecord::class);
     }
 
+    public function absenceRequests(): HasMany
+    {
+        return $this->hasMany(AbsenceRequest::class);
+    }
+
     // Future modules attach here:
     // public function dailyActivities(): HasMany ...
     // public function progressRecords(): HasMany ...

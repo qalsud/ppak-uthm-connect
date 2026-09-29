@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MessageController as MessageOpsController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\Parent\AbsenceController as ParentAbsenceController;
 use App\Http\Controllers\Parent\ActivityController as ParentActivityController;
 use App\Http\Controllers\Parent\AttendanceController as ParentAttendanceController;
 use App\Http\Controllers\Parent\ChildController as ParentChildController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Teacher\AbsenceController as TeacherAbsenceController;
 use App\Http\Controllers\Teacher\ActivityController as TeacherActivityController;
 use App\Http\Controllers\Teacher\AttendanceController as TeacherAttendanceController;
 use App\Http\Controllers\Teacher\DailyUpdateController as TeacherDailyUpdateController;
@@ -171,6 +173,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
             Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');
             Route::post('/medications/{medication}', [TeacherMedicationController::class, 'update'])->name('medications.update');
+            Route::post('/absences/{absence}', [TeacherAbsenceController::class, 'update'])->name('absences.update');
 
             Route::get('/messages', [TeacherMessageController::class, 'index'])->name('messages.index');
             Route::get('/messages/{conversation}', [TeacherMessageController::class, 'show'])->name('messages.show');
@@ -188,6 +191,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
             Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
             Route::post('/children/{student}/medications', [ParentMedicationController::class, 'store'])->name('medications.store');
+            Route::post('/children/{student}/absences', [ParentAbsenceController::class, 'store'])->name('absences.store');
+            Route::delete('/absences/{absence}', [ParentAbsenceController::class, 'destroy'])->name('absences.destroy');
             Route::get('/teachers', [ParentContactController::class, 'index'])->name('teachers.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');

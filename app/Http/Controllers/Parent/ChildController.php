@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbsenceRequest;
 use App\Models\Attendance;
 use App\Models\DailyActivity;
 use App\Models\GrowthRecord;
@@ -43,6 +44,12 @@ class ChildController extends Controller
                 ->get(),
             'attendanceHistory' => Attendance::historyFor($student->id, 14)
                 ->map(fn (Attendance $a) => $a->historyRow())
+                ->values(),
+            'absences' => $student->absenceRequests()
+                ->latest('start_date')
+                ->limit(6)
+                ->get()
+                ->map(fn (AbsenceRequest $a) => $a->summary())
                 ->values(),
             'medications' => $student->medicationRequests()
                 ->latest('date')

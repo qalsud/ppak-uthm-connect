@@ -9,11 +9,13 @@ import { useI18n } from '@/lib/i18n';
 import type { PhotoInfo } from '@/lib/photo';
 
 export type AttendanceSummary = {
-    status: 'none' | 'school' | 'home';
+    status: 'none' | 'school' | 'home' | 'absent';
     arrived_at: string | null;
     departed_at: string | null;
     temperature?: string | null;
     health_note?: string | null;
+    absence_type?: string | null;
+    absence_reason?: string | null;
     photo?: PhotoInfo | null;
     note?: string | null;
     photo_override?: boolean;
@@ -25,6 +27,8 @@ const empty: AttendanceSummary = {
     departed_at: null,
     temperature: null,
     health_note: null,
+    absence_type: null,
+    absence_reason: null,
     photo: null,
     note: null,
     photo_override: false,
@@ -54,7 +58,7 @@ export default function AttendanceActions({
     // Parents are read-only: attendance is marked by teachers.
     const readOnly = role === 'parent';
 
-    const { status, arrived_at, departed_at, temperature, health_note, photo, note, photo_override } =
+    const { status, arrived_at, departed_at, temperature, health_note, absence_type, absence_reason, photo, note, photo_override } =
         attendance;
 
     const elevated = temperature !== null && temperature !== undefined && parseFloat(temperature) >= 37.5;
@@ -69,7 +73,12 @@ export default function AttendanceActions({
               }
             : status === 'home'
               ? { label: `${t('back_home')}${departed_at ? ` · ${departed_at}` : ''}`, cls: 'bg-emerald-100 text-emerald-700' }
-              : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
+              : status === 'absent'
+                ? {
+                      label: `${t('absent')}${absence_type ? ` · ${t(`absence.${absence_type}`)}` : ''}`,
+                      cls: 'bg-rose-100 text-rose-700',
+                  }
+                : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
 
     return (
         <div className="space-y-2">
@@ -85,6 +94,10 @@ export default function AttendanceActions({
             )}
 
             {health_note && <p className="text-[11px] text-muted-foreground">{health_note}</p>}
+
+            {status === 'absent' && absence_reason && (
+                <p className="text-[11px] text-muted-foreground">{absence_reason}</p>
+            )}
 
             {/* Checkout proof */}
             {(photo || note || photo_override) && (
@@ -107,7 +120,7 @@ export default function AttendanceActions({
                         type="button"
                         variant="outline"
                         className="h-10 gap-1.5 rounded-xl text-xs"
-                        disabled={status === 'school'}
+                        disabled={status === 'school' || status === 'absent'}
                         onClick={() => setCheckInOpen(true)}
                     >
                         <LogIn className="size-4" />
@@ -119,8 +132,7 @@ export default function AttendanceActions({
                         className="h-10 gap-1.5 rounded-xl text-xs"
                         disabled={status === 'home'}
                         onClick={() => setCheckoutOpen(true)}
-                    >
-                        <LogOut className="size-4" />
+                    >                        <LogOut className="size-4" />
                         {t('back_home')}
                     </Button>
                 </div>

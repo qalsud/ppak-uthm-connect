@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendancePhoto;
@@ -55,6 +56,18 @@ class AttendanceController extends Controller
             ->map(fn (MedicationRequest $m) => $m->summary())
             ->values();
 
+        // Absences covering this register day.
+        $absenceRequests = AbsenceRequest::query()
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereIn('status', ['pending', 'approved'])
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->with(['student:id,name', 'reviewedBy:id,name'])
+            ->orderBy('start_date')
+            ->get()
+            ->map(fn (AbsenceRequest $a) => $a->summary())
+            ->values();
+
         $students->each(function (Student $student) use ($records) {
             $student->attendance = $records->get($student->id)?->summary() ?? Attendance::emptySummary();
         });
@@ -66,9 +79,16 @@ class AttendanceController extends Controller
             'date' => $date,
             'isToday' => $date === today()->toDateString(),
             'medications' => $medications,
+            'absenceRequests' => $absenceRequests,
+            // The cards sit above the summary, so give them their own counts.
+            'absenceCounts' => [
+                'pending' => $absenceRequests->where('status', 'pending')->count(),
+                'approved' => $absenceRequests->where('status', 'approved')->count(),
+            ],
             'counts' => [
                 'school' => $students->filter(fn ($s) => $s->attendance['status'] === 'school')->count(),
                 'home' => $students->filter(fn ($s) => $s->attendance['status'] === 'home')->count(),
+                'absent' => $students->filter(fn ($s) => $s->attendance['status'] === 'absent')->count(),
                 'none' => $students->filter(fn ($s) => $s->attendance['status'] === 'none')->count(),
             ],
         ]);
@@ -81,7 +101,9 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'action' => ['required', Rule::in(['arrive'])],
-            'date' => ['nullable', 'date', 'before_or_equal:today'],
+            // Teachers may correct an upcoming absence day (e.g. the child turns
+            // up), so allow the same forward window as the absence form.
+            'date' => ['nullable', 'date', 'before_or_equal:'.today()->addDays(90)->toDateString()],
             'temperature' => ['nullable', 'numeric', 'between:30,45'],
             'health_note' => ['nullable', 'string', 'max:255'],
         ]);
@@ -102,6 +124,10 @@ class AttendanceController extends Controller
         if (! empty($data['health_note'])) {
             $attendance->health_note = $data['health_note'];
         }
+
+        // The child is here, so any approved-absence flag for this day is cleared.
+        $attendance->absence_request_id = null;
+        $attendance->absence_type = null;
 
         $attendance->save();
 

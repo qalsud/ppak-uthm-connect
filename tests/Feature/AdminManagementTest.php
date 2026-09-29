@@ -2,6 +2,7 @@
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\Conversation;
@@ -15,6 +16,8 @@ use App\Models\Message;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\AbsenceRequestedNotification;
+use App\Notifications\AbsenceReviewedNotification;
 use App\Notifications\AccountDecisionNotification;
 use App\Notifications\CheckInRecordedNotification;
 use App\Notifications\FeeReminderNotification;
@@ -836,6 +839,105 @@ test('a teacher records a growth measurement and the parent sees it', function (
             ->where('growth.0.height_cm', 111)
             ->where('growth.0.bmi', 14.9)
         );
+});
+
+test('an approved absence marks the covered days absent', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $from = today()->addDays(2)->toDateString();
+    $to = today()->addDays(4)->toDateString();
+
+    $this->actingAs($parent)->post(route('parent.absences.store', $student), [
+        'start_date' => $from,
+        'end_date' => $to,
+        'type' => 'sick',
+        'reason' => 'Fever',
+    ])->assertRedirect();
+
+    $absence = AbsenceRequest::firstOrFail();
+
+    expect($absence->status)->toBe('pending')
+        ->and($absence->dates()->count())->toBe(3)
+        ->and(Attendance::count())->toBe(0);
+
+    Notification::assertSentTo($teacher, AbsenceRequestedNotification::class);
+
+    $this->actingAs($teacher)->post(route('teacher.absences.update', $absence), [
+        'status' => 'approved',
+    ])->assertRedirect();
+
+    expect(Attendance::whereNotNull('absence_request_id')->count())->toBe(3)
+        ->and(Attendance::first()->status())->toBe('absent');
+
+    Notification::assertSentTo($parent, AbsenceReviewedNotification::class);
+
+    // If the child actually turns up, the arrival wins and the flag is cleared.
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $student), [
+        'action' => 'arrive',
+        'date' => $from,
+    ])->assertRedirect();
+
+    expect(Attendance::whereDate('date', $from)->first()->status())->toBe('school');
+});
+
+test('declining an absence clears the flagged days', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $absence = AbsenceRequest::create([
+        'student_id' => $student->id,
+        'requested_by' => $parent->id,
+        'start_date' => today()->addDay()->toDateString(),
+        'end_date' => today()->addDays(2)->toDateString(),
+        'type' => 'personal',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($teacher)->post(route('teacher.absences.update', $absence), ['status' => 'approved']);
+    expect(Attendance::count())->toBe(2);
+
+    $this->actingAs($teacher)->post(route('teacher.absences.update', $absence), ['status' => 'declined']);
+
+    expect(Attendance::count())->toBe(0)
+        ->and($absence->fresh()->status)->toBe('declined');
+});
+
+test('a parent cannot file an absence for another child, or overlap their own', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $stranger = User::factory()->role(UserRole::Parent)->create();
+
+    $this->actingAs($stranger)->post(route('parent.absences.store', $student), [
+        'start_date' => today()->toDateString(),
+        'end_date' => today()->toDateString(),
+        'type' => 'sick',
+    ])->assertForbidden();
+
+    $payload = [
+        'start_date' => today()->addDay()->toDateString(),
+        'end_date' => today()->addDays(3)->toDateString(),
+        'type' => 'sick',
+    ];
+
+    $this->actingAs($parent)->post(route('parent.absences.store', $student), $payload)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($parent)->post(route('parent.absences.store', $student), [
+        ...$payload,
+        'start_date' => today()->addDays(3)->toDateString(),
+        'end_date' => today()->addDays(5)->toDateString(),
+    ])->assertSessionHasErrors('start_date');
+
+    // A parent withdraws their own pending request.
+    $absence = AbsenceRequest::firstOrFail();
+    $this->actingAs($parent)->delete(route('parent.absences.destroy', $absence))->assertRedirect();
+    expect(AbsenceRequest::count())->toBe(0);
 });
 
 test('search ignores very short queries', function () {

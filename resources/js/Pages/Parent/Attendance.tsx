@@ -1,5 +1,6 @@
 import { CalendarClock, History } from 'lucide-react';
 
+import AbsencePanel, { type Absence } from '@/Components/absence-panel';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import PageHeader from '@/Components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -12,11 +13,13 @@ type HistoryRow = {
     id: number;
     date: string;
     day: string;
-    status: 'none' | 'school' | 'home';
+    status: 'none' | 'school' | 'home' | 'absent';
     arrived_at: string | null;
     departed_at: string | null;
     temperature: string | null;
     health_note: string | null;
+    absence_type?: string | null;
+    absence_reason?: string | null;
 };
 
 type Child = {
@@ -25,6 +28,7 @@ type Child = {
     class: string;
     attendance: AttendanceSummary;
     history: HistoryRow[];
+    absences: Absence[];
 };
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
@@ -37,7 +41,9 @@ export default function ParentAttendance({ children }: { children: Child[] }) {
             ? { label: t('at_school'), cls: 'bg-sky-100 text-sky-700' }
             : status === 'home'
               ? { label: t('back_home'), cls: 'bg-emerald-100 text-emerald-700' }
-              : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
+              : status === 'absent'
+                ? { label: t('absent'), cls: 'bg-rose-100 text-rose-700' }
+                : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
@@ -72,6 +78,8 @@ export default function ParentAttendance({ children }: { children: Child[] }) {
                                         role="parent"
                                     />
                                 </div>
+
+                                <AbsencePanel child={child} />
 
                                 {/* History */}
                                 <div className="border-t pt-4">

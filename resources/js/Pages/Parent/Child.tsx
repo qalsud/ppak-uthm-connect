@@ -51,11 +51,13 @@ type HistoryRow = {
     id: number;
     date: string;
     day: string;
-    status: 'none' | 'school' | 'home';
+    status: 'none' | 'school' | 'home' | 'absent';
     arrived_at: string | null;
     departed_at: string | null;
     temperature: string | null;
     health_note: string | null;
+    absence_type?: string | null;
+    absence_reason?: string | null;
 };
 
 type Medication = {
@@ -207,7 +209,9 @@ export default function ParentChild() {
                                         ? { label: t('at_school'), cls: 'bg-sky-100 text-sky-700' }
                                         : row.status === 'home'
                                           ? { label: t('back_home'), cls: 'bg-emerald-100 text-emerald-700' }
-                                          : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
+                                          : row.status === 'absent'
+                                            ? { label: t('absent'), cls: 'bg-rose-100 text-rose-700' }
+                                            : { label: t('not_arrived'), cls: 'bg-slate-100 text-slate-600' };
 
                                 return (
                                     <div
