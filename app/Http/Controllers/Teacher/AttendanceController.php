@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendancePhoto;
+use App\Models\MedicationRequest;
 use App\Models\Message;
 use App\Models\Student;
 use App\Notifications\CheckInRecordedNotification;
@@ -44,6 +45,16 @@ class AttendanceController extends Controller
 
         $records = Attendance::onDateFor($students->pluck('id'), $date);
 
+        $medications = MedicationRequest::query()
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereDate('date', $date)
+            ->with(['student:id,name', 'givenBy:id,name'])
+            ->orderBy('time_due')
+            ->get()
+            ->sortBy(fn (MedicationRequest $m) => [$m->status === 'pending' ? 0 : 1, $m->time_due ?? ''])
+            ->map(fn (MedicationRequest $m) => $m->summary())
+            ->values();
+
         $students->each(function (Student $student) use ($records) {
             $student->attendance = $records->get($student->id)?->summary() ?? Attendance::emptySummary();
         });
@@ -54,6 +65,7 @@ class AttendanceController extends Controller
             'assignedClass' => $assigned,
             'date' => $date,
             'isToday' => $date === today()->toDateString(),
+            'medications' => $medications,
             'counts' => [
                 'school' => $students->filter(fn ($s) => $s->attendance['status'] === 'school')->count(),
                 'home' => $students->filter(fn ($s) => $s->attendance['status'] === 'home')->count(),

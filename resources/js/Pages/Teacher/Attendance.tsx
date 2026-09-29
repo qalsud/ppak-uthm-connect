@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { CalendarClock, UserCheck } from 'lucide-react';
+import { CalendarClock, Pill, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
@@ -36,6 +36,18 @@ type Student = {
 
 const classLabel = (c: string) => (c === '5tahun' ? '5 Tahun' : c === '6bintang' ? '6 Bintang' : c);
 
+type Medication = {
+    id: number;
+    student: string | null;
+    medicine: string;
+    dosage: string | null;
+    time_due: string | null;
+    notes: string | null;
+    status: 'pending' | 'given' | 'declined';
+    given_at: string | null;
+    given_by: string | null;
+};
+
 export default function TeacherAttendance({
     students,
     selectedClass,
@@ -43,6 +55,7 @@ export default function TeacherAttendance({
     date,
     isToday,
     counts,
+    medications,
 }: {
     students: Student[];
     selectedClass: string;
@@ -50,9 +63,17 @@ export default function TeacherAttendance({
     date: string;
     isToday: boolean;
     counts: { school: number; home: number; none: number };
+    medications: Medication[];
 }) {
     const { t } = useI18n();
     const [markAllOpen, setMarkAllOpen] = useState(false);
+
+    const act = (id: number, status: 'given' | 'declined') =>
+        router.post(
+            route('teacher.medications.update', { medication: id }),
+            { status },
+            { preserveScroll: true },
+        );
 
     const reload = (params: { class?: string; date?: string }) => {
         router.get(
@@ -121,6 +142,67 @@ export default function TeacherAttendance({
                     </Card>
                 ))}
             </div>
+
+            {/* Today's medication requests */}
+            {medications.length > 0 && (
+                <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Pill className="size-4 text-primary" />
+                            {t('medications')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {medications.map((m) => (
+                            <div
+                                key={m.id}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3"
+                            >
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">
+                                        {m.student} · {m.medicine}
+                                        {m.dosage ? ` · ${m.dosage}` : ''}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {m.time_due ? `${m.time_due}` : ''}
+                                        {m.notes ? ` · ${m.notes}` : ''}
+                                        {m.given_at ? ` · ${t('given_at')} ${m.given_at}` : ''}
+                                    </p>
+                                </div>
+                                {m.status === 'pending' ? (
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            className="h-8 rounded-lg text-xs"
+                                            onClick={() => act(m.id, 'given')}
+                                        >
+                                            {t('mark_given')}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-8 rounded-lg text-xs"
+                                            onClick={() => act(m.id, 'declined')}
+                                        >
+                                            {t('mark_not_given')}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <span
+                                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                            m.status === 'given'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-rose-100 text-rose-700'
+                                        }`}
+                                    >
+                                        {t(m.status)}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className="rounded-2xl border-0 shadow-sm">
                 <CardHeader className="pb-2">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parent;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\DailyActivity;
+use App\Models\MedicationRequest;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,6 +42,13 @@ class ChildController extends Controller
                 ->get(),
             'attendanceHistory' => Attendance::historyFor($student->id, 14)
                 ->map(fn (Attendance $a) => $a->historyRow())
+                ->values(),
+            'medications' => $student->medicationRequests()
+                ->latest('date')
+                ->latest('id')
+                ->limit(10)
+                ->get()
+                ->map(fn (MedicationRequest $m) => $m->summary())
                 ->values(),
             'fields' => DailyActivity::FIELDS,
         ]);

@@ -1,5 +1,5 @@
-import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare } from 'lucide-react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare, Pill } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -9,6 +9,8 @@ import StatusBadge from '@/Components/status-badge';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/date';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
@@ -56,20 +58,51 @@ type HistoryRow = {
     health_note: string | null;
 };
 
+type Medication = {
+    id: number;
+    date: string;
+    medicine: string;
+    dosage: string | null;
+    time_due: string | null;
+    notes: string | null;
+    status: 'pending' | 'given' | 'declined';
+    given_at: string | null;
+    given_by: string | null;
+};
+
 type Page = PageProps<{
     child: Child;
     updates: Update[];
     activities: Activity[];
     progress: Progress[];
     attendanceHistory: HistoryRow[];
+    medications: Medication[];
     fields: Record<string, string>;
 }>;
 
 export default function ParentChild() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { child, updates, activities, progress, attendanceHistory, fields } = props;
+    const { child, updates, activities, progress, attendanceHistory, medications, fields } = props;
     const [paying, setPaying] = useState(false);
+    const [showMed, setShowMed] = useState(false);
+
+    const medForm = useForm({
+        date: new Date().toISOString().slice(0, 10),
+        medicine: '',
+        dosage: '',
+        time_due: '',
+        notes: '',
+    });
+
+    const submitMed = () =>
+        medForm.post(route('parent.medications.store', { student: child.id }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                medForm.reset();
+                setShowMed(false);
+            },
+        });
 
     const checkout = () => {
         setPaying(true);
@@ -224,6 +257,120 @@ export default function ParentChild() {
                             ))}
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            {/* Medication */}
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <Pill className="size-4 text-primary" />
+                        {t('medication')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {medications.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t('no_medication')}</p>
+                    ) : (
+                        medications.map((m) => (
+                            <div key={m.id} className="flex items-start justify-between gap-2 rounded-xl border p-3">
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">
+                                        {m.medicine}
+                                        {m.dosage ? ` · ${m.dosage}` : ''}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {m.date}
+                                        {m.time_due ? ` · ${m.time_due}` : ''}
+                                        {m.given_at ? ` · ${t('given_at')} ${m.given_at}` : ''}
+                                    </p>
+                                    {m.notes && <p className="text-[11px] text-muted-foreground">{m.notes}</p>}
+                                </div>
+                                <span
+                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                        m.status === 'given'
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : m.status === 'declined'
+                                              ? 'bg-rose-100 text-rose-700'
+                                              : 'bg-amber-100 text-amber-700'
+                                    }`}
+                                >
+                                    {t(m.status)}
+                                </span>
+                            </div>
+                        ))
+                    )}
+
+                    {showMed && (
+                        <div className="space-y-2 rounded-xl border p-3">
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <Label htmlFor="med-date">{t('date')}</Label>
+                                    <Input
+                                        id="med-date"
+                                        type="date"
+                                        value={medForm.data.date}
+                                        onChange={(e) => medForm.setData('date', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="med-time">{t('time_due')}</Label>
+                                    <Input
+                                        id="med-time"
+                                        type="time"
+                                        value={medForm.data.time_due}
+                                        onChange={(e) => medForm.setData('time_due', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="med-medicine">{t('medicine')}</Label>
+                                <Input
+                                    id="med-medicine"
+                                    value={medForm.data.medicine}
+                                    onChange={(e) => medForm.setData('medicine', e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="med-dosage">{t('dosage')}</Label>
+                                <Input
+                                    id="med-dosage"
+                                    placeholder="e.g. 5ml"
+                                    value={medForm.data.dosage}
+                                    onChange={(e) => medForm.setData('dosage', e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="med-notes">{t('medication_notes')}</Label>
+                                <Input
+                                    id="med-notes"
+                                    value={medForm.data.notes}
+                                    onChange={(e) => medForm.setData('notes', e.target.value)}
+                                />
+                            </div>
+                            {(medForm.errors.medicine || medForm.errors.date) && (
+                                <p className="text-xs text-destructive">
+                                    {medForm.errors.medicine ?? medForm.errors.date}
+                                </p>
+                            )}
+                            <Button
+                                onClick={submitMed}
+                                disabled={medForm.processing}
+                                className="h-10 w-full rounded-xl"
+                            >
+                                {t('request_medication')}
+                            </Button>
+                        </div>
+                    )}
+
+                    <Button
+                        variant="outline"
+                        className="w-full rounded-xl"
+                        onClick={() => setShowMed((v) => !v)}
+                    >
+                        <Pill className="mr-2 size-4" />
+                        {t('request_medication')}
+                    </Button>
                 </CardContent>
             </Card>
 

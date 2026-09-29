@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
+use App\Models\MedicationRequest;
 use App\Models\Memo;
 use App\Models\Message;
 use App\Models\Payment;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Notifications\AccountDecisionNotification;
 use App\Notifications\CheckInRecordedNotification;
 use App\Notifications\FeeReminderNotification;
+use App\Notifications\MedicationAdministeredNotification;
 use App\Notifications\MemoPostedNotification;
 use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
@@ -759,6 +761,44 @@ test('fee reminders reach parents whose fees are due soon, and skip the rest', f
     ]);
 
     Notification::assertNotSentTo($other, FeeReminderNotification::class);
+});
+
+test('a parent can request medication and a teacher records it as given', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($parent)->post(route('parent.medications.store', $student), [
+        'date' => today()->toDateString(),
+        'medicine' => 'Paracetamol',
+        'dosage' => '5ml',
+        'time_due' => '12:30',
+    ])->assertRedirect();
+
+    $medication = MedicationRequest::firstOrFail();
+    expect($medication->status)->toBe('pending')
+        ->and($medication->requested_by)->toBe($parent->id);
+
+    // Another parent cannot request medicine for this child.
+    $stranger = User::factory()->role(UserRole::Parent)->create();
+    $this->actingAs($stranger)->post(route('parent.medications.store', $student), [
+        'date' => today()->toDateString(),
+        'medicine' => 'Ibuprofen',
+    ])->assertForbidden();
+
+    $this->actingAs($teacher)->post(route('teacher.medications.update', $medication), [
+        'status' => 'given',
+        'administered_note' => 'Taken with lunch',
+    ])->assertRedirect();
+
+    $medication->refresh();
+    expect($medication->status)->toBe('given')
+        ->and($medication->given_by)->toBe($teacher->id)
+        ->and($medication->given_at)->not->toBeNull();
+
+    Notification::assertSentTo($parent, MedicationAdministeredNotification::class);
 });
 
 test('search ignores very short queries', function () {
