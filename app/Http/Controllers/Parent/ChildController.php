@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parent;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\DailyActivity;
+use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -49,6 +50,13 @@ class ChildController extends Controller
                 ->limit(10)
                 ->get()
                 ->map(fn (MedicationRequest $m) => $m->summary())
+                ->values(),
+            'growth' => $student->growthRecords()
+                ->latest('date')
+                ->latest('id')
+                ->limit(12)
+                ->get()
+                ->map(fn (GrowthRecord $r) => $r->summary())
                 ->values(),
             'fields' => DailyActivity::FIELDS,
         ]);

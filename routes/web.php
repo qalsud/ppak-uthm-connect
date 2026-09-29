@@ -32,6 +32,7 @@ use App\Http\Controllers\Teacher\ActivityController as TeacherActivityController
 use App\Http\Controllers\Teacher\AttendanceController as TeacherAttendanceController;
 use App\Http\Controllers\Teacher\DailyUpdateController as TeacherDailyUpdateController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\GrowthController as TeacherGrowthController;
 use App\Http\Controllers\Teacher\MedicationController as TeacherMedicationController;
 use App\Http\Controllers\Teacher\MemoController as TeacherMemoController;
 use App\Http\Controllers\Teacher\MessageController as TeacherMessageController;
@@ -162,6 +163,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/progress', [TeacherProgressController::class, 'index'])->name('progress.index');
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
+            Route::get('/growth', [TeacherGrowthController::class, 'index'])->name('growth.index');
+            Route::post('/growth', [TeacherGrowthController::class, 'store'])->name('growth.store');
             Route::get('/attendance', [TeacherAttendanceController::class, 'index'])->name('attendance.index');
             Route::post('/attendance/mark-all', [TeacherAttendanceController::class, 'markAll'])->name('attendance.mark-all');
             Route::post('/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('attendance.checkout');

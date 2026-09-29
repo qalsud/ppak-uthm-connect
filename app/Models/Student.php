@@ -72,6 +72,11 @@ class Student extends Model
         return $this->hasMany(MedicationRequest::class);
     }
 
+    public function growthRecords(): HasMany
+    {
+        return $this->hasMany(GrowthRecord::class);
+    }
+
     // Future modules attach here:
     // public function dailyActivities(): HasMany ...
     // public function progressRecords(): HasMany ...

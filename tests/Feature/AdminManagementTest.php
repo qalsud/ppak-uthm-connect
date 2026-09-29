@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
+use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Memo;
 use App\Models\Message;
@@ -799,6 +800,42 @@ test('a parent can request medication and a teacher records it as given', functi
         ->and($medication->given_at)->not->toBeNull();
 
     Notification::assertSentTo($parent, MedicationAdministeredNotification::class);
+});
+
+test('a teacher records a growth measurement and the parent sees it', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($teacher)->post(route('teacher.growth.store'), [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'height_cm' => 110.5,
+        'weight_kg' => 18.2,
+    ])->assertRedirect();
+
+    $record = GrowthRecord::firstOrFail();
+
+    // BMI = 18.2 / (1.105 ^ 2) = 14.9
+    expect((float) $record->bmi)->toBe(14.9)
+        ->and($record->recorded_by)->toBe($teacher->id);
+
+    // Re-recording the same day updates rather than duplicates.
+    $this->actingAs($teacher)->post(route('teacher.growth.store'), [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'height_cm' => 111.0,
+        'weight_kg' => 18.4,
+    ])->assertRedirect();
+
+    expect(GrowthRecord::count())->toBe(1)
+        ->and((float) GrowthRecord::firstOrFail()->height_cm)->toBe(111.0);
+
+    $this->actingAs($parent)->get(route('parent.children.show', $student))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('growth.0.height_cm', 111)
+            ->where('growth.0.bmi', 14.9)
+        );
 });
 
 test('search ignores very short queries', function () {

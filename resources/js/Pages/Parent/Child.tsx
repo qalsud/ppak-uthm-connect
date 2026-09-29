@@ -1,5 +1,5 @@
 import { Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare, Pill } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare, Pill, Ruler } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -70,6 +70,15 @@ type Medication = {
     given_by: string | null;
 };
 
+type Growth = {
+    id: number;
+    date: string;
+    height_cm: number | null;
+    weight_kg: number | null;
+    bmi: number | null;
+    notes: string | null;
+};
+
 type Page = PageProps<{
     child: Child;
     updates: Update[];
@@ -77,13 +86,14 @@ type Page = PageProps<{
     progress: Progress[];
     attendanceHistory: HistoryRow[];
     medications: Medication[];
+    growth: Growth[];
     fields: Record<string, string>;
 }>;
 
 export default function ParentChild() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { child, updates, activities, progress, attendanceHistory, medications, fields } = props;
+    const { child, updates, activities, progress, attendanceHistory, medications, growth, fields } = props;
     const [paying, setPaying] = useState(false);
     const [showMed, setShowMed] = useState(false);
 
@@ -373,6 +383,51 @@ export default function ParentChild() {
                     </Button>
                 </CardContent>
             </Card>
+
+            {/* Growth */}
+            {growth.length > 0 && (
+                <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Ruler className="size-4 text-primary" />
+                            {t('growth')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                            <div className="rounded-xl bg-muted/50 py-2">
+                                <p className="text-lg font-bold">{growth[0].height_cm ?? '—'}</p>
+                                <p className="text-[10px] text-muted-foreground">{t('height_cm')}</p>
+                            </div>
+                            <div className="rounded-xl bg-muted/50 py-2">
+                                <p className="text-lg font-bold">{growth[0].weight_kg ?? '—'}</p>
+                                <p className="text-[10px] text-muted-foreground">{t('weight_kg')}</p>
+                            </div>
+                            <div className="rounded-xl bg-muted/50 py-2">
+                                <p className="text-lg font-bold">{growth[0].bmi ?? '—'}</p>
+                                <p className="text-[10px] text-muted-foreground">{t('bmi')}</p>
+                            </div>
+                        </div>
+                        {growth.length > 1 && (
+                            <div className="space-y-1">
+                                {growth.slice(1).map((g) => (
+                                    <div
+                                        key={g.id}
+                                        className="flex justify-between text-[11px] text-muted-foreground"
+                                    >
+                                        <span>{g.date}</span>
+                                        <span>
+                                            {g.height_cm ?? '—'} cm · {g.weight_kg ?? '—'} kg · {t('bmi')}{' '}
+                                            {g.bmi ?? '—'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <p className="text-[10px] text-muted-foreground">{t('bmi_note')}</p>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Activities */}
             <Card className="mb-4 rounded-2xl border-0 shadow-sm">
