@@ -707,6 +707,29 @@ test('a child is notified as arrived only once', function () {
     Notification::assertSentToTimes($parent, CheckInRecordedNotification::class, 1);
 });
 
+test('a teacher can record a temperature and health note at check-in', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($teacher)->post(route('teacher.attendance.store', $student), [
+        'action' => 'arrive',
+        'temperature' => '37.8',
+        'health_note' => 'Slight cough',
+    ])->assertRedirect();
+
+    $attendance = Attendance::where('student_id', $student->id)->first();
+
+    expect((float) $attendance->temperature)->toBe(37.8)
+        ->and($attendance->health_note)->toBe('Slight cough');
+
+    // The parent sees it on the attendance page.
+    $this->actingAs($parent)->get(route('parent.attendance.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('children.0.attendance.temperature', '37.8')
+        );
+});
+
 test('search ignores very short queries', function () {
     $this->actingAs(admin())
         ->getJson(route('search', ['q' => 'a']))

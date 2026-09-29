@@ -52,6 +52,8 @@ type HistoryRow = {
     status: 'none' | 'school' | 'home';
     arrived_at: string | null;
     departed_at: string | null;
+    temperature: string | null;
+    health_note: string | null;
 };
 
 type Page = PageProps<{
@@ -174,6 +176,7 @@ export default function ParentChild() {
                                             <p className="text-[11px] text-muted-foreground">
                                                 {t('arrived_at')}: {row.arrived_at ?? '—'} ·{' '}
                                                 {t('departed_at')}: {row.departed_at ?? '—'}
+                                                {row.temperature ? ` · ${row.temperature}°C` : ''}
                                             </p>
                                         </div>
                                         <span

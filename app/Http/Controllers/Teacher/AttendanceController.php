@@ -40,7 +40,7 @@ class AttendanceController extends Controller
             ->active()
             ->where('class', $class)
             ->orderBy('name')
-            ->get(['id', 'name', 'class']);
+            ->get(['id', 'name', 'class', 'allergies']);
 
         $records = Attendance::onDateFor($students->pluck('id'), $date);
 
@@ -70,6 +70,8 @@ class AttendanceController extends Controller
         $data = $request->validate([
             'action' => ['required', Rule::in(['arrive'])],
             'date' => ['nullable', 'date', 'before_or_equal:today'],
+            'temperature' => ['nullable', 'numeric', 'between:30,45'],
+            'health_note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $attendance = Attendance::firstOrNew([
@@ -80,6 +82,15 @@ class AttendanceController extends Controller
         $wasArrived = (bool) $attendance->arrived_at;
 
         $attendance->markArrival($request->user()->id);
+
+        if (! empty($data['temperature'])) {
+            $attendance->temperature = $data['temperature'];
+        }
+
+        if (! empty($data['health_note'])) {
+            $attendance->health_note = $data['health_note'];
+        }
+
         $attendance->save();
 
         if (! $wasArrived && $student->parent) {

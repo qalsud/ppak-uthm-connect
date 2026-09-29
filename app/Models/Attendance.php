@@ -21,6 +21,8 @@ class Attendance extends Model
         'checkout_note',
         'checkout_photo_override',
         'checkout_override_reason',
+        'temperature',
+        'health_note',
     ];
 
     protected $casts = [
@@ -28,6 +30,7 @@ class Attendance extends Model
         'arrived_at' => 'datetime',
         'departed_at' => 'datetime',
         'checkout_photo_override' => 'boolean',
+        'temperature' => 'decimal:1',
     ];
 
     public function student(): BelongsTo
@@ -70,6 +73,7 @@ class Attendance extends Model
             'status' => $this->status(),
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
+            ...$this->healthPayload(),
             ...$this->checkoutPayload(),
         ];
     }
@@ -84,7 +88,17 @@ class Attendance extends Model
             'status' => $this->status(),
             'arrived_at' => $this->arrived_at?->format('H:i'),
             'departed_at' => $this->departed_at?->format('H:i'),
+            ...$this->healthPayload(),
             ...$this->checkoutPayload(),
+        ];
+    }
+
+    /** @return array{temperature: string|null, health_note: string|null} */
+    private function healthPayload(): array
+    {
+        return [
+            'temperature' => $this->temperature !== null ? number_format((float) $this->temperature, 1) : null,
+            'health_note' => $this->health_note,
         ];
     }
 
@@ -104,6 +118,8 @@ class Attendance extends Model
             'status' => 'none',
             'arrived_at' => null,
             'departed_at' => null,
+            'temperature' => null,
+            'health_note' => null,
             'photo' => null,
             'note' => null,
             'photo_override' => false,

@@ -21,6 +21,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -47,6 +48,8 @@ type Student = {
     age: number | null;
     class: string;
     status: 'active' | 'withdrawn' | 'graduated';
+    allergies: string | null;
+    medical_notes: string | null;
     parent: { id: number; name: string } | null;
 };
 
@@ -74,7 +77,14 @@ export default function Students({
     const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
     const firstRender = useRef(true);
 
-    const form = useForm({ name: '', age: '', class: '5tahun', parent_id: '' });
+    const form = useForm({
+        name: '',
+        age: '',
+        class: '5tahun',
+        parent_id: '',
+        allergies: '',
+        medical_notes: '',
+    });
 
     const rows = students.data;
 
@@ -162,6 +172,8 @@ export default function Students({
             age: student.age?.toString() ?? '',
             class: student.class,
             parent_id: student.parent?.id?.toString() ?? '',
+            allergies: student.allergies ?? '',
+            medical_notes: student.medical_notes ?? '',
         });
         form.clearErrors();
         setOpen(true);
@@ -560,6 +572,23 @@ export default function Students({
                             {form.errors.parent_id && (
                                 <p className="text-xs text-destructive">{form.errors.parent_id}</p>
                             )}
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('allergies')}</Label>
+                            <Textarea
+                                rows={2}
+                                value={form.data.allergies}
+                                onChange={(e) => form.setData('allergies', e.target.value)}
+                                placeholder={t('allergies_placeholder')}
+                            />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('medical_notes')}</Label>
+                            <Textarea
+                                rows={2}
+                                value={form.data.medical_notes}
+                                onChange={(e) => form.setData('medical_notes', e.target.value)}
+                            />
                         </div>
                     </div>
 

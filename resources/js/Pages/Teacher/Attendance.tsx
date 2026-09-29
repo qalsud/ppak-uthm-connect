@@ -30,6 +30,7 @@ type Student = {
     id: number;
     name: string;
     class: string;
+    allergies?: string | null;
     attendance: AttendanceSummary;
 };
 
@@ -142,6 +143,11 @@ export default function TeacherAttendance({
                         students.map((s) => (
                             <div key={s.id} className="rounded-xl border p-3">
                                 <p className="mb-2 font-medium">{s.name}</p>
+                                {s.allergies && (
+                                    <p className="mb-2 rounded-lg bg-rose-50 px-2 py-1 text-[11px] font-medium text-rose-700">
+                                        {t('allergies')}: {s.allergies}
+                                    </p>
+                                )}
                                 <AttendanceActions
                                     studentId={s.id}
                                     studentName={s.name}
@@ -172,7 +178,14 @@ export default function TeacherAttendance({
 
                                 return (
                                     <TableRow key={s.id}>
-                                        <TableCell className="font-medium">{s.name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {s.name}
+                                            {s.allergies && (
+                                                <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+                                                    {t('allergies')}: {s.allergies}
+                                                </span>
+                                            )}
+                                        </TableCell>
                                         <TableCell>{s.attendance.arrived_at ?? '—'}</TableCell>
                                         <TableCell>{s.attendance.departed_at ?? '—'}</TableCell>
                                         <TableCell>

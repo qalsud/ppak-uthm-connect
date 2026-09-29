@@ -264,6 +264,8 @@ class StudentController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')->where('role', UserRole::Parent->value),
             ],
+            'allergies' => ['nullable', 'string', 'max:1000'],
+            'medical_notes' => ['nullable', 'string', 'max:1000'],
         ]);
     }
 

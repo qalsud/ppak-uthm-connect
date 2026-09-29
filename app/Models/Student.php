@@ -18,6 +18,8 @@ class Student extends Model
         'class',
         'status',
         'withdrawn_at',
+        'allergies',
+        'medical_notes',
     ];
 
     public const CLASSES = ['5tahun', '6bintang'];
