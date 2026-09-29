@@ -17,7 +17,8 @@ class DashboardController extends Controller
         $children = $request->user()
             ->students()
             ->active()
-            ->get(['id', 'name', 'age', 'class']);
+            ->with('centre:id,name')
+            ->get(['id', 'name', 'age', 'class', 'centre_id']);
 
         $children->each(function ($child) {
             $unpaid = $child->financialRecords()->where('status', 'unpaid')->sum('amount');

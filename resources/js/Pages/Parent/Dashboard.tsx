@@ -1,4 +1,4 @@
-﻿import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
     BookOpen,
@@ -28,6 +28,7 @@ type Child = {
     name: string;
     age: number | null;
     class: string;
+    centre?: { name: string } | null;
     unpaid: number;
     attendance?: AttendanceSummary;
 };
@@ -109,6 +110,7 @@ export default function ParentDashboard() {
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate font-semibold">{child.name}</p>
                                     <p className="text-xs text-muted-foreground">
+                                        {child.centre ? child.centre.name + ' · ' : ''}
                                         {classLabel(child.class)}
                                         {child.age ? ` · ${child.age} thn` : ''}
                                     </p>

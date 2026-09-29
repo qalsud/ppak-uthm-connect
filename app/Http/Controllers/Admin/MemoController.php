@@ -6,6 +6,7 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Centre;
 use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
@@ -25,13 +26,15 @@ class MemoController extends Controller
     public function index(): Response
     {
         $memos = Memo::query()
-            ->with('author:id,name')
+            ->with(['author:id,name', 'centre:id,name,short_name'])
+            ->forActiveCentre()
             ->orderBy('created_at', 'desc')
             ->get();
 
         return Inertia::render('Admin/Memos', [
             'memos' => $memos,
-            'classes' => Student::CLASSES,
+            'classes' => Student::classKeys(),
+            'centres' => Centre::active()->orderBy('sort')->get(['id', 'name', 'short_name']),
         ]);
     }
 

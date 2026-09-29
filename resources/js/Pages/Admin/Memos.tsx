@@ -32,12 +32,24 @@ type Memo = {
     description: string;
     audience: 'all' | 'parents' | 'teachers' | 'class';
     class: string | null;
+    centre_id: number | null;
+    centre: { id: number; name: string; short_name: string | null } | null;
     created_at: string;
     author: { id: number; name: string } | null;
 };
 
+type CentreOption = { id: number; name: string; short_name: string | null };
 
-export default function Memos({ memos, classes }: { memos: Memo[]; classes: string[] }) {
+
+export default function Memos({
+    memos,
+    classes,
+    centres,
+}: {
+    memos: Memo[];
+    classes: string[];
+    centres: CentreOption[];
+}) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
@@ -45,20 +57,25 @@ export default function Memos({ memos, classes }: { memos: Memo[]; classes: stri
     const [expanded, setExpanded] = useState<number[]>([]);
     const [deleteTarget, setDeleteTarget] = useState<Memo | null>(null);
 
-    const form = useForm({ title: '', description: '', audience: 'all', class: '' });
+    const form = useForm({ title: '', description: '', audience: 'all', class: '', centre_id: '' });
 
-    const audienceLabel = (memo: Memo) =>
-        memo.audience === 'class'
-            ? classLabel(memo.class ?? '')
-            : memo.audience === 'parents'
-              ? t('parents')
-              : memo.audience === 'teachers'
-                ? t('teachers')
-                : t('audience_all');
+    const audienceLabel = (memo: Memo) => {
+        const base =
+            memo.audience === 'class'
+                ? classLabel(memo.class ?? '')
+                : memo.audience === 'parents'
+                  ? t('parents')
+                  : memo.audience === 'teachers'
+                    ? t('teachers')
+                    : t('audience_all');
+
+        // Show which centre a memo belongs to, since class names repeat.
+        return memo.centre ? `${memo.centre.name} · ${base}` : base;
+    };
 
     const openCreate = () => {
         setEditing(null);
-        form.setData({ title: '', description: '', audience: 'all', class: '' });
+        form.setData({ title: '', description: '', audience: 'all', class: '', centre_id: '' });
         form.clearErrors();
         setOpen(true);
     };
@@ -70,6 +87,7 @@ export default function Memos({ memos, classes }: { memos: Memo[]; classes: stri
             description: memo.description,
             audience: memo.audience,
             class: memo.class ?? '',
+            centre_id: memo.centre_id ? String(memo.centre_id) : '',
         });
         form.clearErrors();
         setOpen(true);

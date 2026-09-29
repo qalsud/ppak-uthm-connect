@@ -388,7 +388,7 @@ export default function Students({
                                                 <span className="truncate font-medium">{student.name}</span>
                                             </label>
                                             <p className="text-xs text-muted-foreground">
-                                                {classLabel(student.class)}
+                                                {student.centre ? student.centre.name + " · " : ""}{classLabel(student.class)}
                                                 {student.age ? ` · ${student.age} ${t('age').toLowerCase()}` : ''}
                                             </p>
                                             <p className="truncate text-xs text-muted-foreground">
@@ -486,7 +486,16 @@ export default function Students({
                                             </TableCell>
                                             <TableCell>{student.age ?? '—'}</TableCell>
                                             <TableCell>
-                                                <Badge variant="secondary">{classLabel(student.class)}</Badge>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <Badge variant="secondary" className="w-fit">
+                                                        {classLabel(student.class)}
+                                                    </Badge>
+                                                    {student.centre && (
+                                                        <span className="text-[10px] text-muted-foreground">
+                                                            {student.centre.name}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 {student.parent?.name ?? (

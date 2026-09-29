@@ -6,6 +6,7 @@ use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Centre;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,7 @@ class TeacherController extends Controller
                 in_array($status, AccountStatus::values(), true),
                 fn ($q) => $q->where('status', $status)
             )
-            ->when(in_array($class, Student::CLASSES, true), fn ($q) => $q->where('class', $class))
+            ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
@@ -43,6 +44,12 @@ class TeacherController extends Controller
             ->groupBy('status')
             ->map->count();
 
+        $teachers->getCollection()->transform(function (User $teacher) {
+            $teacher->setAttribute('centre_ids', $teacher->centres()->pluck('centres.id')->all());
+
+            return $teacher;
+        });
+
         return Inertia::render('Admin/Teachers', [
             'teachers' => $teachers,
             'counts' => [
@@ -50,7 +57,8 @@ class TeacherController extends Controller
                 ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
             ],
             'filters' => ['status' => $status ?? '', 'search' => $search, 'class' => $class ?? ''],
-            'classes' => Student::CLASSES,
+            'classes' => Student::classKeys(),
+            'centres' => Centre::active()->orderBy('sort')->get(['id', 'name', 'short_name']),
         ]);
     }
 
@@ -63,7 +71,12 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
             'class' => ['nullable', Rule::in(Student::classKeys())],
+            'centre_ids' => ['nullable', 'array'],
+            'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
         ]);
+
+        $centreIds = $data['centre_ids'] ?? [];
+        unset($data['centre_ids']);
 
         $teacher = User::create([
             ...$data,
@@ -72,7 +85,10 @@ class TeacherController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        ActivityLog::record('teacher.created', $teacher, $teacher->name);
+        // A teacher may work at more than one centre.
+        $teacher->centres()->sync($centreIds);
+
+        ActivityLog::record('teacher.created', $teacher, $teacher->name, ['centres' => $centreIds]);
 
         return back()->with('success', __('approval.teacher_created'));
     }
@@ -89,13 +105,19 @@ class TeacherController extends Controller
             'status' => ['required', Rule::enum(AccountStatus::class)],
             'password' => 'nullable|string|min:8',
             'class' => ['nullable', Rule::in(Student::classKeys())],
+            'centre_ids' => ['nullable', 'array'],
+            'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
         ]);
 
         if (empty($data['password'])) {
             unset($data['password']);
         }
 
+        $centreIds = $data['centre_ids'] ?? [];
+        unset($data['centre_ids']);
+
         $user->update($data);
+        $user->centres()->sync($centreIds);
 
         ActivityLog::record('teacher.updated', $user, $user->name);
 

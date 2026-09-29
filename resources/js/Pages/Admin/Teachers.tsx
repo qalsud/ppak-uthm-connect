@@ -45,6 +45,7 @@ type Teacher = {
     class: string | null;
     status: 'active' | 'pending' | 'rejected' | 'awaiting';
     created_at: string;
+    centre_ids?: number[];
 };
 
 const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
@@ -55,11 +56,13 @@ export default function Teachers({
     counts,
     filters,
     classes,
+    centres,
 }: {
     teachers: Paginator<Teacher>;
     counts: Record<string, number>;
     filters: { status: string; search: string; class: string };
     classes: string[];
+    centres: Array<{ id: number; name: string; short_name: string | null }>;
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
@@ -78,6 +81,7 @@ export default function Teachers({
         password: '',
         status: 'active',
         class: '',
+        centre_ids: [] as number[],
     });
 
     const rows = teachers.data;
@@ -137,7 +141,7 @@ export default function Teachers({
 
     const openCreate = () => {
         setEditing(null);
-        form.setData({ name: '', email: '', ic_number: '', phone: '', password: '', status: 'active', class: '' });
+        form.setData({ name: '', email: '', ic_number: '', phone: '', password: '', status: 'active', class: '', centre_ids: [] });
         form.clearErrors();
         setOpen(true);
     };
@@ -152,6 +156,7 @@ export default function Teachers({
             password: '',
             status: teacher.status,
             class: teacher.class ?? '',
+            centre_ids: teacher.centre_ids ?? [],
         });
         form.clearErrors();
         setOpen(true);
@@ -436,6 +441,42 @@ export default function Teachers({
                             </SelectContent>
                         </Select>
                     </FormField>
+
+                    {centres.length > 0 && (
+                        <FormField
+                            label={t('assign_centre')}
+                            hint={t('teacher_centres_hint')}
+                            className="sm:col-span-2"
+                        >
+                            <div className="flex flex-wrap gap-2">
+                                {centres.map((c) => {
+                                    const on = form.data.centre_ids.includes(c.id);
+
+                                    return (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            onClick={() =>
+                                                form.setData(
+                                                    'centre_ids',
+                                                    on
+                                                        ? form.data.centre_ids.filter((id) => id !== c.id)
+                                                        : [...form.data.centre_ids, c.id],
+                                                )
+                                            }
+                                            className={`rounded-xl border px-3 py-2 text-sm transition-colors ${
+                                                on
+                                                    ? 'border-primary bg-primary/10 font-medium'
+                                                    : 'hover:bg-muted/60'
+                                            }`}
+                                        >
+                                            {c.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </FormField>
+                    )}
 
                     <FormField
                         label={t('password')}

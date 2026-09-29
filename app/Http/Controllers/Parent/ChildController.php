@@ -27,6 +27,7 @@ class ChildController extends Controller
                 'name' => $student->name,
                 'age' => $student->age,
                 'class' => $student->classLabel,
+                'centre' => $student->centre?->name,
                 'unpaid' => (float) $student->financialRecords()->where('status', 'unpaid')->sum('amount'),
                 'attendance' => Attendance::todayFor([$student->id])->get($student->id)?->summary() ?? Attendance::emptySummary(),
             ],

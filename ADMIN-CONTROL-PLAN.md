@@ -135,9 +135,9 @@ cross-centre leak in `canManage()` widens with every screen added.
 - [x] **G3 Class becomes centre-scoped.** `list_options.centre_id` finally used, `class`
       keys unique per centre, and every class query filtered through the centre.
       Touches attendance, activities, progress, updates, messages, memos, payments, CSV.
-- [ ] **G4 Admin centre switcher** — "All centres" vs a specific one, persisted per session.
-- [ ] **G5 Centre CRUD** at `/admin/centres`.
-- [ ] **G6 Centre assignment** on students and staff (forms + bulk).
+- [x] **G4 Admin centre switcher** — `ActiveCentre` (session-backed) + switcher in the app shell. "All centres" is the default. ✅ `c85d962`
+- [x] **G5 Centre CRUD** at `/admin/centres`. Centres are deactivated, never deleted. ✅ `c85d962`
+- [x] **G6 Centre assignment** on students (form + validation). ✅ `c85d962`
 - [ ] **G7 Scoped access** — teachers and parents only ever see their own centre.
       **Teachers may belong to more than one centre** (assigned via `users.centre_id`
       being nullable or a pivot — decide during G1).

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ActiveCentre;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,6 +31,14 @@ class Memo extends Model
     public function centre(): BelongsTo
     {
         return $this->belongsTo(Centre::class);
+    }
+
+    /** Limit to the admin's currently-selected centre (null = all centres). */
+    public function scopeForActiveCentre($query)
+    {
+        $centreId = ActiveCentre::id();
+
+        return $centreId ? $query->where('centre_id', $centreId) : $query;
     }
 
     public function audienceLabel(): string

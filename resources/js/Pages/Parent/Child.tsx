@@ -20,7 +20,15 @@ import type { PhotoInfo } from '@/lib/photo';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
-type Child = { id: number; name: string; age: number | null; class: string; unpaid: number; attendance?: AttendanceSummary };
+type Child = {
+    id: number;
+    name: string;
+    age: number | null;
+    class: string;
+    centre?: string | null;
+    unpaid: number;
+    attendance?: AttendanceSummary;
+};
 type Update = {
     id: number;
     date: string;
@@ -130,7 +138,12 @@ export default function ParentChild() {
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
-            <PageHeader title={child.name} description={`${child.class}${child.age ? ` · ${child.age} thn` : ''}`}>
+            <PageHeader
+                title={child.name}
+                description={[child.centre, child.class, child.age ? `${child.age} thn` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+            >
                 <Link href="/parent">
                     <Button variant="outline" className="gap-1.5">
                         <ArrowLeft className="size-4" />
