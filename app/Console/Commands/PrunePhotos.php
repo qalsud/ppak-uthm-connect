@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AbsenceAttachment;
 use App\Models\AttendancePhoto;
 use App\Models\Message;
+use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
 use Illuminate\Console\Command;
 
@@ -44,7 +46,21 @@ class PrunePhotos extends Command
                 });
         }
 
-        $this->info("Pruned {$pruned} photo(s) older than {$days} day(s).");
+        // Chat attachments and absence documents were previously never cleaned
+        // up, so their files accumulated on disk forever. Both are short-lived
+        // working documents, so they follow the same retention window.
+        foreach ([MessageAttachment::class, AbsenceAttachment::class] as $model) {
+            $model::query()
+                ->where('created_at', '<', $cutoff)
+                ->chunkById(100, function ($attachments) use (&$pruned) {
+                    foreach ($attachments as $attachment) {
+                        $attachment->delete(); // model event removes the files
+                        $pruned++;
+                    }
+                });
+        }
+
+        $this->info("Pruned {$pruned} file(s) older than {$days} day(s).");
 
         return self::SUCCESS;
     }

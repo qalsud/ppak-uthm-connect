@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\StudentContactController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\Admin\TrashController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MessageController as MessageOpsController;
 use App\Http\Controllers\NotificationsController;
@@ -140,16 +141,20 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/students/{student}/status', [StudentController::class, 'status'])->name('students.status');
             Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
 
-        // Guardians, emergency contacts and authorised collectors.
-        Route::post('/students/{student}/guardians', [StudentContactController::class, 'storeGuardian'])->name('students.guardians.store');
-        Route::put('/guardians/{guardian}', [StudentContactController::class, 'updateGuardian'])->name('guardians.update');
-        Route::delete('/guardians/{guardian}', [StudentContactController::class, 'destroyGuardian'])->name('guardians.destroy');
-        Route::post('/students/{student}/emergency-contacts', [StudentContactController::class, 'storeEmergencyContact'])->name('students.contacts.store');
-        Route::put('/emergency-contacts/{contact}', [StudentContactController::class, 'updateEmergencyContact'])->name('contacts.update');
-        Route::delete('/emergency-contacts/{contact}', [StudentContactController::class, 'destroyEmergencyContact'])->name('contacts.destroy');
-        Route::post('/students/{student}/collectors', [StudentContactController::class, 'storeCollector'])->name('students.collectors.store');
-        Route::post('/collectors/{collector}', [StudentContactController::class, 'updateCollector'])->name('collectors.update');
-        Route::delete('/collectors/{collector}', [StudentContactController::class, 'destroyCollector'])->name('collectors.destroy');
+            // Recoverable records (soft-deleted).
+            Route::get('/trash', [TrashController::class, 'index'])->name('trash.index');
+            Route::post('/trash/{type}/{id}', [TrashController::class, 'restore'])->name('trash.restore');
+
+            // Guardians, emergency contacts and authorised collectors.
+            Route::post('/students/{student}/guardians', [StudentContactController::class, 'storeGuardian'])->name('students.guardians.store');
+            Route::put('/guardians/{guardian}', [StudentContactController::class, 'updateGuardian'])->name('guardians.update');
+            Route::delete('/guardians/{guardian}', [StudentContactController::class, 'destroyGuardian'])->name('guardians.destroy');
+            Route::post('/students/{student}/emergency-contacts', [StudentContactController::class, 'storeEmergencyContact'])->name('students.contacts.store');
+            Route::put('/emergency-contacts/{contact}', [StudentContactController::class, 'updateEmergencyContact'])->name('contacts.update');
+            Route::delete('/emergency-contacts/{contact}', [StudentContactController::class, 'destroyEmergencyContact'])->name('contacts.destroy');
+            Route::post('/students/{student}/collectors', [StudentContactController::class, 'storeCollector'])->name('students.collectors.store');
+            Route::post('/collectors/{collector}', [StudentContactController::class, 'updateCollector'])->name('collectors.update');
+            Route::delete('/collectors/{collector}', [StudentContactController::class, 'destroyCollector'])->name('collectors.destroy');
 
             Route::get('/parents', [ParentController::class, 'index'])->name('parents.index');
             Route::get('/parents/export', [ParentController::class, 'export'])->name('parents.export');

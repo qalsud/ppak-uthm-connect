@@ -10,6 +10,7 @@ use App\Models\DailyActivity;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\GrowthRecord;
+use App\Models\Guardian;
 use App\Models\MedicationRequest;
 use App\Models\Memo;
 use App\Models\Message;
@@ -601,19 +602,40 @@ test('admin can bulk archive students', function () {
         ->and(Student::count())->toBe(2);
 });
 
-test('archiving keeps a student\'s history and enrolled students cannot be hard-deleted', function () {
-    $student = Student::factory()->create();
+test('deleting a student archives instead, and history is never destroyed', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
 
-    // Active students are protected from permanent deletion.
-    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertStatus(422);
+    $student->financialRecords()->create([
+        'month' => 'January', 'amount' => 300, 'overtime_hours' => 0, 'status' => 'paid',
+    ]);
+    $conversation = Conversation::firstOrCreate(['student_id' => $student->id]);
+    $conversation->messages()->create([
+        'sender_id' => $parent->id,
+        'body' => 'Hello',
+        'type' => 'user',
+    ]);
+
+    // "Delete" on an active child archives rather than removing anything.
+    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertRedirect();
+
+    $student->refresh();
+    expect($student->status)->toBe('withdrawn')
+        ->and($student->withdrawn_at)->not->toBeNull();
+
+    // The record and its history are all still present.
+    expect(Student::find($student->id))->not->toBeNull()
+        ->and($student->financialRecords()->count())->toBe(1)
+        ->and($conversation->messages()->count())->toBe(1);
+
+    // Deleting an already-archived child is a no-op, not a destruction.
+    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertRedirect();
     expect(Student::find($student->id))->not->toBeNull();
 
-    // Archive, then permanent delete is allowed.
-    $this->actingAs(admin())->post(route('admin.students.status', $student), ['status' => 'withdrawn']);
-    expect($student->fresh()->status)->toBe('withdrawn');
-
-    $this->actingAs(admin())->delete(route('admin.students.destroy', $student))->assertRedirect();
-    expect(Student::find($student->id))->toBeNull();
+    // Restoring brings them back into the active list.
+    $this->actingAs(admin())->post(route('admin.students.status', $student), ['status' => 'active']);
+    expect($student->fresh()->status)->toBe('active')
+        ->and($student->fresh()->withdrawn_at)->toBeNull();
 });
 
 test('archived students are hidden from active lists', function () {
@@ -1242,6 +1264,112 @@ test('the teacher register flags a childs safety alerts', function () {
             ->has('students', 1)
             ->where('students.0.alerts', ['allergies', 'special_needs'])
         );
+});
+
+test('soft-deleted records are recoverable, not destroyed', function () {
+    $admin = admin();
+
+    $student = Student::factory()->create();
+    $record = $student->financialRecords()->create([
+        'month' => 'March', 'amount' => 300, 'overtime_hours' => 0, 'status' => 'unpaid',
+    ]);
+
+    $this->actingAs($admin)->delete(route('admin.payments.destroy', $record))->assertRedirect();
+
+    // Gone from normal queries...
+    expect(FinancialRecord::count())->toBe(0);
+
+    // ...but still on disk, and restorable.
+    $trashed = FinancialRecord::withTrashed()->find($record->id);
+    expect($trashed)->not->toBeNull()
+        ->and($trashed->trashed())->toBeTrue();
+
+    $trashed->restore();
+    expect(FinancialRecord::count())->toBe(1);
+});
+
+test('deleting a guardian or collector is a soft delete and the file survives', function () {
+    Storage::fake(config('media.disk'));
+
+    $admin = admin();
+    $student = Student::factory()->create();
+
+    $guardian = Guardian::create([
+        'student_id' => $student->id,
+        'name' => 'Nor Aisyah binti Omar',
+        'relationship' => 'mother',
+    ]);
+
+    $this->actingAs($admin)->delete(route('admin.guardians.destroy', $guardian))->assertRedirect();
+
+    expect(Guardian::count())->toBe(0)
+        ->and(Guardian::withTrashed()->count())->toBe(1);
+
+    Guardian::withTrashed()->find($guardian->id)->restore();
+    expect(Guardian::count())->toBe(1);
+});
+
+test('the recently-deleted screen restores soft-deleted records', function () {
+    $admin = admin();
+    $student = Student::factory()->create();
+
+    $memo = Memo::create([
+        'author_id' => $admin->id,
+        'title' => 'Sports Day',
+        'description' => 'Details',
+    ]);
+
+    $this->actingAs($admin)->delete(route('admin.memos.destroy', $memo))->assertRedirect();
+
+    // Listed as recoverable.
+    $this->actingAs($admin)->get(route('admin.trash.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('total', 1)
+            ->has('groups', 1)
+            ->where('groups.0.type', 'Memo')
+            ->where('groups.0.items.0.summary', 'Sports Day')
+        );
+
+    $this->actingAs($admin)
+        ->post(route('admin.trash.restore', ['type' => 'Memo', 'id' => $memo->id]))
+        ->assertRedirect();
+
+    expect(Memo::count())->toBe(1)
+        ->and(Memo::onlyTrashed()->count())->toBe(0);
+});
+
+test('deleting the primary guardian promotes another guardian', function () {
+    $admin = admin();
+    $student = Student::factory()->create();
+
+    $father = Guardian::create([
+        'student_id' => $student->id,
+        'name' => 'Father',
+        'relationship' => 'father',
+        'is_primary' => true,
+    ]);
+    $mother = Guardian::create([
+        'student_id' => $student->id,
+        'name' => 'Mother',
+        'relationship' => 'mother',
+        'is_primary' => false,
+    ]);
+
+    $this->actingAs($admin)->delete(route('admin.guardians.destroy', $father))->assertRedirect();
+
+    expect($mother->fresh()->is_primary)->toBeTrue()
+        ->and($student->guardians()->where('is_primary', true)->count())->toBe(1);
+});
+
+test('the last administrator cannot delete their own account', function () {
+    // admin() helper creates exactly one admin, so this is the last one.
+    $admin = admin();
+
+    $this->actingAs($admin)->delete(route('profile.destroy'), [
+        'password' => 'password',
+    ])->assertSessionHasErrors('password');
+
+    expect(User::find($admin->id))->not->toBeNull();
 });
 
 test('search ignores very short queries', function () {

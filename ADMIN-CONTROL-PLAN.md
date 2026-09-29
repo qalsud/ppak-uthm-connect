@@ -25,6 +25,15 @@ record, change any rule, manage any list, and do it without risking data loss.
 3. **Two centres** are in scope: **Tadika Khalifah Junior** and **Taska Hikmah UTHM**. See Phase G.
 4. **No "permanently erase"** — archive is the only path for child records.
 
+**Centre decisions (Phase G)**
+
+| Question | Decision |
+|---|---|
+| Default centre for existing/historical data | **Tadika Khalifah Junior** |
+| Can a child move centre? | **No** — a move starts a fresh record at the new centre |
+| Do parents see the centre name? | **Yes** |
+| Can a teacher work at both centres? | **Yes** — a teacher may belong to more than one |
+
 ---
 
 ## Phase F — Delete & data safety *(build first)*
@@ -137,14 +146,7 @@ Centres: **Tadika Khalifah Junior** · **Taska Hikmah UTHM**
 
 ## Open questions to settle as we go
 
-_(All four initial questions settled — see "Settled follow-ups" above.)_
-
-Still open:
-
-1. **Default centre for existing data** — which of the two should historical records belong to?
-2. **Can a child move centres?** If yes, do they keep one continuous record or start fresh?
-3. **Should parents see the centre name** in the portal (they'd likely want to)?
-4. **Teacher across centres** — can a teacher work at both, or exactly one?
+_(All initial questions settled — see "Settled follow-ups" and "Centre decisions" above.)_
 
 ## Progress log
 

@@ -11,6 +11,7 @@ import {
     MessageSquare,
     Ruler,
     Settings,
+    Trash2,
     UserRound,
     Users,
     Wallet,
@@ -36,6 +37,7 @@ export const adminNav: NavItem[] = [
     { label: 'conversations', href: '/admin/conversations', icon: MessageSquare },
     { label: 'memos', href: '/admin/memos', icon: FileText },
     { label: 'activity_log', href: '/admin/activity', icon: History },
+    { label: 'recently_deleted', href: '/admin/trash', icon: Trash2 },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
 ];
 

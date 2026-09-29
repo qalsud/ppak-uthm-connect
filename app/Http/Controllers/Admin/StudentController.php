@@ -195,16 +195,22 @@ class StudentController extends Controller
         }, 'students.csv', ['Content-Type' => 'text/csv']);
     }
 
+    /**
+     * A child is never hard-deleted: attendance, payments, progress photos and
+     * chat history are historical records. Deleting here archives instead, so
+     * nothing can be destroyed by a mis-click.
+     */
     public function destroy(Request $request, Student $student): RedirectResponse
     {
-        // Safety: enrolled children can't be hard-deleted (history would cascade away).
-        abort_if($student->isActive(), 422, 'Archive the student before deleting.');
+        if (! $student->isActive()) {
+            return back()->with('success', __('approval.already_archived'));
+        }
 
-        ActivityLog::record('student.deleted', null, $student->name);
+        $student->update(['status' => 'withdrawn', 'withdrawn_at' => now()]);
 
-        $student->delete();
+        ActivityLog::record('student.archived', $student, $student->name, ['via' => 'delete_action']);
 
-        return back()->with('success', __('approval.deleted'));
+        return back()->with('success', __('approval.archived_instead'));
     }
 
     /** Archive (withdraw/graduate) or restore a student. */
@@ -224,34 +230,38 @@ class StudentController extends Controller
         return back()->with('success', __('approval.updated'));
     }
 
-    /** Bulk archive (withdraw) or permanently delete archived students. */
+    /** Bulk archive, or restore. Children are never permanently deleted. */
     public function bulk(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'action' => ['required', Rule::in(['withdraw', 'delete'])],
+            'action' => ['required', Rule::in(['withdraw', 'restore'])],
             'ids' => ['required', 'array'],
             'ids.*' => ['integer', 'exists:students,id'],
         ]);
 
         $students = Student::query()
             ->whereIn('id', $data['ids'])
-            ->when($data['action'] === 'delete', fn ($q) => $q->where('status', '!=', 'active'))
             ->when($data['action'] === 'withdraw', fn ($q) => $q->where('status', 'active'))
+            ->when($data['action'] === 'restore', fn ($q) => $q->where('status', '!=', 'active'))
             ->get();
 
         foreach ($students as $student) {
-            if ($data['action'] === 'withdraw') {
-                $student->update(['status' => 'withdrawn', 'withdrawn_at' => now()]);
-                ActivityLog::record('student.status', $student, $student->name, ['status' => 'withdrawn', 'bulk' => true]);
-            } else {
-                ActivityLog::record('student.deleted', null, $student->name, ['bulk' => true]);
-                $student->delete();
-            }
+            $status = $data['action'] === 'withdraw' ? 'withdrawn' : 'active';
+
+            $student->update([
+                'status' => $status,
+                'withdrawn_at' => $status === 'active' ? null : now(),
+            ]);
+
+            ActivityLog::record('student.status', $student, $student->name, [
+                'status' => $status,
+                'bulk' => true,
+            ]);
         }
 
         return back()->with('success', $data['action'] === 'withdraw'
             ? __('approval.bulk_archived', ['count' => $students->count()])
-            : __('approval.bulk_deleted', ['count' => $students->count()]));
+            : __('approval.bulk_restored', ['count' => $students->count()]));
     }
 
     /**

@@ -48,7 +48,18 @@ class StudentContactController extends Controller
     public function destroyGuardian(Guardian $guardian): RedirectResponse
     {
         $student = $guardian->student;
+        $wasPrimary = $guardian->is_primary;
+
         $guardian->delete();
+
+        // Never leave a child without a primary contact: promote another.
+        if ($wasPrimary && $student) {
+            $student->guardians()
+                ->where('is_primary', false)
+                ->orderBy('id')
+                ->first()
+                ?->update(['is_primary' => true]);
+        }
 
         ActivityLog::record('guardian.deleted', $student, $student?->name);
 

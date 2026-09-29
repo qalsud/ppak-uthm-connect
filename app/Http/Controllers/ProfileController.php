@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,6 +53,13 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Never let the last administrator delete themselves out of the system.
+        if ($user->isAdmin() && User::query()->where('role', UserRole::Admin)->count() <= 1) {
+            throw ValidationException::withMessages([
+                'password' => __('approval.last_admin_guard'),
+            ]);
+        }
 
         Auth::logout();
 
