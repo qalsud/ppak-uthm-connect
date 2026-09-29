@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Notifications\AccountDecisionNotification;
 use App\Notifications\CheckInRecordedNotification;
+use App\Notifications\FeeReminderNotification;
 use App\Notifications\MemoPostedNotification;
 use App\Notifications\NewRegistrationNotification;
 use App\Notifications\PaymentReceivedNotification;
@@ -728,6 +729,36 @@ test('a teacher can record a temperature and health note at check-in', function 
         ->assertInertia(fn (Assert $page) => $page
             ->where('children.0.attendance.temperature', '37.8')
         );
+});
+
+test('fee reminders reach parents whose fees are due soon, and skip the rest', function () {
+    Notification::fake();
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'July', 'amount' => 300,
+        'overtime_hours' => 0, 'status' => 'unpaid', 'due_on' => today()->addDays(2),
+    ]);
+    FinancialRecord::create([
+        'student_id' => $student->id, 'month' => 'August', 'amount' => 300,
+        'overtime_hours' => 0, 'status' => 'unpaid', 'due_on' => today()->addDays(30),
+    ]);
+
+    $this->artisan('fees:send-reminders')->assertSuccessful();
+
+    Notification::assertSentTo($parent, FeeReminderNotification::class);
+
+    // A parent whose fee is not due yet must not be reminded.
+    $other = User::factory()->role(UserRole::Parent)->create();
+    $otherStudent = Student::factory()->create(['parent_id' => $other->id]);
+    FinancialRecord::create([
+        'student_id' => $otherStudent->id, 'month' => 'September', 'amount' => 300,
+        'overtime_hours' => 0, 'status' => 'unpaid', 'due_on' => today()->addDays(45),
+    ]);
+
+    Notification::assertNotSentTo($other, FeeReminderNotification::class);
 });
 
 test('search ignores very short queries', function () {

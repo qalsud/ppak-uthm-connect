@@ -163,6 +163,7 @@
     "allergies": "Allergies",
     "allergies_placeholder": "e.g. peanuts, eggs",
     "medical_notes": "Medical notes",
+    "approval.fee_reminder_body": ":count unpaid month(s) — RM :amount outstanding. Please settle at your convenience.",
     "mark_all_present_desc": "This marks every child in this class as arrived now, skipping anyone already present or gone home.",
     "approval.marked_present": ":count student(s) marked present.",
     "approval.checkin_body": ":name arrived at school at :time.",

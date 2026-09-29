@@ -163,6 +163,7 @@
     "allergies": "Alahan",
     "allergies_placeholder": "cth. kacang, telur",
     "medical_notes": "Nota perubatan",
+    "approval.fee_reminder_body": ":count bulan belum bayar — RM :amount tertunggak. Sila jelaskan pada kesempatan anda.",
     "mark_all_present_desc": "Ini menandakan semua kanak-kanak dalam kelas ini sebagai tiba sekarang, melangkau yang sudah tiba atau sudah pulang.",
     "approval.marked_present": ":count pelajar ditanda hadir.",
     "approval.checkin_body": ":name tiba di sekolah pada :time.",

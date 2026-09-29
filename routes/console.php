@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Prune stored photos past the retention window (config: media.retention_days).
 Schedule::command('media:prune-photos')->dailyAt('03:00');
+
+// Remind parents about fees due within 3 days (or overdue).
+Schedule::command('fees:send-reminders')->dailyAt('08:00');
