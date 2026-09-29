@@ -25,7 +25,7 @@ import {
 } from '@/Components/ui/table';
 import { localDate, shiftDate, futureDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {
@@ -78,7 +78,9 @@ export default function TeacherAttendance({
     absenceRequests,
     upcomingAbsences,
     absenceCounts,
+    shellProp,
 }: {
+    shellProp?: string;
     students: Student[];
     selectedClass: string;
     assignedClass?: string | null;
@@ -91,25 +93,26 @@ export default function TeacherAttendance({
     absenceCounts: { pending: number; approved: number };
 }) {
     const { t } = useI18n();
+    const shell = shellFor(shellProp);
     const [markAllOpen, setMarkAllOpen] = useState(false);
 
     const act = (id: number, status: 'given' | 'declined') =>
         router.post(
-            route('teacher.medications.update', { medication: id }),
+            actionRoute(shell.isAdmin, 'medications.update', { medication: id }),
             { status },
             { preserveScroll: true },
         );
 
     const review = (id: number, status: 'approved' | 'declined') =>
         router.post(
-            route('teacher.absences.update', { absence: id }),
+            actionRoute(shell.isAdmin, 'absences.update', { absence: id }),
             { status },
             { preserveScroll: true },
         );
 
     const reload = (params: { class?: string; date?: string }) => {
         router.get(
-            '/teacher/attendance',
+            actionUrl(shell.isAdmin, 'attendance'),
             { class: params.class ?? selectedClass, date: params.date ?? date },
             { preserveState: true, preserveScroll: true },
         );
@@ -132,7 +135,7 @@ export default function TeacherAttendance({
     ];
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('attendance')} description={t('attendance_register')}>
                 <div className="flex flex-wrap items-center gap-2">
                     {!assignedClass && (
@@ -453,6 +456,7 @@ export default function TeacherAttendance({
                                     role="teacher"
                                     date={date}
                                     collectors={s.collectors ?? []}
+                                                    isAdmin={shell.isAdmin}
                                 />
                             </div>
                         ))
@@ -504,6 +508,7 @@ export default function TeacherAttendance({
                                                     date={date}
                                                     showChip={false}
                                                     collectors={s.collectors ?? []}
+                                                    isAdmin={shell.isAdmin}
                                                 />
                                             </div>
                                         </TableCell>
@@ -524,7 +529,7 @@ export default function TeacherAttendance({
                 destructive={false}
                 onConfirm={() =>
                     router.post(
-                        route('teacher.attendance.mark-all'),
+                        actionRoute(shell.isAdmin, 'attendance.mark-all'),
                         { class: selectedClass, date },
                         { preserveScroll: true, onFinish: () => setMarkAllOpen(false) },
                     )

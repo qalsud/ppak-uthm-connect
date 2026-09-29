@@ -12,6 +12,7 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
+import { actionRoute } from '@/lib/shell';
 
 /** Check a child in — with an optional temperature / health note. */
 export default function CheckInDialog({
@@ -20,12 +21,15 @@ export default function CheckInDialog({
     open,
     onOpenChange,
     date,
+    isAdmin = false,
 }: {
     studentId: number;
     studentName: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     date?: string;
+    /** Admin acting on a teacher screen (Phase A). */
+    isAdmin?: boolean;
 }) {
     const { t } = useI18n();
 
@@ -37,7 +41,7 @@ export default function CheckInDialog({
     });
 
     const submit = () =>
-        form.post(route('teacher.attendance.store', { student: studentId }), {
+        form.post(actionRoute(isAdmin, 'attendance.store', { student: studentId }), {
             preserveScroll: true,
             onSuccess: () => {
                 form.reset();

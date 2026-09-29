@@ -176,6 +176,34 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
             Route::patch('/payments/{record}', [PaymentController::class, 'updateStatus'])->name('payments.status');
             Route::delete('/payments/{record}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+
+            // ---- Phase A: admin can act everywhere a teacher can ----------
+            // These deliberately reuse the teacher controllers (no duplicated
+            // logic). `canManage()` already grants admins, and `assignedClass()`
+            // is null for them, so they get the unrestricted view.
+            Route::get('/register/attendance', [TeacherAttendanceController::class, 'index'])->name('register.attendance');
+            Route::post('/register/attendance/mark-all', [TeacherAttendanceController::class, 'markAll'])->name('register.attendance.mark-all');
+            Route::post('/register/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('register.attendance.checkout');
+            Route::post('/register/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('register.attendance.store');
+
+            Route::post('/register/medications/{medication}', [TeacherMedicationController::class, 'update'])->name('register.medications.update');
+            Route::post('/register/absences/{absence}', [TeacherAbsenceController::class, 'update'])->name('register.absences.update');
+
+            Route::get('/register/growth', [TeacherGrowthController::class, 'index'])->name('register.growth.index');
+            Route::post('/register/growth', [TeacherGrowthController::class, 'store'])->name('register.growth.store');
+
+            Route::get('/register/activities', [TeacherActivityController::class, 'index'])->name('register.activities.index');
+            Route::post('/register/activities', [TeacherActivityController::class, 'store'])->name('register.activities.store');
+
+            Route::get('/register/progress', [TeacherProgressController::class, 'index'])->name('register.progress.index');
+            Route::post('/register/progress', [TeacherProgressController::class, 'store'])->name('register.progress.store');
+
+            Route::get('/register/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('register.daily-updates.index');
+
+            Route::get('/register/messages', [TeacherMessageController::class, 'index'])->name('register.messages.index');
+            Route::get('/register/messages/{conversation}', [TeacherMessageController::class, 'show'])->name('register.messages.show');
+            Route::post('/register/messages/{conversation}', [TeacherMessageController::class, 'store'])->name('register.messages.store');
+            Route::post('/register/messages/student/{student}', [TeacherMessageController::class, 'openWithStudent'])->name('register.messages.open');
         });
 
     // Teacher portal

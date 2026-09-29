@@ -15,6 +15,7 @@ import {
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
+import { actionRoute } from '@/lib/shell';
 
 export type Collector = {
     id: string;
@@ -32,6 +33,7 @@ export default function CheckoutDialog({
     onOpenChange,
     date,
     collectors = [],
+    isAdmin = false,
 }: {
     studentId: number;
     studentName: string;
@@ -40,6 +42,8 @@ export default function CheckoutDialog({
     date?: string;
     /** Adults authorised to collect this child (guardians + listed people). */
     collectors?: Collector[];
+    /** Admin acting on a teacher screen (Phase A). */
+    isAdmin?: boolean;
 }) {
     const { t } = useI18n();
     const [skip, setSkip] = useState(false);
@@ -86,7 +90,7 @@ export default function CheckoutDialog({
             (!notListed || form.data.collector_override.trim().length > 0));
 
     const submit = () =>
-        form.post(route('teacher.attendance.checkout', { student: studentId }), {
+        form.post(actionRoute(isAdmin, 'attendance.checkout', { student: studentId }), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => close(false),

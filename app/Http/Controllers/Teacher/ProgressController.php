@@ -72,6 +72,7 @@ class ProgressController extends Controller
         }
 
         return Inertia::render('Teacher/Progress', [
+            'shell' => $request->user()->shell(),
             'students' => $students,
             'records' => $records,
             'summary' => $summary,

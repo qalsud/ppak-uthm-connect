@@ -50,6 +50,7 @@ class DailyUpdateController extends Controller
         });
 
         return Inertia::render('Teacher/DailyUpdates', [
+            'shell' => $request->user()->shell(),
             'students' => $students,
             'selectedClass' => $selectedClass,
             'assignedClass' => $assigned,

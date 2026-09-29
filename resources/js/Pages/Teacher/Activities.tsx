@@ -15,7 +15,7 @@ import {
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { useI18n } from '@/lib/i18n';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionRoute, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
@@ -28,7 +28,9 @@ export default function Activities({
     today,
     fields,
     records,
+    shellProp,
 }: {
+    shellProp?: string;
     students: Student[];
     today: string;
     fields: FieldMap;
@@ -40,6 +42,7 @@ export default function Activities({
     }>;
 }) {
     const { t } = useI18n();
+    const shell = shellFor(shellProp);
 
     const form = useForm({
         student_id: '',
@@ -56,10 +59,10 @@ export default function Activities({
             [field]: form.data.statuses[field] === 'yes' ? 'no' : 'yes',
         });
 
-    const submit = () => form.post(route('teacher.activities.store'));
+    const submit = () => form.post(actionRoute(shell.isAdmin, 'activities.store'));
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader
                 title={t('daily_activities')}
                 description="Record today's classroom activities"

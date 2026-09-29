@@ -17,7 +17,7 @@ import {
 } from '@/Components/ui/table';
 import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
@@ -42,7 +42,9 @@ export default function TeacherGrowth({
     averageBmi,
     selectedClass,
     assignedClass,
+    shellProp,
 }: {
+    shellProp?: string;
     students: Student[];
     records: Record[];
     latest: Record[];
@@ -51,10 +53,11 @@ export default function TeacherGrowth({
     assignedClass?: string | null;
 }) {
     const { t } = useI18n();
+    const shell = shellFor(shellProp);
 
     const reload = (params: { class?: string }) =>
         router.get(
-            '/teacher/growth',
+            actionUrl(shell.isAdmin, 'growth'),
             { class: params.class ?? selectedClass ?? '' },
             { preserveState: true, preserveScroll: true },
         );
@@ -68,13 +71,13 @@ export default function TeacherGrowth({
     });
 
     const submit = () =>
-        form.post(route('teacher.growth.store'), {
+        form.post(actionRoute(shell.isAdmin, 'growth.store'), {
             preserveScroll: true,
             onSuccess: () => form.reset('height_cm', 'weight_kg', 'notes'),
         });
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('growth')} description={t('bmi_note')}>
                 {assignedClass ? (
                     <span className="text-sm text-muted-foreground">{classLabel(assignedClass)}</span>

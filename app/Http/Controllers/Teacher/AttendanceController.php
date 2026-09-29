@@ -104,6 +104,7 @@ class AttendanceController extends Controller
         });
 
         return Inertia::render('Teacher/Attendance', [
+            'shell' => $request->user()->shell(),
             'students' => $students,
             'selectedClass' => $class,
             'assignedClass' => $assigned,

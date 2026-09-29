@@ -92,6 +92,21 @@ class User extends Authenticatable
         return $this->class ?: null;
     }
 
+    /**
+     * True when this user is acting with admin oversight — the frontend uses
+     * this to render the admin shell around teacher screens.
+     */
+    public function actsAsAdmin(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /** Nav + shell a teacher screen should render for this user. */
+    public function shell(): string
+    {
+        return $this->isAdmin() ? 'admin' : 'teacher';
+    }
+
     /** Whether this user may act on the given student's records. */
     public function canManage(Student $student): bool
     {

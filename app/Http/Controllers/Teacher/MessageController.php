@@ -21,6 +21,7 @@ class MessageController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Teacher/Messages', [
+            'shell' => $request->user()->shell(),
             'conversations' => $this->chat->listFor($request->user()),
             'students' => $this->students($request),
             'open' => null,
@@ -46,6 +47,7 @@ class MessageController extends Controller
         $this->chat->markRead($conversation, $request->user());
 
         return Inertia::render('Teacher/Messages', [
+            'shell' => $request->user()->shell(),
             'conversations' => $this->chat->listFor($request->user()),
             'students' => $this->students($request),
             'open' => $this->chat->thread($conversation, $request->integer('before') ?: null),

@@ -46,6 +46,7 @@ export default function AttendanceActions({
     date,
     showChip = true,
     collectors = [],
+    isAdmin = false,
 }: {
     studentId: number;
     studentName?: string;
@@ -57,6 +58,8 @@ export default function AttendanceActions({
     showChip?: boolean;
     /** Adults authorised to collect this child (teachers only). */
     collectors?: Collector[];
+    /** Admin acting on a teacher screen (Phase A). */
+    isAdmin?: boolean;
 }) {
     const { t } = useI18n();
     const [checkInOpen, setCheckInOpen] = useState(false);
@@ -158,6 +161,7 @@ export default function AttendanceActions({
                         studentId={studentId}
                         studentName={studentName ?? ''}
                         date={date}
+                        isAdmin={isAdmin}
                         open={checkInOpen}
                         onOpenChange={setCheckInOpen}
                     />
@@ -166,6 +170,7 @@ export default function AttendanceActions({
                         studentName={studentName ?? ''}
                         date={date}
                         collectors={collectors}
+                        isAdmin={isAdmin}
                         open={checkoutOpen}
                         onOpenChange={setCheckoutOpen}
                     />

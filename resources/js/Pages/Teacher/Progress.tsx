@@ -20,7 +20,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { formatDate, localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import type { PhotoInfo } from '@/lib/photo';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = { id: number; name: string; class: string };
@@ -75,7 +75,9 @@ export default function Progress({
     development,
     grades,
     filters,
+    shellProp,
 }: {
+    shellProp?: string;
     students: Student[];
     records: Record[];
     summary: Summary | null;
@@ -87,13 +89,14 @@ export default function Progress({
     filters: { student: string; class: string };
 }) {
     const { t } = useI18n();
+    const shell = shellFor(shellProp);
 
     const form = useForm({ ...emptyForm, student_id: filters.student || '' });
 
     const ready = form.data.student_id !== '' && form.data.date !== '';
 
     const submit = () =>
-        form.post(route('teacher.progress.store'), {
+        form.post(actionRoute(shell.isAdmin, 'progress.store'), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () =>
@@ -111,7 +114,7 @@ export default function Progress({
 
     const applyFilter = (key: 'student' | 'class', value: string) =>
         router.get(
-            '/teacher/progress',
+            actionUrl(shell.isAdmin, 'progress'),
             { ...filters, [key]: value === '__all' ? '' : value },
             { preserveState: true, preserveScroll: true },
         );
@@ -144,7 +147,7 @@ export default function Progress({
     );
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('progress')} description={t('progress_desc')} />
 
             {/* Record progress */}

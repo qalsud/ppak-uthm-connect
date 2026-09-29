@@ -54,6 +54,7 @@ class GrowthController extends Controller
         $bmis = $latest->pluck('bmi')->filter(fn ($bmi) => $bmi !== null);
 
         return Inertia::render('Teacher/Growth', [
+            'shell' => $request->user()->shell(),
             'students' => $students,
             'records' => $records,
             'latest' => $latest,

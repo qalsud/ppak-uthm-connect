@@ -40,6 +40,7 @@ class ActivityController extends Controller
             ->get();
 
         return Inertia::render('Teacher/Activities', [
+            'shell' => $request->user()->shell(),
             'students' => $students,
             'today' => $today,
             'fields' => DailyActivity::FIELDS,

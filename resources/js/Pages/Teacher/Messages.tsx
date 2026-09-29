@@ -7,38 +7,40 @@ import ChatInbox, {
 import type { PageProps } from '@/types';
 import { useI18n } from '@/lib/i18n';
 import PageHeader from '@/Components/page-header';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Page = PageProps<{
     conversations: ChatConversation[];
     open: ChatOpen | null;
     students: Array<{ id: number; name: string; class: string }>;
+    shell?: string;
 }>;
 
 export default function TeacherMessages() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
+    const shell = shellFor(props.shell);
 
     const select = (id: number) => {
-        router.get(route('teacher.messages.show', { conversation: id }), {}, { preserveState: true });
+        router.get(actionRoute(shell.isAdmin, 'messages.show', { conversation: id }), {}, { preserveState: true });
     };
 
     const start = (studentId: number) => {
-        router.post(route('teacher.messages.open', { student: studentId }));
+        router.post(actionRoute(shell.isAdmin, 'messages.open', { student: studentId }));
     };
 
     const submit = (body: string) => {
         if (!props.open) return;
         router.post(
-            route('teacher.messages.store', { conversation: props.open.id }),
+            actionRoute(shell.isAdmin, 'messages.store', { conversation: props.open.id }),
             { body },
             { preserveScroll: true },
         );
     };
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('messages')} description="Chat with parents" />
             <ChatInbox
                 conversations={props.conversations}
@@ -48,7 +50,7 @@ export default function TeacherMessages() {
                 basePath="/teacher/messages"
                 onSelect={select}
                 onStart={start}
-                onBack={() => router.get('/teacher/messages')}
+                onBack={() => router.get(actionUrl(shell.isAdmin, 'messages'))}
             />
         </AppShell>
     );

@@ -13,7 +13,7 @@ import {
 } from '@/Components/ui/select';
 import { useI18n } from '@/lib/i18n';
 import PageHeader from '@/Components/page-header';
-import { teacherBottomNav, teacherNav } from '@/lib/navigation';
+import { actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {
@@ -39,19 +39,22 @@ export default function DailyUpdates({
     students,
     selectedClass,
     assignedClass,
+    shellProp,
 }: {
+    shellProp?: string;
     students: Student[];
     selectedClass: string;
     assignedClass?: string | null;
 }) {
     const { t } = useI18n();
+    const shell = shellFor(shellProp);
 
     const changeClass = (value: string) => {
-        router.get('/teacher/daily-updates', { class: value }, { preserveState: true });
+        router.get(actionUrl(shell.isAdmin, 'daily-updates'), { class: value }, { preserveState: true });
     };
 
     return (
-        <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
+        <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('daily_updates')} description="Morning updates received from parents">
                 {!assignedClass && (
                     <div className="w-48">
