@@ -47,6 +47,8 @@ type Student = {
     status: 'active' | 'withdrawn' | 'graduated';
     allergies: string | null;
     medical_notes: string | null;
+    centre_id?: number | null;
+    centre?: { id: number; name: string; short_name: string | null } | null;
     mykid?: string | null;
     date_of_birth?: string | null;
     gender?: string | null;
@@ -73,11 +75,13 @@ type Parent = { id: number; name: string; email: string };
 export default function Students({
     students,
     parents,
+    centres,
     counts,
     filters,
 }: {
     students: Paginator<Student>;
     parents: Parent[];
+    centres: Array<{ id: number; name: string; short_name: string | null }>;
     counts: Record<string, number>;
     filters: { search: string; class: string; status: string };
 }) {
@@ -95,6 +99,7 @@ export default function Students({
         age: '',
         class: '5tahun',
         parent_id: '',
+        centre_id: '',
         mykid: '',
         date_of_birth: '',
         gender: '',
@@ -202,6 +207,7 @@ export default function Students({
             age: student.age?.toString() ?? '',
             class: student.class,
             parent_id: student.parent?.id?.toString() ?? '',
+            centre_id: student.centre_id?.toString() ?? '',
             mykid: student.mykid ?? '',
             date_of_birth: student.date_of_birth ?? '',
             gender: student.gender ?? '',
@@ -582,6 +588,27 @@ export default function Students({
                             </SelectContent>
                         </Select>
                     </FormField>
+
+                    {centres.length > 0 && (
+                        <FormField label={t('assign_centre')} error={form.errors.centre_id}>
+                            <Select
+                                value={form.data.centre_id || 'none'}
+                                onValueChange={(v) => form.setData('centre_id', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t('unassigned')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">{t('unassigned')}</SelectItem>
+                                    {centres.map((c) => (
+                                        <SelectItem key={c.id} value={String(c.id)}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                    )}
 
                     <FormField label={t('parent')} error={form.errors.parent_id}>
                         <Select

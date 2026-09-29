@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\CentreController;
 use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeSettingController;
@@ -176,6 +177,13 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/lists', [ListController::class, 'store'])->name('lists.store');
             Route::put('/lists/{option}', [ListController::class, 'update'])->name('lists.update');
             Route::delete('/lists/{option}', [ListController::class, 'destroy'])->name('lists.destroy');
+
+            // Centres + the active-centre switcher.
+            Route::get('/centres', [CentreController::class, 'index'])->name('centres.index');
+            Route::post('/centres', [CentreController::class, 'store'])->name('centres.store');
+            Route::post('/centres/switch', [CentreController::class, 'switch'])->name('centres.switch');
+            Route::put('/centres/{centre}', [CentreController::class, 'update'])->name('centres.update');
+            Route::delete('/centres/{centre}', [CentreController::class, 'destroy'])->name('centres.destroy');
 
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
             Route::get('/payments/{record}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');

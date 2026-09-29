@@ -35,6 +35,16 @@ export type PageProps<
     translations?: Record<'en' | 'ms', Record<string, string>>;
     /** Admin-editable option lists, keyed by group. */
     lists?: Record<string, Array<{ value: string; label: string }>>;
+    /** The admin's currently-selected centre (null for non-admins). */
+    activeCentre?: {
+        id: number | null;
+        options: Array<{
+            id: number;
+            name: string;
+            short_name: string | null;
+            is_active: boolean;
+        }>;
+    } | null;
     unreadMessages?: number;
     flash?: {
         success?: string | null;

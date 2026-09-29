@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Messaging\ConversationService;
+use App\Support\ActiveCentre;
 use App\Support\Lists;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -57,6 +58,8 @@ class HandleInertiaRequests extends Middleware
             // Admin-editable lists — the one source of truth for form options,
             // so frontend constants can never drift from backend validation.
             'lists' => $user ? Lists::all() : [],
+            // The admin's currently-selected centre (null = all centres).
+            'activeCentre' => $user?->isAdmin() ? ActiveCentre::payload() : null,
             'unreadMessages' => $unreadMessages,
             'flash' => [
                 'success' => session('success'),

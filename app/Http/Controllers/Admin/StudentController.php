@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
+use App\Models\Centre;
 use App\Models\DailyActivity;
 use App\Models\Student;
 use App\Models\User;
@@ -25,12 +26,14 @@ class StudentController extends Controller
 
         $students = Student::query()
             ->with('parent:id,name')
+            ->with('centre:id,name,short_name')
+            ->forActiveCentre()
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhereHas('parent', fn ($p) => $p->where('name', 'like', "%{$search}%"));
             }))
-            ->when(in_array($class, Student::CLASSES, true), fn ($q) => $q->where('class', $class))
-            ->when(in_array($status, Student::STATUSES, true), fn ($q) => $q->where('status', $status))
+            ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
+            ->when(in_array($status, Student::statusKeys(), true), fn ($q) => $q->where('status', $status))
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
@@ -41,6 +44,7 @@ class StudentController extends Controller
             ->get(['id', 'name', 'email']);
 
         $counts = Student::query()
+            ->forActiveCentre()
             ->selectRaw('status, count(*) as aggregate')
             ->groupBy('status')
             ->pluck('aggregate', 'status');
@@ -48,9 +52,10 @@ class StudentController extends Controller
         return Inertia::render('Admin/Students', [
             'students' => $students,
             'parents' => $parents,
+            'centres' => Centre::active()->orderBy('sort')->get(['id', 'name', 'short_name']),
             'counts' => [
                 'all' => (int) $counts->sum(),
-                ...collect(Student::STATUSES)->mapWithKeys(fn ($s) => [$s => (int) $counts->get($s, 0)])->all(),
+                ...collect(Student::statusKeys())->mapWithKeys(fn ($s) => [$s => (int) $counts->get($s, 0)])->all(),
             ],
             'filters' => ['search' => $search, 'class' => $class ?? '', 'status' => $status],
         ]);
@@ -277,6 +282,7 @@ class StudentController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')->where('role', UserRole::Parent->value),
             ],
+            'centre_id' => ['nullable', 'integer', Rule::exists('centres', 'id')],
 
             // Identity & admin.
             'mykid' => ['nullable', 'string', 'max:30'],

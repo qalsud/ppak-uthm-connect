@@ -1,6 +1,7 @@
 import {
     BellRing,
     BookOpen,
+    Building2,
     CalendarCheck,
     CalendarClock,
     ClipboardList,
@@ -45,6 +46,7 @@ export const adminNav: NavItem[] = [
     { label: 'activity_log', href: '/admin/activity', icon: History },
     { label: 'recently_deleted', href: '/admin/trash', icon: Trash2 },
     { label: 'lists', href: '/admin/lists', icon: ListChecks },
+    { label: 'centres', href: '/admin/centres', icon: Building2 },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
 ];
 

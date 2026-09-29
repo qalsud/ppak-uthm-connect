@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ActiveCentre;
 use App\Support\Lists;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class Student extends Model
 
     protected $fillable = [
         'parent_id',
+        'centre_id',
         'name',
         'mykid',
         'date_of_birth',
@@ -143,6 +145,21 @@ class Student extends Model
     public function scopeInCentre($query, ?int $centreId)
     {
         return $centreId ? $query->where('centre_id', $centreId) : $query;
+    }
+
+    /**
+     * Limit to the admin's currently-selected centre. A no-op for "All centres"
+     * and for non-admins (who are already scoped by `visibleTo`).
+     */
+    public function scopeForActiveCentre($query, ?User $user = null)
+    {
+        $user ??= auth()->user();
+
+        if (! $user?->isAdmin()) {
+            return $query;
+        }
+
+        return $query->inCentre(ActiveCentre::id());
     }
 
     /** Limit to a class key within whatever centre scope is already applied. */

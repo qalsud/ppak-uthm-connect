@@ -6,6 +6,7 @@ import GlobalSearch from '@/Components/global-search';
 import LanguageSwitcher from '@/Components/language-switcher';
 import Logo from '@/Components/logo';
 import NotificationBell from '@/Components/notification-bell';
+import CentreSwitcher from '@/Components/centre-switcher';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -118,6 +119,9 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                             </div>
 
                             <div className="flex items-center gap-1.5">
+                                <div className="hidden sm:block">
+                                    <CentreSwitcher />
+                                </div>
                                 <GlobalSearch />
                                 <NotificationBell />
                                 {nav.length === 0 && <LanguageSwitcher />}
