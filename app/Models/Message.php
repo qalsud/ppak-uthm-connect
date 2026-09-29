@@ -29,6 +29,7 @@ class Message extends Model
     protected $casts = [
         'read_at' => 'datetime',
         'edited_at' => 'datetime',
+        'photo_expired' => 'boolean',
     ];
 
     protected $appends = ['photo_url', 'is_deleted', 'is_system', 'attachments', 'sent_time', 'sent_date'];

@@ -1098,6 +1098,29 @@ test('the register can be viewed on a future day and lists upcoming absences', f
         );
 });
 
+test('photo_expired serialises as a boolean, never a bare 0', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+
+    $conversation = Conversation::firstOrCreate(['student_id' => $student->id]);
+    $message = $conversation->messages()->create([
+        'sender_id' => $parent->id,
+        'body' => 'Selamat pagi',
+        'type' => 'user',
+    ]);
+
+    // A raw 0 here renders as "0Selamat pagi" in the chat bubble (React prints
+    // a numeric 0 from a `value && <jsx/>` guard).
+    expect($message->fresh()->toArray()['photo_expired'])->toBeFalse();
+
+    $this->actingAs($teacher)->get(route('teacher.messages.show', $conversation))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('open.messages.0.photo_expired', false)
+            ->where('open.messages.0.body', 'Selamat pagi')
+        );
+});
+
 test('search ignores very short queries', function () {
     $this->actingAs(admin())
         ->getJson(route('search', ['q' => 'a']))

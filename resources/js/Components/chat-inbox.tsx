@@ -496,7 +496,7 @@ export default function ChatInbox({
                                                                     />
                                                                 </a>
                                                             )}
-                                                            {m.photo_expired && !m.photo_url && (
+                                                            {Boolean(m.photo_expired) && !m.photo_url && (
                                                                 <span className="mb-1 block text-xs italic opacity-70">
                                                                     {t('photo_unavailable')}
                                                                 </span>
