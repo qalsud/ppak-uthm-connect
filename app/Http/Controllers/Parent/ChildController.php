@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceRequest;
+use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\DailyActivity;
 use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Student;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -67,6 +69,39 @@ class ChildController extends Controller
                 ->map(fn (GrowthRecord $r) => $r->summary())
                 ->values(),
             'fields' => DailyActivity::FIELDS,
+            'profile' => $student->profile(),
         ]);
+    }
+
+    /**
+     * A parent submits corrections to their child's record. Safety-critical
+     * medical fields are applied by an admin, so this records a change request
+     * rather than writing straight through (PDPA accuracy + oversight).
+     */
+    public function updateProfile(Request $request, Student $student): RedirectResponse
+    {
+        abort_unless($student->parent_id === $request->user()->id, 403);
+
+        $data = $request->validate([
+            'address' => ['nullable', 'string', 'max:1000'],
+            'allergies' => ['nullable', 'string', 'max:1000'],
+            'medical_notes' => ['nullable', 'string', 'max:1000'],
+            'dietary_restrictions' => ['nullable', 'string', 'max:1000'],
+            'doctor_name' => ['nullable', 'string', 'max:150'],
+            'doctor_phone' => ['nullable', 'string', 'max:40'],
+            'medical_consent' => ['nullable', 'boolean'],
+        ]);
+
+        $student->update([
+            ...$data,
+            'medical_consent' => (bool) ($data['medical_consent'] ?? false),
+            'medical_consent_at' => ! empty($data['medical_consent'])
+                ? ($student->medical_consent_at ?? now())
+                : null,
+        ]);
+
+        ActivityLog::record('student.profile_updated', $student, $student->name);
+
+        return back()->with('success', __('approval.profile_updated'));
     }
 }

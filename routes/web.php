@@ -80,6 +80,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('message.photos.show');
     Route::get('/absence-documents/{attachment}', [PhotoController::class, 'absence'])
         ->name('absence.documents.show');
+    Route::get('/students/{student}/photo', [PhotoController::class, 'student'])
+        ->name('student.photos.show');
 
     // Message operations (polling, unread, edit, delete, search)
     Route::get('/messages/unread', [MessageOpsController::class, 'unread'])->name('messages.unread');
@@ -192,6 +194,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/daily-update', [ParentDailyUpdateController::class, 'store'])->name('daily-update.store');
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
             Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
+            Route::patch('/children/{student}/profile', [ParentChildController::class, 'updateProfile'])->name('children.profile');
             Route::post('/children/{student}/medications', [ParentMedicationController::class, 'store'])->name('medications.store');
             Route::post('/children/{student}/absences', [ParentAbsenceController::class, 'store'])->name('absences.store');
             Route::post('/absences/{absence}/document', [ParentAbsenceController::class, 'attach'])->name('absences.attach');

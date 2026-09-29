@@ -6,6 +6,8 @@ import PageHeader from '@/Components/page-header';
 import PhotoThumb from '@/Components/photo-thumb';
 import RatingChip from '@/Components/rating-chip';
 import StatusBadge from '@/Components/status-badge';
+import StudentProfileCard, { type StudentProfile } from '@/Components/student-profile-card';
+import ChildInfoEditor from '@/Components/child-info-editor';
 import AttendanceActions, { type AttendanceSummary } from '@/Components/attendance-actions';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -89,13 +91,14 @@ type Page = PageProps<{
     attendanceHistory: HistoryRow[];
     medications: Medication[];
     growth: Growth[];
+    profile: StudentProfile;
     fields: Record<string, string>;
 }>;
 
 export default function ParentChild() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { child, updates, activities, progress, attendanceHistory, medications, growth, fields } = props;
+    const { child, updates, activities, progress, attendanceHistory, medications, growth, profile, fields } = props;
     const [paying, setPaying] = useState(false);
     const [showMed, setShowMed] = useState(false);
 
@@ -388,8 +391,13 @@ export default function ParentChild() {
                 </CardContent>
             </Card>
 
-            {/* Growth */}
-            {growth.length > 0 && (
+            {/* Child's record — identity + health, editable by the parent. */}
+            <div className="mb-4">
+                <StudentProfileCard profile={profile} />
+                <ChildInfoEditor childId={child.id} profile={profile} />
+            </div>
+
+            {/* Growth */}            {growth.length > 0 && (
                 <Card className="mb-4 rounded-2xl border-0 shadow-sm">
                     <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-2 text-base">

@@ -73,6 +73,7 @@ class StudentController extends Controller
                 ] : null,
                 'unpaid' => (float) $student->financialRecords()->where('status', 'unpaid')->sum('amount'),
             ],
+            'profile' => $student->profile(),
             'attendance' => Attendance::historyFor($student->id, 14)
                 ->map(fn (Attendance $a) => $a->historyRow())
                 ->values(),
@@ -256,7 +257,7 @@ class StudentController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'age' => 'nullable|integer|min:3|max:10',
             'class' => ['required', Rule::in(Student::CLASSES)],
@@ -264,9 +265,43 @@ class StudentController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')->where('role', UserRole::Parent->value),
             ],
+
+            // Identity & admin.
+            'mykid' => ['nullable', 'string', 'max:30'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'gender' => ['nullable', Rule::in(Student::GENDERS)],
+            'nationality' => ['nullable', Rule::in(Student::NATIONALITIES)],
+            'ethnicity' => ['nullable', 'string', 'max:60'],
+            'religion' => ['nullable', 'string', 'max:60'],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'enrolment_date' => ['nullable', 'date', 'before_or_equal:today'],
+
+            // Safety & medical.
             'allergies' => ['nullable', 'string', 'max:1000'],
             'medical_notes' => ['nullable', 'string', 'max:1000'],
+            'blood_type' => ['nullable', Rule::in(Student::BLOOD_TYPES)],
+            'immunisation_status' => ['nullable', Rule::in(Student::IMMUNISATION_STATUSES)],
+            'immunisation_notes' => ['nullable', 'string', 'max:1000'],
+            'has_special_needs' => ['nullable', 'boolean'],
+            'special_needs_notes' => ['nullable', 'string', 'max:1000'],
+            'dietary_restrictions' => ['nullable', 'string', 'max:1000'],
+            'doctor_name' => ['nullable', 'string', 'max:150'],
+            'doctor_phone' => ['nullable', 'string', 'max:40'],
+            'medical_consent' => ['nullable', 'boolean'],
         ]);
+
+        // Stamp when consent was first granted (PDPA: health data is sensitive).
+        if (! empty($data['medical_consent'])) {
+            $existing = $request->route('student');
+            $data['medical_consent_at'] = $existing?->medical_consent_at ?? now();
+        } else {
+            $data['medical_consent'] = false;
+            $data['medical_consent_at'] = null;
+        }
+
+        $data['has_special_needs'] = (bool) ($data['has_special_needs'] ?? false);
+
+        return $data;
     }
 
     /** @return array<int, array<string, string|null>> */

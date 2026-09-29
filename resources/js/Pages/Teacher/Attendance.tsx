@@ -32,6 +32,7 @@ type Student = {
     name: string;
     class: string;
     allergies?: string | null;
+    alerts?: string[];
     attendance: AttendanceSummary;
 };
 
@@ -430,6 +431,18 @@ export default function TeacherAttendance({
                                     <p className="mb-2 rounded-lg bg-rose-50 px-2 py-1 text-[11px] font-medium text-rose-700">
                                         {t('allergies')}: {s.allergies}
                                     </p>
+                                )}
+                                {s.alerts && s.alerts.length > 0 && (
+                                    <div className="mb-2 flex flex-wrap gap-1">
+                                        {s.alerts.map((a) => (
+                                            <span
+                                                key={a}
+                                                className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-700"
+                                            >
+                                                {t(`alert.${a}`)}
+                                            </span>
+                                        ))}
+                                    </div>
                                 )}
                                 <AttendanceActions
                                     studentId={s.id}

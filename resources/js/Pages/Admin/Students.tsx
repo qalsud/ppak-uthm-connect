@@ -38,6 +38,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { localDate } from '@/lib/date';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps, Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -50,6 +51,23 @@ type Student = {
     status: 'active' | 'withdrawn' | 'graduated';
     allergies: string | null;
     medical_notes: string | null;
+    mykid?: string | null;
+    date_of_birth?: string | null;
+    gender?: string | null;
+    nationality?: string | null;
+    ethnicity?: string | null;
+    religion?: string | null;
+    address?: string | null;
+    enrolment_date?: string | null;
+    blood_type?: string | null;
+    immunisation_status?: string | null;
+    immunisation_notes?: string | null;
+    has_special_needs?: boolean;
+    special_needs_notes?: string | null;
+    dietary_restrictions?: string | null;
+    doctor_name?: string | null;
+    doctor_phone?: string | null;
+    medical_consent?: boolean;
     parent: { id: number; name: string } | null;
 };
 
@@ -82,8 +100,25 @@ export default function Students({
         age: '',
         class: '5tahun',
         parent_id: '',
+        mykid: '',
+        date_of_birth: '',
+        gender: '',
+        nationality: '',
+        ethnicity: '',
+        religion: '',
+        address: '',
+        enrolment_date: '',
         allergies: '',
         medical_notes: '',
+        blood_type: '',
+        immunisation_status: '',
+        immunisation_notes: '',
+        has_special_needs: false,
+        special_needs_notes: '',
+        dietary_restrictions: '',
+        doctor_name: '',
+        doctor_phone: '',
+        medical_consent: false,
     });
 
     const rows = students.data;
@@ -172,8 +207,25 @@ export default function Students({
             age: student.age?.toString() ?? '',
             class: student.class,
             parent_id: student.parent?.id?.toString() ?? '',
+            mykid: student.mykid ?? '',
+            date_of_birth: student.date_of_birth ?? '',
+            gender: student.gender ?? '',
+            nationality: student.nationality ?? '',
+            ethnicity: student.ethnicity ?? '',
+            religion: student.religion ?? '',
+            address: student.address ?? '',
+            enrolment_date: student.enrolment_date ?? '',
             allergies: student.allergies ?? '',
             medical_notes: student.medical_notes ?? '',
+            blood_type: student.blood_type ?? '',
+            immunisation_status: student.immunisation_status ?? '',
+            immunisation_notes: student.immunisation_notes ?? '',
+            has_special_needs: student.has_special_needs ?? false,
+            special_needs_notes: student.special_needs_notes ?? '',
+            dietary_restrictions: student.dietary_restrictions ?? '',
+            doctor_name: student.doctor_name ?? '',
+            doctor_phone: student.doctor_phone ?? '',
+            medical_consent: student.medical_consent ?? false,
         });
         form.clearErrors();
         setOpen(true);
@@ -573,6 +625,94 @@ export default function Students({
                                 <p className="text-xs text-destructive">{form.errors.parent_id}</p>
                             )}
                         </div>
+                        {/* Identity */}
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('mykid')}</Label>
+                            <Input
+                                value={form.data.mykid}
+                                onChange={(e) => form.setData('mykid', e.target.value)}
+                                placeholder="080101-14-1234"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('date_of_birth')}</Label>
+                            <Input
+                                type="date"
+                                max={localDate()}
+                                value={form.data.date_of_birth}
+                                onChange={(e) => form.setData('date_of_birth', e.target.value)}
+                            />
+                            {form.errors.date_of_birth && (
+                                <p className="text-xs text-destructive">{form.errors.date_of_birth}</p>
+                            )}
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('gender')}</Label>
+                            <Select
+                                value={form.data.gender || 'none'}
+                                onValueChange={(v) => form.setData('gender', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="—" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">—</SelectItem>
+                                    <SelectItem value="male">{t('gender.male')}</SelectItem>
+                                    <SelectItem value="female">{t('gender.female')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('nationality')}</Label>
+                            <Select
+                                value={form.data.nationality || 'none'}
+                                onValueChange={(v) => form.setData('nationality', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="—" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">—</SelectItem>
+                                    <SelectItem value="malaysian">{t('nationality.malaysian')}</SelectItem>
+                                    <SelectItem value="non_malaysian">
+                                        {t('nationality.non_malaysian')}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('ethnicity')}</Label>
+                            <Input
+                                value={form.data.ethnicity}
+                                onChange={(e) => form.setData('ethnicity', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('religion')}</Label>
+                            <Input
+                                value={form.data.religion}
+                                onChange={(e) => form.setData('religion', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('address')}</Label>
+                            <Textarea
+                                rows={2}
+                                value={form.data.address}
+                                onChange={(e) => form.setData('address', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('enrolment_date')}</Label>
+                            <Input
+                                type="date"
+                                max={localDate()}
+                                value={form.data.enrolment_date}
+                                onChange={(e) => form.setData('enrolment_date', e.target.value)}
+                            />
+                        </div>
+
+                        {/* Medical */}
                         <div className="space-y-1 sm:col-span-2">
                             <Label>{t('allergies')}</Label>
                             <Textarea
@@ -590,6 +730,114 @@ export default function Students({
                                 onChange={(e) => form.setData('medical_notes', e.target.value)}
                             />
                         </div>
+                        <div className="space-y-1">
+                            <Label>{t('blood_type')}</Label>
+                            <Select
+                                value={form.data.blood_type || 'none'}
+                                onValueChange={(v) => form.setData('blood_type', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="—" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">—</SelectItem>
+                                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => (
+                                        <SelectItem key={b} value={b}>
+                                            {b}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('immunisation_status')}</Label>
+                            <Select
+                                value={form.data.immunisation_status || 'none'}
+                                onValueChange={(v) => form.setData('immunisation_status', v === 'none' ? '' : v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="—" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">—</SelectItem>
+                                    {['complete', 'partial', 'none', 'exempt', 'unknown'].map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {t(`immunisation.${s}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('immunisation_notes')}</Label>
+                            <Textarea
+                                rows={2}
+                                value={form.data.immunisation_notes}
+                                onChange={(e) => form.setData('immunisation_notes', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                            <Label>{t('dietary_restrictions')}</Label>
+                            <Textarea
+                                rows={2}
+                                value={form.data.dietary_restrictions}
+                                onChange={(e) => form.setData('dietary_restrictions', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('doctor_name')}</Label>
+                            <Input
+                                value={form.data.doctor_name}
+                                onChange={(e) => form.setData('doctor_name', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label>{t('doctor_phone')}</Label>
+                            <Input
+                                value={form.data.doctor_phone}
+                                onChange={(e) => form.setData('doctor_phone', e.target.value)}
+                            />
+                        </div>
+
+                        <label className="flex items-start gap-2.5 rounded-xl border p-3 sm:col-span-2">
+                            <input
+                                type="checkbox"
+                                className="mt-0.5 size-4"
+                                checked={form.data.has_special_needs}
+                                onChange={(e) => form.setData('has_special_needs', e.target.checked)}
+                            />
+                            <span>
+                                <span className="block text-sm font-medium">{t('special_needs')}</span>
+                                <span className="block text-[11px] text-muted-foreground">
+                                    {t('special_needs_notes')}
+                                </span>
+                            </span>
+                        </label>
+                        {form.data.has_special_needs && (
+                            <div className="space-y-1 sm:col-span-2">
+                                <Label>{t('special_needs_notes')}</Label>
+                                <Textarea
+                                    rows={2}
+                                    value={form.data.special_needs_notes}
+                                    onChange={(e) => form.setData('special_needs_notes', e.target.value)}
+                                />
+                            </div>
+                        )}
+
+                        <label className="flex items-start gap-2.5 rounded-xl border p-3 sm:col-span-2">
+                            <input
+                                type="checkbox"
+                                className="mt-0.5 size-4"
+                                checked={form.data.medical_consent}
+                                onChange={(e) => form.setData('medical_consent', e.target.checked)}
+                            />
+                            <span>
+                                <span className="block text-sm font-medium">{t('medical_consent')}</span>
+                                <span className="block text-[11px] text-muted-foreground">
+                                    {t('medical_consent_hint')}
+                                </span>
+                            </span>
+                        </label>
                     </div>
 
                     <DialogFooter>

@@ -53,7 +53,7 @@ class AttendanceController extends Controller
             ->active()
             ->where('class', $class)
             ->orderBy('name')
-            ->get(['id', 'name', 'class', 'allergies']);
+            ->get(['id', 'name', 'class', 'allergies', 'has_special_needs', 'dietary_restrictions', 'medical_notes']);
 
         $records = Attendance::onDateFor($students->pluck('id'), $date);
 
@@ -94,6 +94,7 @@ class AttendanceController extends Controller
 
         $students->each(function (Student $student) use ($records) {
             $student->attendance = $records->get($student->id)?->summary() ?? Attendance::emptySummary();
+            $student->setAttribute('alerts', $student->alerts());
         });
 
         return Inertia::render('Teacher/Attendance', [

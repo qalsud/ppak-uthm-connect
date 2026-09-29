@@ -6,6 +6,7 @@ use App\Models\AbsenceAttachment;
 use App\Models\AttendancePhoto;
 use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -28,6 +29,28 @@ class PhotoController extends Controller
     public function message(Request $request, MessageAttachment $photo): StreamedResponse
     {
         return $this->serve($request, $photo);
+    }
+
+    /** Child profile photo (admin/teacher, or the child's own parent). */
+    public function student(Request $request, Student $student): StreamedResponse
+    {
+        $user = $request->user();
+
+        $allowed = $user !== null
+            && ($user->isAdmin() || $user->isTeacher() || $student->parent_id === $user->id);
+
+        abort_unless($allowed, 403);
+        abort_unless($student->photo_path, 404);
+
+        $disk = Storage::disk($student->photo_disk ?? config('media.disk'));
+
+        abort_unless($disk->exists($student->photo_path), 404);
+
+        return $disk->response($student->photo_path, null, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'private, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /** Absence proof documents: images render inline, PDFs download. */

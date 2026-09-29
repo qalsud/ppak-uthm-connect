@@ -86,26 +86,83 @@ class DatabaseSeeder extends Seeder
         $demoParent = $parents->first();
 
         // ---- Children (child name + bin/binti <father>) --------------------
-        // [parent index, name, age, class]
+        // [parent index, name, age, class, gender, extra profile fields]
         $childData = [
-            [0, 'Muhammad Adam bin Ahmad Faizal', 6, '6bintang'],
-            [0, 'Nur Aisyah binti Ahmad Faizal', 5, '5tahun'],
-            [0, 'Nur Fatihah binti Ahmad Faizal', 4, '5tahun'],
-            [1, 'Ahmad Danial bin Amran', 6, '6bintang'],
-            [2, 'Muhammad Harith bin Mohd Syafiq', 5, '5tahun'],
-            [2, 'Muhammad Luqman bin Mohd Syafiq', 6, '6bintang'],
-            [3, 'Nur Safiya binti Rizal', 5, '5tahun'],
-            [4, 'Muhamad Zikry bin Abdul Rahim', 6, '6bintang'],
-            [4, 'Nur Aliya binti Abdul Rahim', 4, '5tahun'],
-            [5, 'Nurul Iman binti Kamal', 5, '5tahun'],
+            [0, 'Muhammad Adam bin Ahmad Faizal', 6, '6bintang', 'male', [
+                'mykid' => '200314-01-0521', 'allergies' => 'Peanuts, shellfish',
+                'blood_type' => 'O+', 'immunisation_status' => 'complete',
+                'doctor_name' => 'Dr. Tan Wei Ming', 'doctor_phone' => '07-434 1122',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [0, 'Nur Aisyah binti Ahmad Faizal', 5, '5tahun', 'female', [
+                'mykid' => '210628-01-0188', 'blood_type' => 'A+',
+                'immunisation_status' => 'complete', 'medical_consent' => true,
+                'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [0, 'Nur Fatihah binti Ahmad Faizal', 4, '5tahun', 'female', [
+                'mykid' => '220905-01-0334', 'immunisation_status' => 'partial',
+                'immunisation_notes' => 'Booster due in December', 'blood_type' => 'A+',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [1, 'Ahmad Danial bin Amran', 6, '6bintang', 'male', [
+                'mykid' => '200421-01-0777', 'allergies' => 'Dust, pollen',
+                'blood_type' => 'B+', 'immunisation_status' => 'complete',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [2, 'Muhammad Harith bin Mohd Syafiq', 5, '5tahun', 'male', [
+                'mykid' => '210110-01-0412', 'blood_type' => 'O+',
+                'immunisation_status' => 'complete', 'has_special_needs' => true,
+                'special_needs_notes' => 'Speech therapy every Tuesday; responds well to routines.',
+                'dietary_restrictions' => 'No nuts (see allergies)', 'allergies' => 'Cashews',
+                'doctor_name' => 'Dr. Siti Nurhaliza', 'doctor_phone' => '07-431 8899',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [2, 'Muhammad Luqman bin Mohd Syafiq', 6, '6bintang', 'male', [
+                'mykid' => '200719-01-0250', 'blood_type' => 'O+',
+                'immunisation_status' => 'complete', 'medical_consent' => true,
+                'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [3, 'Nur Safiya binti Rizal', 5, '5tahun', 'female', [
+                'mykid' => '210501-01-0963', 'blood_type' => 'AB+',
+                'immunisation_status' => 'complete', 'medical_consent' => true,
+                'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [4, 'Muhamad Zikry bin Abdul Rahim', 6, '6bintang', 'male', [
+                'mykid' => '200802-01-0104', 'blood_type' => 'B-',
+                'immunisation_status' => 'exempt', 'immunisation_notes' => 'Medical exemption on file.',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [4, 'Nur Aliya binti Abdul Rahim', 4, '5tahun', 'female', [
+                'mykid' => '220111-01-0620', 'blood_type' => 'B-',
+                'immunisation_status' => 'partial', 'dietary_restrictions' => 'Lactose intolerant',
+                'medical_consent' => true, 'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
+            [5, 'Nurul Iman binti Kamal', 5, '5tahun', 'female', [
+                'mykid' => '210923-01-0881', 'blood_type' => 'A-',
+                'immunisation_status' => 'complete', 'medical_consent' => true,
+                'ethnicity' => 'Melayu', 'religion' => 'Islam',
+            ]],
         ];
 
-        $students = collect($childData)->map(fn ($c) => Student::create([
-            'parent_id' => $parents[$c[0]]->id,
-            'name' => $c[1],
-            'age' => $c[2],
-            'class' => $c[3],
-        ]));
+        $streets = ['Dahlia', 'Kenanga', 'Melor', 'Cempaka', 'Anggerik', 'Seroja', 'Teratai', 'Bunga Raya'];
+
+        $students = collect($childData)->map(function ($c) use ($parents, $streets) {
+            $extra = $c[5] ?? [];
+
+            return Student::create([
+                'parent_id' => $parents[$c[0]]->id,
+                'name' => $c[1],
+                'age' => $c[2],
+                'class' => $c[3],
+                'gender' => $c[4],
+                'nationality' => 'malaysian',
+                'address' => 'No. '.random_int(1, 60).', Jalan '.$streets[array_rand($streets)].', Parit Raja, Batu Pahat, Johor',
+                'date_of_birth' => today()->subYears($c[2])->subDays(random_int(10, 300))->toDateString(),
+                'enrolment_date' => today()->subMonths(random_int(3, 20))->toDateString(),
+                'medical_consent_at' => ! empty($extra['medical_consent']) ? now() : null,
+                ...$extra,
+            ]);
+        });
 
         $demoStudent = $students->first();
 

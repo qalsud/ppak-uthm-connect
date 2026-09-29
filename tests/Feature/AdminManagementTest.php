@@ -1121,6 +1121,129 @@ test('photo_expired serialises as a boolean, never a bare 0', function () {
         );
 });
 
+test('a child record stores identity, medical and consent fields', function () {
+    $admin = User::factory()->role(UserRole::Admin)->create();
+    $parent = User::factory()->role(UserRole::Parent)->create();
+
+    $this->actingAs($admin)->post(route('admin.students.store'), [
+        'name' => 'Nur Aisyah binti Ahmad',
+        'class' => '5tahun',
+        'parent_id' => $parent->id,
+        'mykid' => '210101-14-1234',
+        'date_of_birth' => today()->subYears(5)->subMonths(2)->toDateString(),
+        'gender' => 'female',
+        'nationality' => 'malaysian',
+        'ethnicity' => 'Melayu',
+        'religion' => 'Islam',
+        'address' => '12 Jalan Parit Raja, Batu Pahat',
+        'enrolment_date' => today()->subMonths(3)->toDateString(),
+        'allergies' => 'Peanuts',
+        'blood_type' => 'O+',
+        'immunisation_status' => 'complete',
+        'has_special_needs' => true,
+        'special_needs_notes' => 'Speech therapy weekly',
+        'dietary_restrictions' => 'No pork',
+        'doctor_name' => 'Dr Tan',
+        'doctor_phone' => '07-1234567',
+        'medical_consent' => true,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $student = Student::firstOrFail();
+
+    expect($student->mykid)->toBe('210101-14-1234')
+        ->and($student->gender)->toBe('female')
+        ->and($student->blood_type)->toBe('O+')
+        ->and($student->has_special_needs)->toBeTrue()
+        ->and($student->medical_consent)->toBeTrue()
+        ->and($student->medical_consent_at)->not->toBeNull();
+
+    // Age derives from the date of birth, not the legacy column.
+    expect($student->age)->toBe(today()->subYears(5)->subMonths(2)->age);
+
+    // Alerts drive the safety strip on registers.
+    expect($student->alerts())->toContain('allergies')
+        ->and($student->alerts())->toContain('special_needs')
+        ->and($student->alerts())->toContain('medical');
+
+    expect($student->profile()['mykid'])->toBe('210101-14-1234');
+});
+
+test('invalid enum values and future dates are rejected on the child record', function () {
+    $admin = User::factory()->role(UserRole::Admin)->create();
+
+    $this->actingAs($admin)->post(route('admin.students.store'), [
+        'name' => 'Test Child',
+        'class' => '5tahun',
+        'gender' => 'unknown-value',
+        'blood_type' => 'Z+',
+        'immunisation_status' => 'maybe',
+        'date_of_birth' => today()->addDay()->toDateString(),
+    ])->assertSessionHasErrors(['gender', 'blood_type', 'immunisation_status', 'date_of_birth']);
+
+    expect(Student::count())->toBe(0);
+});
+
+test('a parent can update their childs medical details but not another childs', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $student = Student::factory()->create([
+        'parent_id' => $parent->id,
+        'allergies' => null,
+        'doctor_name' => null,
+    ]);
+    $stranger = User::factory()->role(UserRole::Parent)->create();
+
+    $this->actingAs($parent)->patch(route('parent.children.profile', $student), [
+        'address' => '99 Jalan Baru',
+        'allergies' => 'Eggs and peanuts',
+        'dietary_restrictions' => 'Halal only',
+        'doctor_name' => 'Dr Lim',
+        'doctor_phone' => '07-9999999',
+        'medical_consent' => true,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $student->refresh();
+
+    expect($student->allergies)->toBe('Eggs and peanuts')
+        ->and($student->doctor_name)->toBe('Dr Lim')
+        ->and($student->medical_consent)->toBeTrue()
+        ->and($student->medical_consent_at)->not->toBeNull();
+
+    // Withdrawing consent clears the timestamp.
+    $this->actingAs($parent)->patch(route('parent.children.profile', $student), [
+        'medical_consent' => false,
+    ])->assertRedirect();
+
+    $student->refresh();
+
+    expect($student->medical_consent)->toBeFalse()
+        ->and($student->medical_consent_at)->toBeNull();
+
+    // Another parent cannot touch this child's record.
+    $this->actingAs($stranger)->patch(route('parent.children.profile', $student), [
+        'allergies' => 'Tampered',
+    ])->assertForbidden();
+
+    expect($student->fresh()->allergies)->toBe('Eggs and peanuts');
+});
+
+test('the teacher register flags a childs safety alerts', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+
+    Student::factory()->create([
+        'parent_id' => $parent->id,
+        'class' => '5tahun',
+        'allergies' => 'Peanuts',
+        'has_special_needs' => true,
+    ]);
+
+    $this->actingAs($teacher)->get(route('teacher.attendance.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students', 1)
+            ->where('students.0.alerts', ['allergies', 'special_needs'])
+        );
+});
+
 test('search ignores very short queries', function () {
     $this->actingAs(admin())
         ->getJson(route('search', ['q' => 'a']))
