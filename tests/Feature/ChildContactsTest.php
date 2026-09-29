@@ -109,7 +109,8 @@ test('checkout requires an authorised collector and records the override path', 
 
     $attendance = Attendance::firstOrFail();
 
-    expect($attendance->collected_by)->toBe('guardian-'.$guardian->id)
+    // Must be the human-readable name, never the raw option id ("guardian-1").
+    expect($attendance->collected_by)->toBe('Nor Aisyah binti Omar (Mother)')
         ->and($attendance->collector_override_reason)->toBeNull();
 });
 
@@ -147,6 +148,38 @@ test('an unlisted collector is rejected without a reason, allowed with one', fun
     $attendance = Attendance::firstOrFail();
 
     expect($attendance->collector_override_reason)->toBe('Mother phoned ahead; uncle collecting.');
+});
+
+test('the parent sees the collector by name, not an internal id', function () {
+    Storage::fake(config('media.disk'));
+
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $student = Student::factory()->create(['parent_id' => $parent->id]);
+
+    $guardian = Guardian::create([
+        'student_id' => $student->id,
+        'name' => 'Nor Aisyah binti Omar',
+        'relationship' => 'mother',
+        'can_collect' => true,
+    ]);
+
+    $this->actingAs($teacher)
+        ->post(route('teacher.attendance.checkout', $student), [
+            'photo' => UploadedFile::fake()->image('pickup.jpg'),
+            'collected_by' => 'guardian-'.$guardian->id,
+        ])
+        ->assertRedirect();
+
+    // The parent's own view must show a readable name.
+    $this->actingAs($parent)->get(route('parent.attendance.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('children.0.attendance.collected_by', 'Nor Aisyah binti Omar (Mother)')
+        );
+
+    // Nothing anywhere should leak the raw "guardian-N" identifier.
+    $this->actingAs($parent)->get(route('parent.attendance.index'))
+        ->assertDontSee('guardian-'.$guardian->id, false);
 });
 
 test('the register lists authorised collectors for each child', function () {

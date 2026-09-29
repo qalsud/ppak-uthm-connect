@@ -244,7 +244,8 @@ class AttendanceController extends Controller
         // Safeguarding: whoever collects the child must be on the authorised
         // list, otherwise the release needs a recorded reason.
         $student->loadMissing(['guardians', 'authorisedCollectors']);
-        $allowed = collect($student->collectorOptions())->pluck('id')->all();
+        $options = collect($student->collectorOptions());
+        $allowed = $options->pluck('id')->all();
         $collectedBy = $request->input('collected_by');
         $collectorOverride = $request->input('collector_override');
 
@@ -259,6 +260,13 @@ class AttendanceController extends Controller
                 'collected_by' => __('collector_required'),
             ]);
         }
+
+        // Store the human-readable name, with the relationship for context
+        // (e.g. "Nor Aisyah binti Omar (Mother)") — never the raw option id.
+        $chosen = $options->firstWhere('id', $collectedBy);
+        $collectedByLabel = $chosen
+            ? trim($chosen['name'].($chosen['relationship'] ? ' ('.__('relationship.'.$chosen['relationship']).')' : ''))
+            : null;
 
         $userId = $request->user()->id;
 
@@ -276,7 +284,7 @@ class AttendanceController extends Controller
         $attendance->checkout_note = $request->input('note');
         $attendance->checkout_photo_override = ! $hasPhoto;
         $attendance->checkout_override_reason = $hasPhoto ? null : $request->input('override_reason');
-        $attendance->collected_by = $collectorOverride ?: $collectedBy;
+        $attendance->collected_by = $collectorOverride ?: $collectedByLabel;
         $attendance->collector_override_reason = $collectorOverride;
         $attendance->save();
 
