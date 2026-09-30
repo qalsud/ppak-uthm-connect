@@ -187,7 +187,7 @@ class StudentContactController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'relationship' => ['nullable', 'string', 'max:40'],
+            'relationship' => ['nullable', Rule::in(Lists::keys('guardian_relationship'))],
             'phone' => ['required', 'string', 'max:40'],
             'priority' => ['nullable', 'integer', 'min:1', 'max:10'],
             'notes' => ['nullable', 'string', 'max:1000'],
@@ -202,7 +202,7 @@ class StudentContactController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'relationship' => ['nullable', 'string', 'max:40'],
+            'relationship' => ['nullable', Rule::in(Lists::keys('guardian_relationship'))],
             'phone' => ['nullable', 'string', 'max:40'],
             'ic_number' => ['nullable', 'string', 'max:30'],
             'is_active' => ['nullable', 'boolean'],

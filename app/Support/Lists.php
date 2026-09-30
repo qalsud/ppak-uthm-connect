@@ -50,6 +50,10 @@ class Lists
             'mother' => 'Mother',
             'father' => 'Father',
             'guardian' => 'Legal guardian',
+            'grandparent' => 'Grandparent',
+            'sibling' => 'Sibling',
+            'uncle' => 'Uncle',
+            'aunt' => 'Aunt',
             'other' => 'Other',
         ],
         'absence_type' => [

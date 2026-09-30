@@ -33,6 +33,50 @@ class Memo extends Model
         return $this->belongsTo(Centre::class);
     }
 
+    /**
+     * Memos a given user may see. The ONE place this is decided, so the badge
+     * count and the list can never disagree.
+     */
+    public function scopeVisibleTo($query, ?User $user)
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        if ($user->isTeacher()) {
+            $centres = $user->centreIds();
+
+            return $query
+                ->whereIn('audience', ['all', 'teachers', 'class'])
+                ->when($centres !== null, fn ($q) => $q->where(fn ($w) => $w
+                    ->whereIn('centre_id', $centres)
+                    ->orWhereNull('centre_id')))
+                ->where(function ($q) use ($user) {
+                    $q->whereIn('audience', ['all', 'teachers']);
+
+                    if ($user->class) {
+                        $q->orWhere(fn ($w) => $w->where('audience', 'class')->where('class', $user->class));
+                    }
+                });
+        }
+
+        // Parent: their children's classes, within their centres.
+        $classes = $user->students()->pluck('class')->unique()->filter()->all();
+        $centres = $user->students()->pluck('centre_id')->unique()->filter()->all();
+
+        return $query
+            ->where(fn ($q) => $q
+                ->whereIn('audience', ['all', 'parents'])
+                ->orWhere(fn ($w) => $w->where('audience', 'class')->whereIn('class', $classes)))
+            ->when($centres, fn ($q) => $q->where(fn ($w) => $w
+                ->whereIn('centre_id', $centres)
+                ->orWhereNull('centre_id')));
+    }
+
     /** Limit to the admin's currently-selected centre (null = all centres). */
     public function scopeForActiveCentre($query)
     {

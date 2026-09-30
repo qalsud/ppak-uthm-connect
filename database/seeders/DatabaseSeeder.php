@@ -205,7 +205,7 @@ class DatabaseSeeder extends Seeder
             EmergencyContact::create([
                 'student_id' => $student->id,
                 'name' => $family.' bin Hassan',
-                'relationship' => 'Grandparent',
+                'relationship' => 'grandparent',
                 'phone' => '01'.random_int(10000000, 99999999),
                 'priority' => 1,
             ]);
@@ -215,7 +215,7 @@ class DatabaseSeeder extends Seeder
                 EmergencyContact::create([
                     'student_id' => $student->id,
                     'name' => 'Puan Selvi a/p Raman',
-                    'relationship' => 'Neighbour',
+                    'relationship' => 'other',
                     'phone' => '01'.random_int(10000000, 99999999),
                     'priority' => 2,
                 ]);
@@ -223,7 +223,7 @@ class DatabaseSeeder extends Seeder
                 AuthorisedCollector::create([
                     'student_id' => $student->id,
                     'name' => 'Abang '.$family,
-                    'relationship' => 'Uncle',
+                    'relationship' => 'uncle',
                     'phone' => '01'.random_int(10000000, 99999999),
                     'ic_number' => '90'.random_int(100000, 999999).'01',
                     'is_active' => true,

@@ -489,10 +489,24 @@ export default function ChildContactsManager({
                                 </div>
                                 <div className="space-y-1">
                                     <Label>{t('relationship')}</Label>
-                                    <Input
-                                        value={collectorForm.data.relationship}
-                                        onChange={(e) => collectorForm.setData('relationship', e.target.value)}
-                                    />
+                                    <Select
+                                        value={collectorForm.data.relationship || 'none'}
+                                        onValueChange={(v) =>
+                                            collectorForm.setData('relationship', v === 'none' ? '' : v)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="—" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">—</SelectItem>
+                                            {useList('guardian_relationship').map((r) => (
+                                                <SelectItem key={r.value} value={r.value}>
+                                                    {r.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="space-y-1">
                                     <Label>{t('phone')}</Label>

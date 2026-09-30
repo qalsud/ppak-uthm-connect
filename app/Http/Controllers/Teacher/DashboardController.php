@@ -65,7 +65,7 @@ class DashboardController extends Controller
             'assignedClass' => $assigned,
             'activityCount' => $todayActivities->count(),
             'updateCount' => $todayUpdates->count(),
-            'memoCount' => Memo::count(),
+            'memoCount' => Memo::query()->visibleTo(auth()->user())->count(),
             'recentActivities' => $recentActivities,
         ]);
     }

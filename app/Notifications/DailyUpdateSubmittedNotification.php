@@ -25,6 +25,8 @@ class DailyUpdateSubmittedNotification extends BaseNotification
 
     public function url(): ?string
     {
-        return route('teacher.daily-updates.index', ['class' => $this->student->class]);
+        // No `class` param: a class key exists at every centre, so passing a
+        // bare class could land the teacher on the wrong centre's register.
+        return route('teacher.daily-updates.index');
     }
 }

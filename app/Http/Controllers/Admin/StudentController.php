@@ -10,6 +10,7 @@ use App\Models\Centre;
 use App\Models\DailyActivity;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -360,6 +361,11 @@ class StudentController extends Controller
         return $rows;
     }
 
+    /**
+     * Map a CSV class value onto a real list key. Matches the key, the label,
+     * or a label containing the value (so "5 Tahun" and "5tahun" both work) —
+     * but against the LIVE list, so an admin-added class imports correctly.
+     */
     private function normaliseClass(?string $value): ?string
     {
         $value = strtolower(trim((string) $value));
@@ -368,10 +374,22 @@ class StudentController extends Controller
             return null;
         }
 
-        return match (true) {
-            str_contains($value, '5') => '5tahun',
-            str_contains($value, '6') => '6bintang',
-            default => null,
-        };
+        $options = Lists::options('class');
+
+        // Exact key or exact label.
+        foreach ($options as $key => $label) {
+            if ($value === strtolower($key) || $value === strtolower($label)) {
+                return $key;
+            }
+        }
+
+        // Partial label match (e.g. "5 tahun" -> "5 Tahun").
+        foreach ($options as $key => $label) {
+            if (str_contains(strtolower($label), $value) || str_contains($value, strtolower($label))) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 }

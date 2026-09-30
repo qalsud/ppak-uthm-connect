@@ -35,7 +35,7 @@ test('an admin can manage guardians, emergency contacts and collectors', functio
     // Emergency contact
     $this->actingAs($admin)->post(route('admin.students.contacts.store', $student), [
         'name' => 'Ahmad bin Ali',
-        'relationship' => 'Grandparent',
+        'relationship' => 'grandparent',
         'phone' => '0198887777',
         'priority' => 2,
     ])->assertRedirect()->assertSessionHasNoErrors();
@@ -45,7 +45,7 @@ test('an admin can manage guardians, emergency contacts and collectors', functio
 
     $this->actingAs($admin)->post(route('admin.students.collectors.store', $student), [
         'name' => 'Siti binti Rahim',
-        'relationship' => 'Aunt',
+        'relationship' => 'aunt',
         'phone' => '0176665555',
         'photo' => UploadedFile::fake()->image('aunt.jpg', 300, 300),
     ])->assertRedirect()->assertSessionHasNoErrors();
@@ -205,7 +205,7 @@ test('the register lists authorised collectors for each child', function () {
     AuthorisedCollector::create([
         'student_id' => $student->id,
         'name' => 'Siti binti Rahim',
-        'relationship' => 'Aunt',
+        'relationship' => 'aunt',
         'is_active' => true,
     ]);
 

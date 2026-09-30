@@ -398,10 +398,8 @@ class Student extends Model
 
     public static function classLabelStatic(string $class): string
     {
-        return match ($class) {
-            '5tahun' => '5 Tahun',
-            '6bintang' => '6 Bintang',
-            default => strtoupper($class),
-        };
+        // Reads the admin-editable list, so a rename shows up in backend-rendered
+        // labels (PDF receipts, Stripe descriptions, memo audiences) too.
+        return Lists::label('class', $class) ?? strtoupper($class);
     }
 }

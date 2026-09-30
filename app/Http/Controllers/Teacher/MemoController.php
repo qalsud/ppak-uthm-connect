@@ -12,24 +12,11 @@ class MemoController extends Controller
 {
     public function index(Request $request): Response
     {
-        $user = $request->user();
-
         $memos = Memo::query()
             ->with('author:id,name')
-            ->whereIn('audience', ['all', 'teachers', 'class'])
-            // A class memo is only for that class — and a class key exists at
-            // every centre, so the memo's centre must match too.
-            ->when($user->centreIds() !== null, fn ($q) => $q->where(fn ($w) => $w
-                ->whereIn('centre_id', $user->centreIds())
-                ->orWhereNull('centre_id')
-            ))
-            ->where(function ($q) use ($user) {
-                $q->whereIn('audience', ['all', 'teachers']);
-
-                if ($user->class) {
-                    $q->orWhere(fn ($w) => $w->where('audience', 'class')->where('class', $user->class));
-                }
-            })
+            // Visibility lives in one place (Memo::visibleTo) so the memo list
+            // and the dashboard badge can never disagree.
+            ->visibleTo($request->user())
             ->orderBy('created_at', 'desc')
             ->get();
 
