@@ -69,7 +69,7 @@ class ChildController extends Controller
                 ->get()
                 ->map(fn (GrowthRecord $r) => $r->summary())
                 ->values(),
-            'fields' => DailyActivity::FIELDS,
+            'fields' => DailyActivity::fields(),
             'profile' => $student->profile(),
         ]);
     }

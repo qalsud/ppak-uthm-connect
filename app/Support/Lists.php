@@ -90,6 +90,44 @@ class Lists
             'Average' => 'Average',
             'Poor' => 'Poor',
         ],
+        'progress_permata' => [
+            'Drawing' => 'Drawing',
+            'Coloring' => 'Coloring',
+            'Crafting' => 'Crafting',
+            'Reading' => 'Reading',
+            'Writing' => 'Writing',
+        ],
+        'progress_free' => [
+            'Learning' => 'Learning',
+            'Playing' => 'Playing',
+            'Reading' => 'Reading',
+            'Drawing' => 'Drawing',
+            'Other' => 'Other',
+        ],
+        'progress_development' => [
+            'Creativity Innovation' => 'Creativity Innovation',
+            'Social Skills' => 'Social Skills',
+            'Motor Skills' => 'Motor Skills',
+            'Language Skills' => 'Language Skills',
+            'Cognitive Skills' => 'Cognitive Skills',
+        ],
+        // The 12 PERMATA/KSPK checkboxes. Their keys map 1:1 to real columns on
+        // `daily_activities`, so an admin may rename/reorder/hide them but not
+        // invent new ones (a new field needs a migration) — see FIXED_KEYS.
+        'daily_activity_field' => [
+            'afternoon_sleep' => 'Afternoon Sleep/Nap',
+            'medication' => 'Medication Given',
+            'shower' => 'Take Shower',
+            'brush_teeth' => 'Brush Teeth',
+            'drink_milk' => 'Drink Milk',
+            'breakfast' => 'Breakfast',
+            'lunch' => 'Lunch',
+            'afternoon_snack' => 'Afternoon Snack',
+            'eat_fruits' => 'Eat Fruits',
+            'tantrum_crying' => 'Tantrum/Crying',
+            'health_issues' => 'Health Issues',
+            'injuries' => 'Injuries',
+        ],
     ];
 
     /** Groups the admin can edit on the Lists screen. */
@@ -108,7 +146,18 @@ class Lists
         'sleep_status',
         'bath_status',
         'progress_grade',
+        'progress_permata',
+        'progress_free',
+        'progress_development',
+        'daily_activity_field',
     ];
+
+    /**
+     * Groups whose keys map to real database columns. Their options can be
+     * renamed/reordered/deactivated, but not added — a new key would have no
+     * column to store it.
+     */
+    public const FIXED_KEYS = ['daily_activity_field'];
 
     /** All options for a group, as [key => label]. */
     public static function options(string $group): array

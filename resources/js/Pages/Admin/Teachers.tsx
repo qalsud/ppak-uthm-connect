@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
+import { AlertTriangle, Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -11,6 +11,7 @@ import ListToolbar from '@/Components/list-toolbar';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { FormField, FormGrid } from '@/Components/ui/form-field';
@@ -60,12 +61,18 @@ export default function Teachers({
 }: {
     teachers: Paginator<Teacher>;
     counts: Record<string, number>;
-    filters: { status: string; search: string; class: string };
+    filters: { status: string; search: string; class: string; centre: string };
     classes: string[];
     centres: Array<{ id: number; name: string; short_name: string | null }>;
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
+
+    const centreName = (id: number) => {
+        const centre = centres.find((c) => c.id === id);
+
+        return centre?.short_name ?? centre?.name ?? '';
+    };
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Teacher | null>(null);
     const [search, setSearch] = useState(filters.search);
@@ -91,7 +98,7 @@ export default function Teachers({
 
     useEffect(() => {
         setSelected([]);
-    }, [teachers.current_page, filters.search, filters.status]);
+    }, [teachers.current_page, filters.search, filters.status, filters.centre]);
 
     const toggle = (id: number) =>
         setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -112,12 +119,13 @@ export default function Teachers({
             },
         );
 
-    const visit = (params: Partial<{ search: string; status: string }>) =>
+    const visit = (params: Partial<{ search: string; status: string; centre: string }>) =>
         router.get(
             '/admin/teachers',
             {
                 search: params.search ?? search,
                 status: params.status ?? filters.status,
+                centre: params.centre ?? filters.centre,
             },
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -210,19 +218,39 @@ export default function Teachers({
                     onSearch={setSearch}
                     placeholder={t('search_teachers')}
                     filters={
-                        <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
-                            <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t('all')} ({counts.all ?? 0})</SelectItem>
-                                {STATUSES.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                        {t(s)} ({counts[s] ?? 0})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
+                                <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('all')} ({counts.all ?? 0})</SelectItem>
+                                    {STATUSES.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {t(s)} ({counts[s] ?? 0})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {centres.length > 0 && (
+                                <Select
+                                    value={filters.centre || 'all'}
+                                    onValueChange={(v) => visit({ centre: v === 'all' ? '' : v })}
+                                >
+                                    <SelectTrigger className="h-8 border-0 px-0 text-muted-foreground shadow-none focus:ring-0">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t('all_centres')}</SelectItem>
+                                        {centres.map((c) => (
+                                            <SelectItem key={c.id} value={String(c.id)}>
+                                                {c.short_name ?? c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </div>
                     }
                 />
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground">
@@ -278,6 +306,20 @@ export default function Teachers({
                                             <p className="text-xs text-muted-foreground">
                                                 {teacher.class ? classLabel(teacher.class) : t('all_classes')}
                                             </p>
+                                            <p className="mt-0.5 text-xs">
+                                                {(teacher.centre_ids ?? []).length > 0 ? (
+                                                    <span className="text-muted-foreground">
+                                                        {(teacher.centre_ids ?? [])
+                                                            .map((id) => centreName(id))
+                                                            .join(' · ')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 font-medium text-amber-600">
+                                                        <AlertTriangle className="size-3" />
+                                                        {t('unrestricted_all_centres')}
+                                                    </span>
+                                                )}
+                                            </p>
                                             <div className="mt-1.5">
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
                                             </div>
@@ -317,6 +359,7 @@ export default function Teachers({
                                         <TableHead>{t('ic')}</TableHead>
                                         <TableHead>{t('email')}</TableHead>
                                         <TableHead>{t('class')}</TableHead>
+                                        <TableHead>{t('centre')}</TableHead>
                                         <TableHead>{t('phone')}</TableHead>
                                         <TableHead>{t('status')}</TableHead>
                                         <TableHead className="text-right">{t('actions')}</TableHead>
@@ -341,6 +384,25 @@ export default function Teachers({
                                                     classLabel(teacher.class)
                                                 ) : (
                                                     <span className="text-muted-foreground">{t('all_classes')}</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {(teacher.centre_ids ?? []).length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {(teacher.centre_ids ?? []).map((id) => (
+                                                            <Badge key={id} variant="secondary" className="font-normal">
+                                                                {centreName(id)}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span
+                                                        className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+                                                        title={t('teacher_centres_hint')}
+                                                    >
+                                                        <AlertTriangle className="size-3.5" />
+                                                        {t('unrestricted_all_centres')}
+                                                    </span>
                                                 )}
                                             </TableCell>
                                             <TableCell>{teacher.phone ?? '—'}</TableCell>
@@ -475,6 +537,12 @@ export default function Teachers({
                                     );
                                 })}
                             </div>
+                            {form.data.centre_ids.length === 0 && (
+                                <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+                                    <AlertTriangle className="size-3.5" />
+                                    {t('unrestricted_warning')}
+                                </p>
+                            )}
                         </FormField>
                     )}
 

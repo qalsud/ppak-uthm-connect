@@ -47,6 +47,63 @@ test('the admin centre switcher scopes the student list', function () {
         ->assertInertia(fn (Assert $page) => $page->has('students.data', 2));
 });
 
+test('an explicit centre filter overrides the active centre on the student list', function () {
+    $khalifah = Student::factory()->create(['class' => '5tahun', 'centre_id' => $this->khalifah->id]);
+    Student::factory()->create(['class' => '5tahun', 'centre_id' => $this->taska->id]);
+
+    // Active centre = Taska.
+    $this->actingAs($this->admin)
+        ->post(route('admin.centres.switch', ['centre_id' => $this->taska->id]));
+
+    // Filtering by Khalifah overrides it, rather than intersecting to nothing.
+    $this->actingAs($this->admin)
+        ->get(route('admin.students.index', ['centre' => $this->khalifah->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students.data', 1)
+            ->where('students.data.0.id', $khalifah->id)
+        );
+});
+
+test('the teacher list can be filtered by centre', function () {
+    $khalifahTeacher = User::factory()->role(UserRole::Teacher)->create();
+    $khalifahTeacher->centres()->attach($this->khalifah->id);
+
+    $taskaTeacher = User::factory()->role(UserRole::Teacher)->create();
+    $taskaTeacher->centres()->attach($this->taska->id);
+
+    // No centre = unrestricted, so it must not appear under either filter.
+    User::factory()->role(UserRole::Teacher)->create();
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.teachers.index', ['centre' => $this->khalifah->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('teachers.data', 1)
+            ->where('teachers.data.0.id', $khalifahTeacher->id)
+        );
+});
+
+test('the class list is shared across centres by design', function () {
+    // G-i11 accepted decision: class keys are shared, and isolation comes from
+    // centre_id (not a per-centre class list). Both centres may use "5tahun".
+    foreach ([$this->khalifah, $this->taska] as $centre) {
+        $this->actingAs($this->admin)->post(route('admin.students.store'), [
+            'name' => 'Child at '.$centre->name,
+            'class' => '5tahun',
+            'centre_id' => $centre->id,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+    }
+
+    expect(Student::where('class', '5tahun')->count())->toBe(2);
+
+    // Filtering by one centre still shows only that centre's child.
+    $this->actingAs($this->admin)
+        ->get(route('admin.students.index', ['centre' => $this->taska->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students.data', 1)
+            ->where('students.data.0.centre_id', $this->taska->id)
+        );
+});
+
 test('the switcher is shared with the frontend for admins only', function () {
     $this->actingAs($this->admin)->get(route('admin.students.index'))
         ->assertInertia(fn (Assert $page) => $page

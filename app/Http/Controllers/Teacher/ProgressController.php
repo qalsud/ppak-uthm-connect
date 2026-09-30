@@ -78,10 +78,6 @@ class ProgressController extends Controller
             'records' => $records,
             'summary' => $summary,
             'assignedClass' => $assigned,
-            'permata' => ProgressRecord::PERMATA,
-            'free' => ProgressRecord::FREE,
-            'development' => ProgressRecord::DEVELOPMENT,
-            'grades' => ProgressRecord::GRADES,
             'filters' => [
                 'student' => $studentId ? (string) $studentId : '',
                 'class' => $class ?? '',
@@ -97,9 +93,9 @@ class ProgressController extends Controller
             'sub_theme' => 'nullable|string|max:255',
             'activity_done' => ['required', Rule::in(Lists::keys('progress_grade'))],
             'child_proficiency' => ['required', Rule::in(Lists::keys('progress_grade'))],
-            'permata_activity' => ['required', Rule::in(ProgressRecord::PERMATA)],
-            'free_activity' => ['required', Rule::in(ProgressRecord::FREE)],
-            'development_proficiency' => ['required', Rule::in(ProgressRecord::DEVELOPMENT)],
+            'permata_activity' => ['required', Rule::in(Lists::keys('progress_permata'))],
+            'free_activity' => ['required', Rule::in(Lists::keys('progress_free'))],
+            'development_proficiency' => ['required', Rule::in(Lists::keys('progress_development'))],
             'notes' => 'nullable|string|max:1000',
             'photo' => [
                 'nullable',

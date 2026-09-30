@@ -5,6 +5,7 @@ import PhotoThumb from '@/Components/photo-thumb';
 import RatingChip from '@/Components/rating-chip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
+import { listLabel, useLists } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PhotoInfo } from '@/lib/photo';
 import AppShell from '@/Layouts/app-shell';
@@ -53,6 +54,7 @@ export default function ParentActivities({
     fields: FieldMap;
 }) {
     const { t } = useI18n();
+    const lists = useLists();
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
@@ -142,20 +144,20 @@ export default function ParentActivities({
                                             <RatingChip value={child.latest_progress.activity_done} />
                                             <RatingChip value={child.latest_progress.child_proficiency} />
                                             <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                                {child.latest_progress.development_proficiency}
+                                                {listLabel(lists, 'progress_development', child.latest_progress.development_proficiency)}
                                             </span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs">
                                                 <p className="text-muted-foreground">{t('permata_activity')}</p>
                                                 <p className="font-medium">
-                                                    {child.latest_progress.permata_activity}
+                                                    {listLabel(lists, 'progress_permata', child.latest_progress.permata_activity)}
                                                 </p>
                                             </div>
                                             <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs">
                                                 <p className="text-muted-foreground">{t('free_activity')}</p>
                                                 <p className="font-medium">
-                                                    {child.latest_progress.free_activity}
+                                                    {listLabel(lists, 'progress_free', child.latest_progress.free_activity)}
                                                 </p>
                                             </div>
                                         </div>

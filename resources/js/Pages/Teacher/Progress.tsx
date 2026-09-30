@@ -19,7 +19,12 @@ import {
 import { Textarea } from '@/Components/ui/textarea';
 import { formatDate, localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
-import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import {
+    listLabel,
+    useClassLabel as useClassLabelHook,
+    useList,
+    useLists,
+} from '@/lib/lists';
 import type { PhotoInfo } from '@/lib/photo';
 import { actionRoute, actionUrl, shellFor } from '@/lib/shell';
 import AppShell from '@/Layouts/app-shell';
@@ -70,10 +75,6 @@ export default function Progress({
     records,
     summary,
     assignedClass,
-    permata,
-    free,
-    development,
-    grades,
     filters,
     shellProp,
 }: {
@@ -82,15 +83,19 @@ export default function Progress({
     records: Record[];
     summary: Summary | null;
     assignedClass?: string | null;
-    permata: string[];
-    free: string[];
-    development: string[];
-    grades: string[];
     filters: { student: string; class: string };
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
+    const lists = useLists();
+    const permataOptions = useList('progress_permata');
+    const freeOptions = useList('progress_free');
+    const developmentOptions = useList('progress_development');
+    const gradeOptions = useList('progress_grade');
+    const classOptions = useList('class');
     const shell = shellFor(shellProp);
+
+    const progressLabel = (group: string, value?: string | null) => listLabel(lists, group, value);
 
     const form = useForm({ ...emptyForm, student_id: filters.student || '' });
 
@@ -123,7 +128,7 @@ export default function Progress({
     const selectField = (opts: {
         label: string;
         name: keyof typeof form.data;
-        options: string[];
+        options: { value: string; label: string }[];
         hint?: string;
     }) => (
         <div className="space-y-1.5">
@@ -134,8 +139,8 @@ export default function Progress({
                 </SelectTrigger>
                 <SelectContent>
                     {opts.options.map((o) => (
-                        <SelectItem key={o} value={o}>
-                            {o}
+                        <SelectItem key={o.value} value={o.value}>
+                            {o.label}
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -230,12 +235,12 @@ export default function Progress({
                             {selectField({
                                 label: t('permata_activity'),
                                 name: 'permata_activity',
-                                options: permata,
+                                options: permataOptions,
                             })}
                             {selectField({
                                 label: t('free_activity'),
                                 name: 'free_activity',
-                                options: free,
+                                options: freeOptions,
                             })}
                         </div>
                     </div>
@@ -258,19 +263,19 @@ export default function Progress({
                             {selectField({
                                 label: t('activity_performance'),
                                 name: 'activity_done',
-                                options: grades,
+                                options: gradeOptions,
                                 hint: t('activity_performance_hint'),
                             })}
                             {selectField({
                                 label: t('skill_mastery'),
                                 name: 'child_proficiency',
-                                options: grades,
+                                options: gradeOptions,
                                 hint: t('skill_mastery_hint'),
                             })}
                             {selectField({
                                 label: t('development_area'),
                                 name: 'development_proficiency',
-                                options: development,
+                                options: developmentOptions,
                                 hint: t('development_area_hint'),
                             })}
                         </div>
@@ -341,8 +346,11 @@ export default function Progress({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="__all">{t('all_classes')}</SelectItem>
-                                <SelectItem value="5tahun">5 Tahun</SelectItem>
-                                <SelectItem value="6bintang">6 Bintang</SelectItem>
+                                {classOptions.map((c) => (
+                                    <SelectItem key={c.value} value={c.value}>
+                                        {c.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     )}
@@ -377,7 +385,7 @@ export default function Progress({
                                     <RatingChip value={summary.latest.activity_performance} />
                                     <RatingChip value={summary.latest.skill_mastery} />
                                     <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                        {summary.latest.development_area}
+                                        {progressLabel('progress_development', summary.latest.development_area)}
                                     </span>
                                 </div>
                             ) : (
@@ -421,10 +429,11 @@ export default function Progress({
                                         <RatingChip value={r.activity_done} />
                                         <RatingChip value={r.child_proficiency} />
                                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                            {r.development_proficiency}
+                                            {progressLabel('progress_development', r.development_proficiency)}
                                         </span>
                                         <span className="text-[11px] text-muted-foreground">
-                                            PERMATA: {r.permata_activity} · {t('free_activity')}: {r.free_activity}
+                                            PERMATA: {progressLabel('progress_permata', r.permata_activity)} ·{' '}
+                                            {t('free_activity')}: {progressLabel('progress_free', r.free_activity)}
                                         </span>
                                     </div>
 

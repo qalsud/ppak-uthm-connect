@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
+use App\Models\DailyActivity;
 use App\Models\Guardian;
 use App\Models\ListOption;
 use App\Models\MedicationRequest;
 use App\Models\Memo;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -61,6 +64,7 @@ class ListController extends Controller
                 'group' => $group,
                 'label' => $group,
                 'customised' => $customised,
+                'fixed' => in_array($group, Lists::FIXED_KEYS, true),
                 'options' => $options,
             ];
         })->values();
@@ -79,6 +83,14 @@ class ListController extends Controller
             'label' => ['required', 'string', 'max:120'],
             'sort' => ['nullable', 'integer', 'min:0'],
         ]);
+
+        // Some lists map to real columns — new keys can't be stored, so reject.
+        if (in_array($data['group'], Lists::FIXED_KEYS, true)
+            && ! array_key_exists($data['key'], Lists::DEFAULTS[$data['group']] ?? [])) {
+            throw ValidationException::withMessages([
+                'key' => __('approval.list_fixed_keys'),
+            ]);
+        }
 
         $this->seedDefaults($data['group']);
 
@@ -173,6 +185,12 @@ class ListController extends Controller
             'absence_status' => AbsenceRequest::query()->where('status', $key)->exists(),
             'medication_status' => MedicationRequest::query()->where('status', $key)->exists(),
             'memo_audience' => Memo::query()->where('audience', $key)->exists(),
+            'progress_permata' => ProgressRecord::query()->where('permata_activity', $key)->exists(),
+            'progress_free' => ProgressRecord::query()->where('free_activity', $key)->exists(),
+            'progress_development' => ProgressRecord::query()->where('development_proficiency', $key)->exists(),
+            // Activity fields are real columns, so any used column is "in use".
+            'daily_activity_field' => array_key_exists($key, DailyActivity::FIELDS)
+                && DailyActivity::query()->where($key, 'yes')->exists(),
             default => false,
         };
     }

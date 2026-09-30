@@ -3,10 +3,17 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
+use App\Models\AuthorisedCollector;
+use App\Models\DailyActivity;
+use App\Models\DailyUpdate;
+use App\Models\EmergencyContact;
+use App\Models\Guardian;
 use App\Models\ListOption;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\Lists;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -177,4 +184,111 @@ test('an invalid group is rejected', function () {
         'key' => 'x',
         'label' => 'X',
     ])->assertSessionHasErrors('group');
+});
+
+test('progress options are admin-editable and validation follows', function () {
+    $admin = listAdmin();
+    $teacher = User::factory()->role(UserRole::Teacher)->create();
+    $student = Student::factory()->create();
+
+    // Rename a PERMATA option (the stored key stays the same).
+    $this->actingAs($admin)->post(route('admin.lists.store'), [
+        'group' => 'progress_permata',
+        'key' => 'Drawing',
+        'label' => 'Melukis',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(Lists::label('progress_permata', 'Drawing'))->toBe('Melukis');
+
+    $payload = [
+        'student_id' => $student->id,
+        'date' => today()->toDateString(),
+        'activity_done' => 'Good',
+        'child_proficiency' => 'Good',
+        'permata_activity' => 'Drawing',
+        'free_activity' => 'Learning',
+        'development_proficiency' => 'Social Skills',
+    ];
+
+    $this->actingAs($teacher)->post(route('teacher.progress.store'), $payload)
+        ->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(ProgressRecord::first()->permata_activity)->toBe('Drawing');
+
+    // A value outside the live list is rejected.
+    $this->actingAs($teacher)->post(route('teacher.progress.store'), [
+        ...$payload,
+        'development_proficiency' => 'Singing',
+    ])->assertSessionHasErrors('development_proficiency');
+});
+
+test('daily activity fields can be renamed but not invented', function () {
+    $admin = listAdmin();
+
+    $this->actingAs($admin)->post(route('admin.lists.store'), [
+        'group' => 'daily_activity_field',
+        'key' => 'lunch',
+        'label' => 'Makan Tengah Hari',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(DailyActivity::fields()['lunch'])->toBe('Makan Tengah Hari');
+
+    // A brand-new key has no column to store it → rejected.
+    $this->actingAs($admin)->post(route('admin.lists.store'), [
+        'group' => 'daily_activity_field',
+        'key' => 'nap_time',
+        'label' => 'Nap Time',
+    ])->assertSessionHasErrors('key');
+});
+
+test('seeded demo data only uses live list values', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    foreach (Student::all() as $student) {
+        expect(Lists::keys('class'))->toContain($student->class)
+            ->and(Lists::keys('gender'))->toContain($student->gender)
+            ->and(Lists::keys('nationality'))->toContain($student->nationality);
+    }
+
+    foreach (Guardian::all() as $guardian) {
+        expect(Lists::keys('guardian_relationship'))->toContain($guardian->relationship);
+    }
+
+    foreach (EmergencyContact::all() as $contact) {
+        expect(Lists::keys('guardian_relationship'))->toContain($contact->relationship);
+    }
+
+    foreach (AuthorisedCollector::all() as $collector) {
+        expect(Lists::keys('guardian_relationship'))->toContain($collector->relationship);
+    }
+
+    foreach (DailyUpdate::all() as $update) {
+        expect(Lists::keys('sleep_status'))->toContain($update->sleep_status)
+            ->and(Lists::keys('bath_status'))->toContain($update->bath_status);
+    }
+
+    foreach (ProgressRecord::all() as $progress) {
+        expect(Lists::keys('progress_grade'))->toContain($progress->activity_done)
+            ->and(Lists::keys('progress_grade'))->toContain($progress->child_proficiency)
+            ->and(Lists::keys('progress_permata'))->toContain($progress->permata_activity)
+            ->and(Lists::keys('progress_free'))->toContain($progress->free_activity)
+            ->and(Lists::keys('progress_development'))->toContain($progress->development_proficiency);
+    }
+});
+
+test('deactivating a daily activity field removes it from the form', function () {
+    $admin = listAdmin();
+
+    $this->actingAs($admin)->post(route('admin.lists.store'), [
+        'group' => 'daily_activity_field',
+        'key' => 'lunch',
+        'label' => 'Lunch',
+    ])->assertRedirect();
+
+    $option = ListOption::where('group', 'daily_activity_field')->where('key', 'lunch')->firstOrFail();
+
+    $this->actingAs($admin)->delete(route('admin.lists.destroy', $option))->assertRedirect();
+
+    expect(DailyActivity::fields())->not->toHaveKey('lunch')
+        ->and(DailyActivity::fields())->toHaveKey('breakfast');
 });

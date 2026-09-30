@@ -45,7 +45,7 @@ class ActivityController extends Controller
 
         return Inertia::render('Parent/Activities', [
             'children' => $children,
-            'fields' => DailyActivity::FIELDS,
+            'fields' => DailyActivity::fields(),
         ]);
     }
 }

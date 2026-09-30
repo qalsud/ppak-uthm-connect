@@ -111,7 +111,7 @@ otherwise `php artisan serve` → http://localhost:8000.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 133 tests / 664 assertions
+php artisan test      # Pest - 208 tests / 1439 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -182,8 +182,9 @@ lang/en.json · lang/ms.json        bilingual keys
 ## Continuing this work (handoff)
 
 **Where we left off.** All work is committed and pushed to `main`
-(`git log -1` for the latest commit). **133 tests / 664 assertions** pass
-(`php artisan test`), and the frontend builds clean (`npm run build`).
+(`git log -1` for the latest commit). **208 tests / 1439 assertions** pass
+(`php artisan test`), and the frontend builds clean (`npm run build`). The admin **issue
+register is clear** — the only open item (`G-i5`, per-centre fee rates) lands with **Phase B**.
 
 **Live demo:** stopped/finished — the Cloudflare quick tunnel URL is no longer live. To bring it back,
 follow [`DEPLOY.md`](DEPLOY.md) (the URL changes on each restart, so regenerate the demo PDF too).

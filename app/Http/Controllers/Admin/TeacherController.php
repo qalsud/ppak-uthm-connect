@@ -22,6 +22,8 @@ class TeacherController extends Controller
         $status = $request->query('status');
         $search = trim((string) $request->query('search', ''));
         $class = $request->query('class');
+        $centre = $request->query('centre');
+        $centreId = is_numeric($centre) ? (int) $centre : null;
 
         $teachers = User::query()
             ->where('role', UserRole::Teacher)
@@ -30,6 +32,7 @@ class TeacherController extends Controller
                 fn ($q) => $q->where('status', $status)
             )
             ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
+            ->when($centreId, fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
@@ -40,6 +43,7 @@ class TeacherController extends Controller
 
         $counts = User::query()
             ->where('role', UserRole::Teacher)
+            ->when($centreId, fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)))
             ->get(['status'])
             ->groupBy('status')
             ->map->count();
@@ -53,10 +57,10 @@ class TeacherController extends Controller
         return Inertia::render('Admin/Teachers', [
             'teachers' => $teachers,
             'counts' => [
-                'all' => User::query()->where('role', UserRole::Teacher)->count(),
+                'all' => (int) $counts->sum(),
                 ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
             ],
-            'filters' => ['status' => $status ?? '', 'search' => $search, 'class' => $class ?? ''],
+            'filters' => ['status' => $status ?? '', 'search' => $search, 'class' => $class ?? '', 'centre' => $centre ?? ''],
             'classes' => Student::classKeys(),
             'centres' => Centre::active()->orderBy('sort')->get(['id', 'name', 'short_name']),
         ]);

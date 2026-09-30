@@ -83,10 +83,11 @@ export default function Students({
     parents: Parent[];
     centres: Array<{ id: number; name: string; short_name: string | null }>;
     counts: Record<string, number>;
-    filters: { search: string; class: string; status: string };
+    filters: { search: string; class: string; status: string; centre: string };
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
+    const classOptions = useList('class');
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Student | null>(null);
     const [search, setSearch] = useState(filters.search);
@@ -128,7 +129,7 @@ export default function Students({
 
     useEffect(() => {
         setSelected([]);
-    }, [students.current_page, filters.search, filters.class, filters.status]);
+    }, [students.current_page, filters.search, filters.class, filters.status, filters.centre]);
 
     const toggle = (id: number) =>
         setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -149,13 +150,14 @@ export default function Students({
             },
         );
 
-    const visit = (params: Partial<{ search: string; class: string; status: string }>) =>
+    const visit = (params: Partial<{ search: string; class: string; status: string; centre: string }>) =>
         router.get(
             '/admin/students',
             {
                 search: params.search ?? search,
                 class: params.class ?? filters.class,
                 status: params.status ?? filters.status,
+                centre: params.centre ?? filters.centre,
             },
             { preserveState: true, preserveScroll: true, replace: true },
         );
@@ -255,8 +257,7 @@ export default function Students({
 
     const classFilters = [
         { value: '', label: t('all') },
-        { value: '5tahun', label: '5 Tahun' },
-        { value: '6bintang', label: '6 Bintang' },
+        ...classOptions.map((c) => ({ value: c.value, label: c.label })),
     ];
 
     return (
@@ -318,21 +319,41 @@ export default function Students({
                     onSearch={setSearch}
                     placeholder={t('search_students')}
                     filters={
-                        <div className="flex rounded-lg p-0.5">
-                            {classFilters.map((f) => (
-                                <button
-                                    key={f.value}
-                                    type="button"
-                                    onClick={() => visit({ class: f.value })}
-                                    className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                                        filters.class === f.value
-                                            ? 'bg-brand-navy text-white'
-                                            : 'text-muted-foreground hover:bg-muted'
-                                    }`}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {centres.length > 0 && (
+                                <Select
+                                    value={filters.centre || 'all'}
+                                    onValueChange={(v) => visit({ centre: v === 'all' ? '' : v })}
                                 >
-                                    {f.label}
-                                </button>
-                            ))}
+                                    <SelectTrigger className="h-7 w-auto gap-1 border-0 px-0 text-xs shadow-none focus:ring-0">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">{t('all_centres')}</SelectItem>
+                                        {centres.map((c) => (
+                                            <SelectItem key={c.id} value={String(c.id)}>
+                                                {c.short_name ?? c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                            <div className="flex rounded-lg p-0.5">
+                                {classFilters.map((f) => (
+                                    <button
+                                        key={f.value}
+                                        type="button"
+                                        onClick={() => visit({ class: f.value })}
+                                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                                            filters.class === f.value
+                                                ? 'bg-brand-navy text-white'
+                                                : 'text-muted-foreground hover:bg-muted'
+                                        }`}
+                                    >
+                                        {f.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     }
                 />

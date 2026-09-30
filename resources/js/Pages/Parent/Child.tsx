@@ -15,6 +15,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
 import { formatDate } from '@/lib/date';
+import { listLabel, useLists } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PhotoInfo } from '@/lib/photo';
 import type { PageProps } from '@/types';
@@ -105,6 +106,7 @@ type Page = PageProps<{
 
 export default function ParentChild() {
     const { t } = useI18n();
+    const lists = useLists();
     const { props } = usePage<Page>();
     const { child, updates, activities, progress, attendanceHistory, medications, growth, profile, fields } = props;
     const [paying, setPaying] = useState(false);
@@ -534,12 +536,12 @@ export default function ParentChild() {
                                         <RatingChip value={p.activity_done} />
                                         <RatingChip value={p.child_proficiency} />
                                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                            {p.development_proficiency}
+                                            {listLabel(lists, 'progress_development', p.development_proficiency)}
                                         </span>
                                     </div>
                                     <p className="mt-1.5 text-[11px] text-muted-foreground">
-                                        {t('permata_activity')}: {p.permata_activity} · {t('free_activity')}:{' '}
-                                        {p.free_activity}
+                                        {t('permata_activity')}: {listLabel(lists, 'progress_permata', p.permata_activity)} ·{' '}
+                                        {t('free_activity')}: {listLabel(lists, 'progress_free', p.free_activity)}
                                     </p>
                                     {p.notes && (
                                         <p className="mt-1 text-[11px] italic text-muted-foreground">

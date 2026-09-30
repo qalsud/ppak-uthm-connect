@@ -182,18 +182,25 @@ completes. Nothing here is a blocker; it is a debt list.
 
 | # | Issue | Impact | Where |
 |---|---|---|---|
-| G-i5 | `FeeSetting` is global — one rate for both centres | Per-centre fee rates impossible | `Admin/PaymentController`, `FeeSetting` |
-| G-i11 | `list_options` is still global — class lists are not per-centre | Both centres share one class list | `app/Support/Lists.php`, `ListController` |
-| G-i3 | Admin student/teacher lists have a centre **column** but no centre **filter** | Filtering is via the header switcher only | `Admin/Students.tsx`, `Admin/Teachers.tsx` |
-| G-i9 | Staff with **no centre assignment are unrestricted** | Correct behaviour, but worth surfacing as a UI warning | `User::centreIds()` |
-| C-i4 | Seeder still writes some literal values rather than list keys | A renamed key could mismatch freshly-seeded demo data | `database/seeders/DatabaseSeeder.php` |
-| C-i5 | Migration enum-ish defaults (`students.class` default `5tahun`, `progress_records` default `Select`) | A renamed value can leave rows outside any list | several migrations |
-| C-i6 | `ProgressRecord::PERMATA/FREE/DEVELOPMENT` are still code-only lists | Not admin-editable | `app/Models/ProgressRecord.php` |
-| C-i7 | `DailyActivity::FIELDS` (the 12 checkboxes) is not a manageable list | Needs a schema decision | `app/Models/DailyActivity.php` |
-| C-i8 | `PaymentController::MONTHS` is not a manageable list | Fine in practice; inconsistent with the new pattern | `Admin/PaymentController` |
-| G-i12 | Informational — dev DB needed a re-seed after adding centres | Not a bug | — |
+| G-i5 | `FeeSetting` is global — one rate for both centres | Per-centre fee rates impossible | `Admin/PaymentController`, `FeeSetting` — **closes in Phase B** |
+
+_Everything else that used to be here was cleared or accepted on 30 Sep 2026 (see below)._
+
+### Accepted by decision (documented, no code change)
+
+| # | Issue | Decision |
+|---|---|---|
+| **G-i11** | `list_options` is global — class lists are not per-centre | **Accepted.** A single shared class list is intentional. `centre_id` already makes `class` a centre-scoped key on every query (`Student::scopeVisibleTo`, the class filter, attendance/memo/message scoping), guarded by 16 isolation tests. Per-centre lists would add admin UI + validation complexity for a case that isn't needed — revisit only if one centre must offer a class the other must not. Guarded by the test *"the class list is shared across centres by design"*. |
+| **C-i5** | Migration enum-ish defaults (`students.class` default `5tahun`, `progress_records` default `Select`) | **Accepted (documented).** DB defaults only apply to inserts that omit the column, and both are always supplied by validation. A migration to strip them is more risk than value. |
+| **C-i8** | `PaymentController::MONTHS` is not a manageable list | **Accepted.** Months are fixed; a settings-backed month list adds no value. |
+| **G-i12** | Dev DB needed a re-seed after adding centres | Informational — not a bug. Struck from the register. |
 
 ### Cleared (kept for the record)
+
+**Register-clearing pass 2 (30 Sep 2026):** G-i3 (centre filter on the student/teacher lists),
+G-i9 (unrestricted-staff UI warning), C-i4 (seeder values verified against the live lists),
+C-i6 (progress PERMATA/free/development lists are now admin-editable),
+C-i7 (daily-activity fields are now admin-editable — rename/reorder/hide; keys stay fixed columns).
 
 **By Phase G:** G-i1 (class labels), G-i2 (CSV import), G-i4 (dashboard donut),
 G-i6 (memo badges), G-i7 (notification deep-link), G-i8 (report counts),
@@ -212,7 +219,8 @@ _Append as each phase lands._
 | A — Admin acts everywhere | ✅ **done** (`fdaa0c5`) |
 | C — Editable lists | ✅ **done** (`1885857`) |
 | G — Two centres | ✅ **done** except per-centre fee rates (`G8`) — `7ac8415` → `4e634f0` |
-| Register clearing | ✅ **done** (`e6e2464`) — see *Still open* above for what remains |
+| Register clearing | ✅ **done** (`e6e2464`) |
+| Register clearing 2 | ✅ **done** (30 Sep 2026) — G-i3, G-i9, C-i4, C-i6, C-i7 fixed; G-i11/C-i5/C-i8 accepted by decision |
 | B — Settings + money | ⬜ **next** — also closes G-i5 (per-centre fee rates) |
 | E — Oversight views | ⬜ not started |
 | D — Admin accounts | ⬜ not started |

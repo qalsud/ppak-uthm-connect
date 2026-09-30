@@ -24,11 +24,16 @@ class StudentController extends Controller
         $search = trim((string) $request->query('search', ''));
         $class = $request->query('class');
         $status = $request->query('status', 'active');
+        $centre = $request->query('centre');
+
+        // An explicit centre filter overrides the header's active centre, so the
+        // two can never silently intersect into an empty list.
+        $centreId = is_numeric($centre) ? (int) $centre : null;
 
         $students = Student::query()
             ->with('parent:id,name')
             ->with('centre:id,name,short_name')
-            ->forActiveCentre()
+            ->when($centreId, fn ($q) => $q->where('centre_id', $centreId), fn ($q) => $q->forActiveCentre())
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhereHas('parent', fn ($p) => $p->where('name', 'like', "%{$search}%"));
@@ -45,7 +50,7 @@ class StudentController extends Controller
             ->get(['id', 'name', 'email']);
 
         $counts = Student::query()
-            ->forActiveCentre()
+            ->when($centreId, fn ($q) => $q->where('centre_id', $centreId), fn ($q) => $q->forActiveCentre())
             ->selectRaw('status, count(*) as aggregate')
             ->groupBy('status')
             ->pluck('aggregate', 'status');
@@ -58,7 +63,7 @@ class StudentController extends Controller
                 'all' => (int) $counts->sum(),
                 ...collect(Student::statusKeys())->mapWithKeys(fn ($s) => [$s => (int) $counts->get($s, 0)])->all(),
             ],
-            'filters' => ['search' => $search, 'class' => $class ?? '', 'status' => $status],
+            'filters' => ['search' => $search, 'class' => $class ?? '', 'status' => $status, 'centre' => $centre ?? ''],
         ]);
     }
 
@@ -103,7 +108,7 @@ class StudentController extends Controller
                 ->latest('created_at')
                 ->limit(8)
                 ->get(['id', 'month', 'amount', 'status', 'paid_on']),
-            'fields' => DailyActivity::FIELDS,
+            'fields' => DailyActivity::fields(),
         ]);
     }
 

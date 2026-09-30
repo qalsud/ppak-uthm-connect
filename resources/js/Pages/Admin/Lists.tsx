@@ -25,6 +25,8 @@ type Group = {
     group: string;
     label: string;
     customised: boolean;
+    /** Keys map to real DB columns — options can be edited but not added. */
+    fixed: boolean;
     options: Option[];
 };
 
@@ -204,10 +206,12 @@ export default function AdminLists() {
                                 </span>
                             )}
                         </CardTitle>
-                        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAdding(true)}>
-                            <Plus className="size-3.5" />
-                            {t('add_option')}
-                        </Button>
+                        {!current?.fixed && (
+                            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAdding(true)}>
+                                <Plus className="size-3.5" />
+                                {t('add_option')}
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent className="space-y-2">
                         {adding && (

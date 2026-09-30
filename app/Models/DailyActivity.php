@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Lists;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -44,6 +45,27 @@ class DailyActivity extends Model
         'health_issues' => 'Health Issues',
         'injuries' => 'Injuries',
     ];
+
+    /**
+     * The activity fields to show in forms and summaries, as [column => label].
+     *
+     * Reads the admin-editable list so labels/order/visibility can change
+     * without code, but always intersects with the real columns — adding a
+     * brand-new field still needs a migration. Falls back to FIELDS when the
+     * list is untouched (or emptied).
+     */
+    public static function fields(): array
+    {
+        $options = Lists::options('daily_activity_field');
+
+        if ($options === []) {
+            return self::FIELDS;
+        }
+
+        $filtered = array_intersect_key($options, array_flip(array_keys(self::FIELDS)));
+
+        return $filtered !== [] ? $filtered : self::FIELDS;
+    }
 
     public function student(): BelongsTo
     {

@@ -11,6 +11,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { listLabel, useLists } from '@/lib/lists';
 import type { PhotoInfo } from '@/lib/photo';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
@@ -77,6 +78,7 @@ type Page = PageProps<{
 
 export default function AdminStudent() {
     const { t } = useI18n();
+    const lists = useLists();
     const { props } = usePage<Page>();
     const { student, profile, contacts, attendance, updates, activities, progress, payments, fields } = props;
 
@@ -228,12 +230,12 @@ export default function AdminStudent() {
                                         <RatingChip value={p.activity_done} />
                                         <RatingChip value={p.child_proficiency} />
                                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                            {p.development_proficiency}
+                                            {listLabel(lists, 'progress_development', p.development_proficiency)}
                                         </span>
                                     </div>
                                     <p className="mt-1.5 text-[11px] text-muted-foreground">
-                                        {t('permata_activity')}: {p.permata_activity} · {t('free_activity')}:{' '}
-                                        {p.free_activity}
+                                        {t('permata_activity')}: {listLabel(lists, 'progress_permata', p.permata_activity)} ·{' '}
+                                        {t('free_activity')}: {listLabel(lists, 'progress_free', p.free_activity)}
                                     </p>
                                     {p.photo && (
                                         <div className="mt-2">

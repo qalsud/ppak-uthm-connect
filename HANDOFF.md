@@ -18,35 +18,17 @@
 | | |
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
-| Last commit | `4535ffd` |
-| Tests | **~201 passing** (`php artisan test`) |
+| Last commit | `git log -1` — "clear remaining register items" |
+| Tests | **208 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — 91 frontend route names verified |
 | Seeder | idempotent, re-runnable (`php artisan migrate:fresh --seed`) |
 
-### ⚠️ Uncommitted work exists
+### ✅ Working tree is clean
 
-There is an **uncommitted batch** clearing the issue register. Files touched:
-
-```
-app/Http/Controllers/Admin/StudentContactController.php
-app/Http/Controllers/Admin/StudentController.php
-app/Http/Controllers/Parent/DashboardController.php
-app/Http/Controllers/Teacher/DashboardController.php
-app/Http/Controllers/Teacher/MemoController.php
-app/Models/Memo.php
-app/Models/Student.php
-app/Notifications/DailyUpdateSubmittedNotification.php
-app/Support/Lists.php
-database/seeders/DatabaseSeeder.php
-resources/js/Components/child-contacts-manager.tsx
-resources/js/Components/rating-chip.tsx
-tests/Feature/ChildContactsTest.php
-```
-
-**First action in a new session:** run `php artisan test` and `npm run build`. If green,
-commit this batch. It clears register items **C-i1, C-i2, C-i3, C-i4 (partial), C-i9,
-G-i1, G-i2, G-i6, G-i7**.
+The first register-clearing batch (described in the previous revision of this file) was
+committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clearing pass
+(G-i3, G-i9, C-i4, C-i6, C-i7) followed on 30 Sep 2026 — see *Immediate next steps*.
 
 ---
 
@@ -95,30 +77,26 @@ G-i1, G-i2, G-i6, G-i7**.
 
 ## Immediate next steps
 
-1. **Verify + commit the uncommitted batch** (see above).
-2. **Finish clearing the issue register** — remaining items listed below.
-3. Then continue with **Phase B** (settings + money), which also closes **G-i5**
-   (per-centre fee rates).
+1. **Issue register is now clear** — the only open item is **G-i5** (per-centre fee rates),
+   which is a Phase B deliverable.
+2. Continue with **Phase B** (settings + money), which also closes **G-i5**.
 
-### Issue register — what still needs doing
+### Issue register — status (30 Sep 2026)
 
-Full detail lives in `ADMIN-CONTROL-PLAN.md` → *Issue register*. Remaining:
+Full detail lives in `ADMIN-CONTROL-PLAN.md` → *Issue register*.
 
-| # | Item | Note |
-|---|---|---|
-| **C-i4** | Seeder writes literal values rather than list keys | Partly fixed; verify all groups |
-| **C-i5** | Migration enum-ish defaults (`students.class` default `5tahun`, `progress_records` default `Select`) | Low risk; document rather than migrate |
-| **C-i6** | `ProgressRecord::PERMATA/FREE/DEVELOPMENT` are still code-only lists | Would need a new list group + admin screen |
-| **C-i7** | `DailyActivity::FIELDS` (12 checkboxes) is not a manageable list | Needs `list_options` + a columns decision — **bigger job** |
-| **C-i8** | `PaymentController::MONTHS` not manageable | Low value; months are fixed |
-| **G-i3** | Admin student/teacher lists have no centre **filter** (column added) | Add a centre filter dropdown |
-| **G-i5** | **`FeeSetting` is global** — one rate for both centres | **Closes in Phase B**; highest-value remaining |
-| **G-i9** | Teachers with **no centre** are unrestricted | Correct, but surface it in the UI as a warning |
-| **G-i11** | `list_options` is still global — class lists aren't per-centre | Both centres currently share one class list |
-| **G-i12** | Not a bug — dev DB needed a re-seed after adding centres | Informational |
+**Open:** `G-i5` — `FeeSetting` is global; one rate for both centres. **Closes in Phase B.**
 
-**Already resolved** (can be struck from the register): C-i1, C-i2, C-i3, C-i9, G-i1, G-i2,
-G-i4, G-i6, G-i7, G-i8, G-i10 — the last five were resolved by G9/G10 during Phase G.
+**Fixed in the second clearing pass:** `G-i3` (centre filter on the student/teacher lists),
+`G-i9` (unrestricted-staff UI warning), `C-i4` (seeder values verified against the live lists —
+now guarded by a test), `C-i6` (progress PERMATA/free/development lists are admin-editable),
+`C-i7` (daily-activity fields are admin-editable — rename/reorder/hide; keys stay fixed columns).
+
+**Accepted by decision (documented):** `G-i11` (one shared class list is intentional — centre +
+class is already the enforced key), `C-i5` (migration defaults — document, don't migrate),
+`C-i8` (payment months are fixed), `G-i12` (informational).
+
+**Earlier resolved:** C-i1, C-i2, C-i3, C-i9, G-i1, G-i2, G-i4, G-i6, G-i7, G-i8, G-i10.
 
 ---
 

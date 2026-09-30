@@ -43,7 +43,7 @@ class ActivityController extends Controller
             'shell' => $request->user()->shell(),
             'students' => $students,
             'today' => $today,
-            'fields' => DailyActivity::FIELDS,
+            'fields' => DailyActivity::fields(),
             'records' => $records,
         ]);
     }
@@ -68,7 +68,7 @@ class ActivityController extends Controller
         $student = Student::with('parent')->findOrFail($data['student_id']);
         abort_unless($request->user()->canManage($student), 403);
 
-        foreach (array_keys(DailyActivity::FIELDS) as $field) {
+        foreach (array_keys(DailyActivity::fields()) as $field) {
             $data[$field] = $validated['statuses'][$field] ?? 'no';
         }
 
@@ -100,7 +100,7 @@ class ActivityController extends Controller
     /** Post a summary of the day's activity into the parent ↔ teacher chat. */
     private function postActivityMessage(DailyActivity $activity, Student $student, User $sender): void
     {
-        $done = collect(DailyActivity::FIELDS)
+        $done = collect(DailyActivity::fields())
             ->filter(fn ($label, $field) => $activity->{$field} === 'yes')
             ->values();
 
