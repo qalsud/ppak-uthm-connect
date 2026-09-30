@@ -221,7 +221,7 @@ export default function AdminLists() {
                                     <Input
                                         value={addForm.data.key}
                                         onChange={(e) => addForm.setData('key', e.target.value)}
-                                        placeholder="theki"
+                                        placeholder={t('value_placeholder')}
                                         className="h-9 w-32 font-mono text-xs"
                                     />
                                 </div>

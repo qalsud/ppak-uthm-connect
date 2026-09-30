@@ -367,7 +367,7 @@ export default function ParentChild() {
                                 <Label htmlFor="med-dosage">{t('dosage')}</Label>
                                 <Input
                                     id="med-dosage"
-                                    placeholder="e.g. 5ml"
+                                    placeholder={t('dosage_placeholder')}
                                     value={medForm.data.dosage}
                                     onChange={(e) => medForm.setData('dosage', e.target.value)}
                                 />
@@ -488,7 +488,7 @@ export default function ParentChild() {
                                                     />
                                                     <span className="flex-1 truncate">{label}</span>
                                                     <span className={yes ? 'text-emerald-600' : 'text-muted-foreground'}>
-                                                        {yes ? 'Ya' : 'Tidak'}
+                                                        {yes ? t('yes') : t('no')}
                                                     </span>
                                                 </div>
                                             );

@@ -260,16 +260,16 @@ export default function TeacherDashboard() {
                                         <TableCell>{classLabel(s.class)}</TableCell>
                                         <TableCell>
                                             {s.activity_logged ? (
-                                                <StatusBadge status="paid" label="Logged" />
+                                                <StatusBadge status="paid" label={t('logged')} />
                                             ) : (
-                                                <StatusBadge status="neutral" label="Not logged" />
+                                                <StatusBadge status="neutral" label={t('not_logged')} />
                                             )}
                                         </TableCell>
                                         <TableCell>
                                             {s.update_received ? (
-                                                <StatusBadge status="active" label="Received" />
+                                                <StatusBadge status="active" label={t('received')} />
                                             ) : (
-                                                <StatusBadge status="neutral" label="Pending" />
+                                                <StatusBadge status="neutral" label={t('pending')} />
                                             )}
                                         </TableCell>
                                         <TableCell>
