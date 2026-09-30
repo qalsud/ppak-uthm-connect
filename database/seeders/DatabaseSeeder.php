@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Models\AbsenceRequest;
+use App\Models\ActivityLog;
+use App\Models\Attendance;
 use App\Models\AuthorisedCollector;
 use App\Models\Centre;
 use App\Models\Conversation;
@@ -12,13 +15,16 @@ use App\Models\DailyUpdate;
 use App\Models\EmergencyContact;
 use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
+use App\Models\GrowthRecord;
 use App\Models\Guardian;
+use App\Models\MedicationRequest;
 use App\Models\Memo;
 use App\Models\Message;
 use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -190,6 +196,16 @@ class DatabaseSeeder extends Seeder
             }));
         }
 
+        // A centre-specific rate overrides the global one (demonstrates G-i5).
+        if ($taska) {
+            FeeSetting::create([
+                'centre_id' => $taska->id,
+                'monthly_fee' => 290.00,
+                'overtime_rate' => 6.00,
+                'is_active' => true,
+            ]);
+        }
+
         // ---- Guardians, emergency contacts & authorised collectors --------
         // Every child gets a mother + father; a couple get an extra contact or
         // collector so the safeguarding flows are demonstrable.
@@ -256,24 +272,29 @@ class DatabaseSeeder extends Seeder
         // ---- Memos ---------------------------------------------------------
         Memo::create([
             'author_id' => $admin->id,
+            'centre_id' => $khalifah?->id,
             'title' => 'Sambutan Hari Kanak-Kanak — "Bintang Kecil Bersinar"',
             'description' => "Tarikh: 23 Oktober 2025 (Khamis)\nMasa: 8:30 pagi – 12:00 tengah hari\nTempat: Dewan Serbaguna, PPAK UTHM\n\nAcara ini bertujuan meraikan setiap kanak-kanak. Program dimulakan dengan perarakan kostum, persembahan nyanyian dan tarian, sukaneka ringan, serta sesi bercerita.",
         ]);
 
         Memo::create([
             'author_id' => $admin->id,
+            'centre_id' => $khalifah?->id,
             'title' => 'Karnival Mini Merdeka — "Saya Sayang Malaysia"',
             'description' => "Tarikh: 28 Ogos 2025 (Khamis)\nMasa: 9:00 pagi – 11:30 pagi\nTempat: PPAK UTHM\n\nPerarakan dengan bendera kecil, nyanyian lagu patriotik, bengkel kraf dan kuiz mudah untuk menyemai semangat patriotik.",
         ]);
 
         Memo::create([
             'author_id' => $admin->id,
+            'centre_id' => $taska?->id,
             'title' => 'Hari Sains & Alam Sekitar — "Cilik Eksperimen"',
             'description' => "Tarikh: 12 November 2025 (Rabu)\nMasa: 8:30 pagi – 11:45 pagi\nTempat: PPAK UTHM\n\nAktiviti eksperimen mudah seperti gunung berapi baking soda dan penanaman biji kacang, bagi mencetuskan minat terhadap sains dan alam sekitar.",
         ]);
 
         // ---- Financial records --------------------------------------------
-        $months = [
+        // Coherent months: due on the 7th, paid on the 5th. April + June stay
+        // unpaid, so they render as Overdue (those due dates are in the past).
+        $feeMonths = [
             ['January', 0.0, 'paid'],
             ['February', 0.0, 'paid'],
             ['March', 0.0, 'paid'],
@@ -282,21 +303,25 @@ class DatabaseSeeder extends Seeder
             ['June', 0.0, 'unpaid'],
         ];
 
-        foreach ($months as $index => [$month, $ot, $status]) {
+        foreach ($feeMonths as [$month, $ot, $status]) {
             FinancialRecord::create([
                 'student_id' => $demoStudent->id,
                 'month' => $month,
+                'due_on' => Carbon::parse("7 {$month} ".now()->year)->toDateString(),
                 'overtime_hours' => $ot,
                 'amount' => 310.00 + ($ot * 6.00),
                 'status' => $status,
-                'paid_on' => $status === 'paid' ? now()->subMonths(count($months) - $index)->toDateString() : null,
+                'paid_on' => $status === 'paid'
+                    ? Carbon::parse("5 {$month} ".now()->year)->toDateString()
+                    : null,
             ]);
         }
 
-        // A couple of records for other children (unpaid)
+        // Unpaid records for other children (Khalifah → the global RM 310 rate).
         FinancialRecord::create([
             'student_id' => $students[3]->id,
             'month' => 'June',
+            'due_on' => Carbon::parse('7 June '.now()->year)->toDateString(),
             'overtime_hours' => 0,
             'amount' => 310.00,
             'status' => 'unpaid',
@@ -305,8 +330,19 @@ class DatabaseSeeder extends Seeder
         FinancialRecord::create([
             'student_id' => $students[4]->id,
             'month' => 'June',
+            'due_on' => Carbon::parse('7 June '.now()->year)->toDateString(),
             'overtime_hours' => 2,
             'amount' => 322.00,
+            'status' => 'unpaid',
+        ]);
+
+        // A Taska child on the centre's own rate (RM 290).
+        FinancialRecord::create([
+            'student_id' => $students[7]->id,
+            'month' => 'June',
+            'due_on' => Carbon::parse('7 June '.now()->year)->toDateString(),
+            'overtime_hours' => 0,
+            'amount' => 290.00,
             'status' => 'unpaid',
         ]);
 
@@ -353,6 +389,156 @@ class DatabaseSeeder extends Seeder
             'notes' => 'Aktif dan menunjukkan kemajuan.',
         ]);
 
+        // ---- Attendance ----------------------------------------------------
+        // Today: several children arrive (one with an elevated temperature and
+        // a health note, one goes home with a collector). Taska children too,
+        // so the centre switcher shows data in both registers. Yesterday: a
+        // full day for the demo child (history).
+        $at = fn (string $hm, ?Carbon $day = null) => ($day ?? today())->copy()
+            ->setTime((int) substr($hm, 0, 2), (int) substr($hm, 3, 2));
+
+        Attendance::create([
+            'student_id' => $demoStudent->id,
+            'date' => today()->toDateString(),
+            'arrived_at' => $at('07:30'),
+            'arrived_by' => $demoTeacher->id,
+            'temperature' => 37.8,
+            'health_note' => 'Slight fever this morning — monitoring.',
+        ]);
+
+        Attendance::create([
+            'student_id' => $students[1]->id,
+            'date' => today()->toDateString(),
+            'arrived_at' => $at('07:45'),
+            'arrived_by' => $demoTeacher->id,
+        ]);
+
+        Attendance::create([
+            'student_id' => $students[3]->id,
+            'date' => today()->toDateString(),
+            'arrived_at' => $at('08:05'),
+            'arrived_by' => $demoTeacher->id,
+            'departed_at' => $at('16:30'),
+            'departed_by' => $demoTeacher->id,
+            'collected_by' => 'Grandmother',
+            'checkout_note' => 'Collected by grandmother.',
+        ]);
+
+        Attendance::create([
+            'student_id' => $students[5]->id,
+            'date' => today()->toDateString(),
+            'arrived_at' => $at('07:50'),
+            'arrived_by' => $demoTeacher->id,
+        ]);
+
+        // Taska Hikmah children (teacher 3 works there).
+        foreach ([$students[7], $students[8]] as $i => $child) {
+            Attendance::create([
+                'student_id' => $child->id,
+                'date' => today()->toDateString(),
+                'arrived_at' => $at($i === 0 ? '08:10' : '07:55'),
+                'arrived_by' => $teachers[3]->id,
+            ]);
+        }
+
+        Attendance::create([
+            'student_id' => $demoStudent->id,
+            'date' => now()->subDay()->toDateString(),
+            'arrived_at' => $at('07:30', now()->subDay()),
+            'arrived_by' => $demoTeacher->id,
+            'departed_at' => $at('17:15', now()->subDay()),
+            'departed_by' => $demoTeacher->id,
+            'collected_by' => 'Father',
+        ]);
+
+        // ---- Medication ----------------------------------------------------
+        MedicationRequest::create([
+            'student_id' => $demoStudent->id,
+            'requested_by' => $demoParent->id,
+            'date' => today()->toDateString(),
+            'medicine' => 'Paracetamol',
+            'dosage' => '5ml',
+            'time_due' => '13:00',
+            'notes' => 'Only if the fever returns.',
+            'status' => 'pending',
+        ]);
+
+        MedicationRequest::create([
+            'student_id' => $demoStudent->id,
+            'requested_by' => $demoParent->id,
+            'date' => now()->subDay()->toDateString(),
+            'medicine' => 'Vitamin C',
+            'dosage' => '1 tablet',
+            'time_due' => '11:00',
+            'status' => 'given',
+            'given_at' => now()->subDay()->setTime(11, 5),
+            'given_by' => $demoTeacher->id,
+            'administered_note' => 'Taken with water.',
+        ]);
+
+        // ---- Growth --------------------------------------------------------
+        foreach ([[now()->subMonths(3), 110.0, 17.5], [now()->subDay(), 113.0, 19.0]] as [$date, $h, $w]) {
+            GrowthRecord::create([
+                'student_id' => $demoStudent->id,
+                'date' => $date->toDateString(),
+                'height_cm' => $h,
+                'weight_kg' => $w,
+                'bmi' => GrowthRecord::bmiFor($h, $w),
+                'recorded_by' => $demoTeacher->id,
+            ]);
+        }
+
+        // A couple of classmates, so the class-average BMI is meaningful.
+        foreach ([$students[1], $students[3]] as $child) {
+            $h = 108.0 + random_int(0, 8);
+            $w = 16.0 + random_int(0, 5);
+
+            GrowthRecord::create([
+                'student_id' => $child->id,
+                'date' => now()->subDay()->toDateString(),
+                'height_cm' => $h,
+                'weight_kg' => $w,
+                'bmi' => GrowthRecord::bmiFor($h, $w),
+                'recorded_by' => $demoTeacher->id,
+            ]);
+        }
+
+        // ---- Absence request ----------------------------------------------
+        AbsenceRequest::create([
+            'student_id' => $students[1]->id,
+            'requested_by' => $demoParent->id,
+            'start_date' => now()->addDays(2)->toDateString(),
+            'end_date' => now()->addDays(3)->toDateString(),
+            'type' => 'sick',
+            'reason' => 'Doctor appointment and fever.',
+            'status' => 'pending',
+        ]);
+
+        // ---- Activity log --------------------------------------------------
+        ActivityLog::create([
+            'user_id' => $admin->id,
+            'action' => 'student.created',
+            'subject_type' => Student::class,
+            'subject_id' => $demoStudent->id,
+            'description' => $demoStudent->name,
+            'ip' => '127.0.0.1',
+        ]);
+
+        ActivityLog::create([
+            'user_id' => $admin->id,
+            'action' => 'fees.updated',
+            'description' => 'Global monthly fee set to RM 310.',
+            'properties' => ['monthly_fee' => 310.00],
+            'ip' => '127.0.0.1',
+        ]);
+
+        ActivityLog::create([
+            'user_id' => $admin->id,
+            'action' => 'memo.created',
+            'description' => 'Sambutan Hari Kanak-Kanak',
+            'ip' => '127.0.0.1',
+        ]);
+
         // ---- Conversation between the demo parent & teacher ---------------
         $conversation = Conversation::create([
             'student_id' => $demoStudent->id,
@@ -371,6 +557,6 @@ class DatabaseSeeder extends Seeder
             'body' => 'Alhamdulillah, terima kasih cikgu!',
         ]);
 
-        $this->command?->info('Seeded admin, teachers, parents, children, memos, fees, activities and chat.');
+        $this->command?->info('Seeded admin, teachers, parents, children, centres, attendance, health, growth, fees and chat.');
     }
 }
