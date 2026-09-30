@@ -5,24 +5,43 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\FinancialRecord;
 use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\ActiveCentre;
 use App\Support\Lists;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
         // Respect the admin's centre switcher (null = all centres).
         $centreId = ActiveCentre::id();
         $scoped = fn ($q) => $centreId
             ? $q->whereHas('student', fn ($s) => $s->where('centre_id', $centreId))
             : $q;
+
+        $year = (int) $request->query('year', now()->year);
+        $year = max(now()->year - 5, min(now()->year + 1, $year));
+
+        $lastMonth = now()->subMonthNoOverflow();
+
+        $thisMonthIncome = (float) $scoped(FinancialRecord::query())
+            ->where('status', 'paid')
+            ->whereYear('paid_on', now()->year)
+            ->whereMonth('paid_on', now()->month)
+            ->sum('amount');
+
+        $lastMonthIncome = (float) $scoped(FinancialRecord::query())
+            ->where('status', 'paid')
+            ->whereYear('paid_on', $lastMonth->year)
+            ->whereMonth('paid_on', $lastMonth->month)
+            ->sum('amount');
 
         $pendingParent = User::query()
             ->where('role', UserRole::Parent)
@@ -42,10 +61,7 @@ class DashboardController extends Controller
             'memos' => Memo::query()
                 ->when($centreId, fn ($q) => $q->where('centre_id', $centreId))
                 ->count(),
-            'monthly_income' => $scoped(FinancialRecord::query())
-                ->where('status', 'paid')
-                ->whereMonth('paid_on', now()->month)
-                ->sum('amount'),
+            'monthly_income' => $thisMonthIncome,
         ];
 
         // Monthly income bars (Jan – Dec), from paid records by displayed month.
@@ -54,6 +70,7 @@ class DashboardController extends Controller
 
         $incomeByMonth = $scoped(FinancialRecord::query())
             ->where('status', 'paid')
+            ->whereYear('paid_on', $year)
             ->get()
             ->groupBy(fn ($r) => $r->Month ?? $r->month)
             ->map(fn ($rows) => (float) $rows->sum('amount'));
@@ -94,11 +111,46 @@ class DashboardController extends Controller
                 'paid_on' => $r->paid_on?->format('d M Y'),
             ]);
 
+        // Actionable tiles: unpaid fees this month + children not yet checked in.
+        $unpaidThisMonth = $scoped(FinancialRecord::query())
+            ->where('status', 'unpaid')
+            ->where('month', now()->format('F'))
+            ->get();
+
+        $activeStudentIds = Student::query()->active()->inCentre($centreId)->pluck('id');
+
+        $arrivedToday = Attendance::query()
+            ->whereIn('student_id', $activeStudentIds)
+            ->whereDate('date', today())
+            ->whereNotNull('arrived_at')
+            ->pluck('student_id');
+
+        $tiles = [
+            'unpaid_month' => now()->format('F'),
+            'unpaid_count' => $unpaidThisMonth->count(),
+            'unpaid_amount' => (float) $unpaidThisMonth->sum('amount'),
+            'students_active' => $activeStudentIds->count(),
+            'not_checked_in' => $activeStudentIds->diff($arrivedToday)->count(),
+        ];
+
+        $monthOverMonth = [
+            'month' => now()->format('F'),
+            'this_month' => $thisMonthIncome,
+            'last_month' => $lastMonthIncome,
+            'delta_pct' => $lastMonthIncome > 0
+                ? round((($thisMonthIncome - $lastMonthIncome) / $lastMonthIncome) * 100, 1)
+                : null,
+        ];
+
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'monthlyChart' => $monthlyChart,
             'classDistribution' => $classDistribution,
             'recentPayments' => $recentPayments,
+            'tiles' => $tiles,
+            'monthOverMonth' => $monthOverMonth,
+            'year' => $year,
+            'years' => range(now()->year - 3, now()->year),
         ]);
     }
 }

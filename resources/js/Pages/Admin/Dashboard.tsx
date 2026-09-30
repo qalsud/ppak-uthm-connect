@@ -1,5 +1,7 @@
-﻿import { Link, usePage } from '@inertiajs/react';
+﻿import { Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowDownRight,
+    ArrowUpRight,
     CalendarClock,
     ClipboardList,
     FileText,
@@ -18,6 +20,13 @@ import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Card,
     CardContent,
@@ -59,6 +68,21 @@ type Page = PageProps<{
         status: string;
         paid_on: string | null;
     }>;
+    tiles: {
+        unpaid_month: string;
+        unpaid_count: number;
+        unpaid_amount: number;
+        students_active: number;
+        not_checked_in: number;
+    };
+    monthOverMonth: {
+        month: string;
+        this_month: number;
+        last_month: number;
+        delta_pct: number | null;
+    };
+    year: number;
+    years: number[];
 }>;
 
 export default function AdminDashboard() {
@@ -69,6 +93,10 @@ export default function AdminDashboard() {
     const monthlyChart = props.monthlyChart as Page['monthlyChart'];
     const classDistribution = props.classDistribution as Page['classDistribution'];
     const recentPayments = props.recentPayments as Page['recentPayments'];
+    const tiles = props.tiles as Page['tiles'];
+    const monthOverMonth = props.monthOverMonth as Page['monthOverMonth'];
+    const year = props.year as Page['year'];
+    const years = props.years as Page['years'];
 
     const maxBar = Math.max(...monthlyChart.map((m) => m.value), 1);
     const totalStudents = stats.students || 1;
@@ -131,15 +159,88 @@ export default function AdminDashboard() {
                 />
             </div>
 
+            {/* Actionable tiles */}
+            <div className="mb-6 grid gap-3 sm:grid-cols-2">
+                <Link href={`/admin/payments?month=${encodeURIComponent(tiles.unpaid_month)}&status=unpaid`}>
+                    <Card className="rounded-2xl border-0 shadow-sm transition-colors hover:bg-muted/40">
+                        <CardContent className="flex items-center justify-between pt-5">
+                            <div>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('unpaid_this_month')} · {tiles.unpaid_month}
+                                </p>
+                                <p className="text-2xl font-bold">{tiles.unpaid_count}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    RM {tiles.unpaid_amount.toFixed(2)}
+                                </p>
+                            </div>
+                            <Wallet className="size-7 text-amber-600" />
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <Link href="/admin/register/attendance">
+                    <Card className="rounded-2xl border-0 shadow-sm transition-colors hover:bg-muted/40">
+                        <CardContent className="flex items-center justify-between pt-5">
+                            <div>
+                                <p className="text-xs text-muted-foreground">{t('not_checked_in_today')}</p>
+                                <p className="text-2xl font-bold">{tiles.not_checked_in}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    / {tiles.students_active} {t('students').toLowerCase()}
+                                </p>
+                            </div>
+                            <CalendarClock className="size-7 text-sky-600" />
+                        </CardContent>
+                    </Card>
+                </Link>
+            </div>
+
             {/* Chart + donut */}
             <div className="mb-6 grid gap-4 lg:grid-cols-3">
                 <Card className="rounded-2xl border-0 shadow-sm lg:col-span-2">
-                    <CardHeader className="pb-0">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                            <TrendingUp className="size-4 text-primary" />
-                            {t('monthly_income')}
-                        </CardTitle>
-                        <CardDescription>{t('chart_subtitle')}</CardDescription>
+                    <CardHeader className="flex-row items-start justify-between gap-2 pb-0">
+                        <div>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <TrendingUp className="size-4 text-primary" />
+                                {t('monthly_income')}
+                            </CardTitle>
+                            <CardDescription>{t('chart_subtitle')}</CardDescription>
+                        </div>
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                            {monthOverMonth.delta_pct !== null && (
+                                <span
+                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium ${
+                                        monthOverMonth.delta_pct >= 0
+                                            ? 'bg-emerald-50 text-emerald-700'
+                                            : 'bg-rose-50 text-rose-700'
+                                    }`}
+                                    title={`${monthOverMonth.month}: RM ${monthOverMonth.this_month.toFixed(2)}`}
+                                >
+                                    {monthOverMonth.delta_pct >= 0 ? (
+                                        <ArrowUpRight className="size-3.5" />
+                                    ) : (
+                                        <ArrowDownRight className="size-3.5" />
+                                    )}
+                                    {monthOverMonth.delta_pct}% {t('vs_last_month')}
+                                </span>
+                            )}
+                            <Select
+                                value={String(year)}
+                                onValueChange={(v) =>
+                                    router.get('/admin', { year: v }, { preserveState: true, preserveScroll: true })
+                                }
+                            >
+                                <SelectTrigger className="h-8 w-24">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {years.map((y) => (
+                                        <SelectItem key={y} value={String(y)}>
+                                            {y}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="flex h-44 items-end gap-1.5 pt-4">
