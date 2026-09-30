@@ -92,6 +92,7 @@ export default function AdminConversation() {
                 onStart={() => {}}
                 readOnly={closed}
                 canModerate
+                hideList
             />
         </AppShell>
     );

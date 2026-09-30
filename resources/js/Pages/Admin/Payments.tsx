@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { CalendarPlus, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, CalendarPlus, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -42,6 +42,7 @@ type PaymentRecord = {
     status: 'paid' | 'unpaid';
     paid_on: string | null;
     due_on: string | null;
+    overdue: boolean;
     student: { id: number; name: string; class: string };
 };
 
@@ -268,11 +269,20 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                     ? ` · ${Number(record.overtime_hours)}h OT`
                                                     : ''}
                                             </p>
-                                            {record.paid_on && (
+                                            {record.paid_on ? (
                                                 <p className="text-[11px] text-muted-foreground">
                                                     {t('paid_on')}: {record.paid_on}
                                                 </p>
-                                            )}
+                                            ) : record.due_on ? (
+                                                <p
+                                                    className={`text-[11px] ${
+                                                        record.overdue ? 'font-medium text-rose-600' : 'text-muted-foreground'
+                                                    }`}
+                                                >
+                                                    {t('due_on')}: {record.due_on}
+                                                    {record.overdue ? ` · ${t('overdue')}` : ''}
+                                                </p>
+                                            ) : null}
                                         </div>
                                         <StatusBadge
                                             status={record.status}
@@ -338,11 +348,25 @@ export default function Payments({ records, months, classes, students, fee, summ
                                 <TableBody>
                                     {rows.map((record) => (
                                         <TableRow key={record.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="whitespace-nowrap font-medium">
                                                 {record.student.name}
                                             </TableCell>
-                                            <TableCell>{classLabel(record.student.class)}</TableCell>
-                                            <TableCell>{record.month}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{classLabel(record.student.class)}</TableCell>
+                                            <TableCell>
+                                                {record.month}
+                                                {record.due_on && (
+                                                    <span
+                                                        className={`mt-0.5 flex items-center gap-1 text-[11px] ${
+                                                            record.overdue
+                                                                ? 'font-medium text-rose-600'
+                                                                : 'text-muted-foreground'
+                                                        }`}
+                                                    >
+                                                        {record.overdue && <AlertTriangle className="size-3" />}
+                                                        {t('due_on')} {record.due_on}
+                                                    </span>
+                                                )}
+                                            </TableCell>
                                             <TableCell>{Number(record.overtime_hours)}h</TableCell>
                                             <TableCell>RM {Number(record.amount).toFixed(2)}</TableCell>
                                             <TableCell>
@@ -351,8 +375,8 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                     label={record.status === 'paid' ? t('paid') : t('unpaid')}
                                                 />
                                             </TableCell>
-                                            <TableCell>{record.paid_on ?? '—'}</TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="whitespace-nowrap">{record.paid_on ?? '—'}</TableCell>
+                                            <TableCell className="whitespace-nowrap text-right">
                                                 {record.status === 'paid' && (
                                                     <Button
                                                         size="sm"
@@ -381,6 +405,15 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                     }
                                                 >
                                                     {record.status === 'unpaid' ? t('mark_paid') : t('mark_unpaid')}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="mr-1"
+                                                    onClick={() => openEdit(record)}
+                                                    title={t('edit')}
+                                                >
+                                                    <Pencil className="size-4" />
                                                 </Button>
                                                 <Button
                                                     size="sm"

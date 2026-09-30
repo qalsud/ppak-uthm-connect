@@ -57,6 +57,13 @@ class PaymentController extends Controller
 
         $records = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
+        // Flag overdue records so the list can highlight them.
+        $records->getCollection()->transform(function (FinancialRecord $record) {
+            $record->setAttribute('overdue', $record->isOverdue());
+
+            return $record;
+        });
+
         $currentMonth = now()->format('F');
 
         return Inertia::render('Admin/Payments', [

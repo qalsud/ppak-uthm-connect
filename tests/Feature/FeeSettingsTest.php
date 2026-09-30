@@ -102,6 +102,25 @@ test('an admin can edit an amount, month, overtime and due date', function () {
         ->and($record->due_on->format('Y-m-d'))->toBe(now()->year.'-09-20');
 });
 
+test('the payments list flags overdue records', function () {
+    $student = Student::factory()->create();
+
+    FinancialRecord::create([
+        'student_id' => $student->id,
+        'month' => now()->format('F'),
+        'amount' => 300,
+        'overtime_hours' => 0,
+        'status' => 'unpaid',
+        'due_on' => today()->subDay()->toDateString(),
+    ]);
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.payments.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('records.data.0.overdue', true)
+        );
+});
+
 test('the fees page renders the scopes', function () {
     FeeSetting::create(['monthly_fee' => 300, 'overtime_rate' => 6]);
 

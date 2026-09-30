@@ -34,7 +34,14 @@ class AdministratorController extends Controller
             }))
             ->orderBy('name')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'status' => $user->status->value,
+                'created_at' => $user->created_at?->format('d M Y'),
+            ]);
 
         $counts = User::query()
             ->where('role', UserRole::Admin)

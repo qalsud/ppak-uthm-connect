@@ -100,7 +100,22 @@ export default function AdminDashboard() {
 
     const maxBar = Math.max(...monthlyChart.map((m) => m.value), 1);
     const totalStudents = stats.students || 1;
-    const donut = classDistribution.map((c) => (c.value / totalStudents) * 100);
+
+    // Bars use pixel heights: a % height inside an auto-height flex parent
+    // collapses to 0 (the chart rendered empty). Fixed chart area in px instead.
+    const chartAreaPx = 140;
+
+    // Build the donut from any number of classes (was hard-coded to two).
+    const donutPalette = ['#509cdb', '#a9c9e6', '#7dd3fc', '#c4b5fd', '#fca5a5', '#fcd34d'];
+    let donutAcc = 0;
+    const donutSegments = classDistribution.map((c, i) => {
+        const pct = (c.value / totalStudents) * 100;
+        const segment = `${donutPalette[i % donutPalette.length]} ${donutAcc}% ${donutAcc + pct}%`;
+        donutAcc += pct;
+
+        return segment;
+    });
+    const donutBackground = `conic-gradient(${donutSegments.join(', ') || '#e2e8f0 0 100%'})`;
 
     const actions = [
         { label: t('add') + ' ' + t('student'), href: '/admin/students?create=1', icon: GraduationCap, tint: 'bg-sky-100 text-sky-600' },
@@ -153,9 +168,10 @@ export default function AdminDashboard() {
                 <StatCard label={t('parent')} value={stats.parents} icon={UserCheck} />
                 <StatCard label={t('pending')} value={stats.pending} icon={CalendarClock} />
                 <StatCard
-                    label={t('income_month')}
+                    label={t('income')}
                     value={`RM ${Number(stats.monthly_income).toFixed(0)}`}
                     icon={Wallet}
+                    hint={monthOverMonth.month}
                 />
             </div>
 
@@ -248,7 +264,7 @@ export default function AdminDashboard() {
                                 <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
                                     <div
                                         className="w-full rounded-t-md bg-primary transition-all hover:bg-primary/80"
-                                        style={{ height: `${Math.max((m.value / maxBar) * 100, 2)}%` }}
+                                        style={{ height: `${Math.max((m.value / maxBar) * chartAreaPx, 3)}px` }}
                                         title={`RM ${m.value.toFixed(2)}`}
                                     />
                                     <span className="text-[9px] text-muted-foreground">{m.month}</span>
@@ -265,11 +281,9 @@ export default function AdminDashboard() {
                     <CardContent className="flex items-center justify-around pt-4">
                         <div
                             className="size-24 rounded-full"
-                            style={{
-                                background: `conic-gradient(#509cdb 0 ${donut[0]}%, #a9c9e6 ${donut[0]}% 100%)`,
-                            }}
+                            style={{ background: donutBackground }}
                         >
-                            <div className="flex size-full items-center justify-center rounded-full bg-card">
+                            <div className="flex size-16 items-center justify-center rounded-full bg-card">
                                 <span className="text-lg font-bold">{stats.students}</span>
                             </div>
                         </div>
@@ -278,7 +292,7 @@ export default function AdminDashboard() {
                                 <div key={c.label} className="flex items-center gap-2 text-sm">
                                     <span
                                         className="size-2.5 rounded-full"
-                                        style={{ background: i === 0 ? '#509cdb' : '#a9c9e6' }}
+                                        style={{ background: donutPalette[i % donutPalette.length] }}
                                     />
                                     <span>{c.label}</span>
                                     <span className="text-muted-foreground">{c.value}</span>

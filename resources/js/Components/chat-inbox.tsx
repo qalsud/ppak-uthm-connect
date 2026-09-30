@@ -77,6 +77,8 @@ type Props = {
     readOnly?: boolean;
     /** Admin oversight: allow deleting any message, not just your own. */
     canModerate?: boolean;
+    /** Single-thread view (admin): hide the empty conversation list column. */
+    hideList?: boolean;
 };
 
 const initials = (name: string) =>
@@ -107,6 +109,7 @@ export default function ChatInbox({
     onBack,
     readOnly = false,
     canModerate = false,
+    hideList = false,
 }: Props) {
     const { t } = useI18n();
     const [body, setBody] = useState('');
@@ -286,8 +289,13 @@ export default function ChatInbox({
         : null;
 
     return (
-        <div className="grid h-[calc(100dvh-17rem)] gap-4 overflow-hidden lg:h-[calc(100dvh-11.5rem)] lg:grid-cols-3">
+        <div
+            className={`grid h-[calc(100dvh-17rem)] gap-4 overflow-hidden lg:h-[calc(100dvh-11.5rem)] ${
+                hideList ? '' : 'lg:grid-cols-3'
+            }`}
+        >
             {/* Conversation list */}
+            {!hideList && (
             <div className={`flex min-h-0 flex-col rounded-2xl border bg-card ${open ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
                     <p className="text-sm font-semibold">{t('messages')}</p>
@@ -382,12 +390,13 @@ export default function ChatInbox({
                     })}
                 </div>
             </div>
+            )}
 
             {/* Thread */}
             <div
-                className={`flex min-h-0 flex-col rounded-2xl border bg-card lg:col-span-2 ${
-                    open ? 'flex' : 'hidden lg:flex'
-                }`}
+                className={`flex min-h-0 flex-col rounded-2xl border bg-card ${
+                    hideList ? '' : 'lg:col-span-2'
+                } ${open ? 'flex' : 'hidden lg:flex'}`}
             >
                 {!open ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-muted-foreground">

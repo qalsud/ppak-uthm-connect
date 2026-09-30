@@ -172,7 +172,34 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                     />
                 ) : (
                     <>
-                        <div className="overflow-x-auto">
+                        {/* Mobile cards */}
+                        <div className="space-y-2 p-3 lg:hidden">
+                            {rows.map((payment) => (
+                                <button
+                                    key={payment.id}
+                                    type="button"
+                                    onClick={() => openDetail(payment)}
+                                    className="flex w-full items-start justify-between gap-2 rounded-xl border p-3 text-left"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate font-medium">{payment.student?.name ?? '—'}</p>
+                                        <p className="truncate text-xs text-muted-foreground">
+                                            {payment.user?.name ?? '—'}
+                                            {payment.paid_at ? ` · ${formatDate(payment.paid_at)}` : ''}
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold">
+                                            RM {Number(payment.amount).toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <StatusBadge
+                                        status={variant(payment.status)}
+                                        label={t(payment.status, payment.status)}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="hidden overflow-x-auto lg:block">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/40">
