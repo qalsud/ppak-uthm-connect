@@ -3,6 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
+import { useI18n } from '@/lib/i18n';
 import { homePathFor } from '@/lib/navigation';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
@@ -10,6 +11,7 @@ export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
+    const { t } = useI18n();
     const user = usePage().props.auth.user;
     const home = homePathFor(user);
 
@@ -30,7 +32,7 @@ export default function Authenticated({
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink href={home} active={route().current() === home}>
-                                    Dashboard
+                                    {t('dashboard')}
                                 </NavLink>
                             </div>
                         </div>
@@ -66,14 +68,14 @@ export default function Authenticated({
                                         <Dropdown.Link
                                             href={route('profile.edit')}
                                         >
-                                            Profile
+                                            {t('profile')}
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            {t('logout')}
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -131,7 +133,7 @@ export default function Authenticated({
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={home} active={route().current() === home}>
-                            Dashboard
+                            {t('dashboard')}
                         </ResponsiveNavLink>
                     </div>
 
@@ -147,14 +149,14 @@ export default function Authenticated({
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
+                                {t('profile')}
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
                                 as="button"
                             >
-                                Log Out
+                                {t('logout')}
                             </ResponsiveNavLink>
                         </div>
                     </div>

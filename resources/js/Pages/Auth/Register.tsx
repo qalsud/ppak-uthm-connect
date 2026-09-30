@@ -7,9 +7,11 @@ import InputLabel from '@/Components/InputLabel';
 import BrandLockup from '@/Components/brand-lockup';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function Register() {
+    const { t } = useI18n();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -27,7 +29,7 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title={t('register')} />
 
             {/* Brand lockup (mobile — desktop shows it in the brand panel) */}
             <div className="mb-8 flex justify-center lg:hidden">
@@ -37,16 +39,16 @@ export default function Register() {
             {/* Heading */}
             <div className="mb-7 text-center">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    Create your account
+                    {t('register_title')}
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Register as a parent — an admin will approve your account
+                    {t('register_subtitle')}
                 </p>
             </div>
 
             <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <InputLabel htmlFor="name" value="Full name" />
+                    <InputLabel htmlFor="name" value={t('full_name')} />
                     <div className="relative mt-1.5">
                         <User className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <TextInput
@@ -56,7 +58,7 @@ export default function Register() {
                             className="block h-11 w-full pl-10"
                             autoComplete="name"
                             isFocused={true}
-                            placeholder="Your full name"
+                            placeholder={t('full_name_placeholder')}
                             onChange={(e) => setData('name', e.target.value)}
                             required
                         />
@@ -65,7 +67,7 @@ export default function Register() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value={t('email')} />
                     <div className="relative mt-1.5">
                         <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <TextInput
@@ -84,7 +86,7 @@ export default function Register() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value={t('password')} />
                     <div className="relative mt-1.5">
                         <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <TextInput
@@ -103,7 +105,7 @@ export default function Register() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password_confirmation" value="Confirm password" />
+                    <InputLabel htmlFor="password_confirmation" value={t('confirm_password')} />
                     <div className="relative mt-1.5">
                         <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <TextInput
@@ -126,7 +128,7 @@ export default function Register() {
                     disabled={processing}
                     className="h-11 w-full rounded-xl text-sm font-semibold"
                 >
-                    {processing ? 'Creating account…' : 'Create account'}
+                    {processing ? t('creating_account') : t('create_account')}
                     {!processing && <ArrowRight className="ml-2 size-4" />}
                 </Button>
             </form>
@@ -136,19 +138,19 @@ export default function Register() {
                 <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
                 <div className="relative flex justify-center">
                     <span className="bg-background px-3 text-xs text-muted-foreground">
-                        Already have an account?
+                        {t('already_have_account')}
                     </span>
                 </div>
             </div>
 
             <Link href={route('login')}>
                 <Button variant="outline" className="h-11 w-full rounded-xl text-sm font-semibold">
-                    Back to login
+                    {t('back_to_login')}
                 </Button>
             </Link>
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
-                Need help? Contact{' '}
+                {t('need_help_contact')}{' '}
                 <a href="mailto:ppak@uthm.edu.my" className="text-primary hover:underline">
                     ppak@uthm.edu.my
                 </a>

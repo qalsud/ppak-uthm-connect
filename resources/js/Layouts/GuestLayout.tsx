@@ -1,8 +1,11 @@
 import type { PropsWithChildren } from 'react';
 
 import BrandLockup from '@/Components/brand-lockup';
+import { useI18n } from '@/lib/i18n';
 
 export default function GuestLayout({ children }: PropsWithChildren) {
+    const { t } = useI18n();
+
     return (
         <div className="flex min-h-screen bg-background">
             {/* Brand panel */}
@@ -14,11 +17,10 @@ export default function GuestLayout({ children }: PropsWithChildren) {
                 </div>
                 <div className="relative">
                     <h2 className="max-w-md text-3xl font-extrabold leading-tight">
-                        One platform for parents, teachers and administrators.
+                        {t('guest_tagline_title')}
                     </h2>
                     <p className="mt-4 max-w-md text-sm text-white/60">
-                        Track daily activities, manage fees, share progress and stay connected —
-                        all in one place.
+                        {t('guest_tagline_body')}
                     </p>
                 </div>
                 <div className="relative">

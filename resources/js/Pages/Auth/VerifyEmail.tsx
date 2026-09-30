@@ -1,9 +1,11 @@
 import PrimaryButton from '@/Components/PrimaryButton';
+import { useI18n } from '@/lib/i18n';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function VerifyEmail({ status }: { status?: string }) {
+    const { t } = useI18n();
     const { post, processing } = useForm({});
 
     const submit: FormEventHandler = (e) => {
@@ -14,35 +16,35 @@ export default function VerifyEmail({ status }: { status?: string }) {
 
     return (
         <GuestLayout>
-            <Head title="Email Verification" />
+            <Head title={t('verify_email')} />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify
-                your email address by clicking on the link we just emailed to
-                you? If you didn't receive the email, we will gladly send you
-                another.
+            <h1 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
+                {t('verify_email')}
+            </h1>
+
+            <div className="mb-4 text-sm text-muted-foreground">
+                {t('verify_email_desc')}
             </div>
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    {t('verification_link_sent')}
                 </div>
             )}
 
             <form onSubmit={submit}>
                 <div className="mt-4 flex items-center justify-between">
                     <PrimaryButton disabled={processing}>
-                        Resend Verification Email
+                        {t('resend_verification_email')}
                     </PrimaryButton>
 
                     <Link
                         href={route('logout')}
                         method="post"
                         as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md text-sm text-muted-foreground underline hover:text-foreground focus:outline-none"
                     >
-                        Log Out
+                        {t('logout')}
                     </Link>
                 </div>
             </form>

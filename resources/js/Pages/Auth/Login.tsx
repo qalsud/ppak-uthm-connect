@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel';
 import BrandLockup from '@/Components/brand-lockup';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
+import { useI18n } from '@/lib/i18n';
 import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function Login({
@@ -16,6 +17,7 @@ export default function Login({
     status?: string;
     canResetPassword: boolean;
 }) {
+    const { t } = useI18n();
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -32,7 +34,7 @@ export default function Login({
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title={t('login')} />
 
             {/* Brand lockup (mobile — desktop shows it in the brand panel) */}
             <div className="mb-8 flex justify-center lg:hidden">
@@ -42,10 +44,10 @@ export default function Login({
             {/* Heading */}
             <div className="mb-7 text-center">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    Welcome back
+                    {t('login_welcome')}
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Sign in to your PPAK UTHM account
+                    {t('login_subtitle')}
                 </p>
             </div>
 
@@ -57,7 +59,7 @@ export default function Login({
 
             <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value={t('email')} />
                     <div className="relative mt-1.5">
                         <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <TextInput
@@ -77,13 +79,13 @@ export default function Login({
 
                 <div>
                     <div className="flex items-center justify-between">
-                        <InputLabel htmlFor="password" value="Password" />
+                        <InputLabel htmlFor="password" value={t('password')} />
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
                                 className="text-xs font-medium text-primary hover:underline"
                             >
-                                Forgot password?
+                                {t('forgot_password_q')}
                             </Link>
                         )}
                     </div>
@@ -111,7 +113,7 @@ export default function Login({
                             setData('remember', (e.target.checked || false) as false)
                         }
                     />
-                    Remember me
+                    {t('remember_me')}
                 </label>
 
                 <Button
@@ -119,7 +121,7 @@ export default function Login({
                     disabled={processing}
                     className="h-11 w-full rounded-xl text-sm font-semibold"
                 >
-                    {processing ? 'Signing in…' : 'Log in'}
+                    {processing ? t('signing_in') : t('login')}
                     {!processing && <ArrowRight className="ml-2 size-4" />}
                 </Button>
             </form>
@@ -129,7 +131,7 @@ export default function Login({
                 <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
                 <div className="relative flex justify-center">
                     <span className="bg-background px-3 text-xs text-muted-foreground">
-                        New to PPAK UTHM?
+                        {t('new_to_ppak')}
                     </span>
                 </div>
             </div>
@@ -139,12 +141,12 @@ export default function Login({
                     variant="outline"
                     className="h-11 w-full rounded-xl text-sm font-semibold"
                 >
-                    Create a parent account
+                    {t('create_parent_account')}
                 </Button>
             </Link>
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
-                Need help? Contact{' '}
+                {t('need_help_contact')}{' '}
                 <a href="mailto:ppak@uthm.edu.my" className="text-primary hover:underline">
                     ppak@uthm.edu.my
                 </a>
