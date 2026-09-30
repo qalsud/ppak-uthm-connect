@@ -125,7 +125,7 @@ export default function Activity() {
                             <SelectValue placeholder={t('user')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="__all">{t('all_roles')}</SelectItem>
+                            <SelectItem value="__all">{t('all_users')}</SelectItem>
                             {users.map((u) => (
                                 <SelectItem key={u.id} value={String(u.id)}>
                                     {u.name}

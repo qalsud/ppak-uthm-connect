@@ -87,10 +87,7 @@ export default function ParentDailyUpdate() {
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
-            <PageHeader
-                title={t('daily_update')}
-                description="Let the teachers know how your child is today"
-            />
+            <PageHeader title={t('daily_update')} description={t('daily_update_desc')} />
 
             {children.length > 1 && (
                 <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
@@ -113,8 +110,8 @@ export default function ParentDailyUpdate() {
             {existing && (
                 <Card className="mb-4 rounded-2xl border-0 bg-muted/50 p-4 shadow-none">
                     <p className="text-xs text-muted-foreground">
-                        Last submitted {existing.date}
-                        {existing.health_status ? ` · health: ${existing.health_status}` : ''}
+                        {t('last_submitted')} {existing.date}
+                        {existing.health_status ? ` · ${t('health')}: ${existing.health_status}` : ''}
                     </p>
                 </Card>
             )}
@@ -147,7 +144,7 @@ export default function ParentDailyUpdate() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label>Arrival time</Label>
+                                <Label>{t('arrival_time')}</Label>
                                 <Input
                                     type="time"
                                     className="h-11"
@@ -163,7 +160,7 @@ export default function ParentDailyUpdate() {
                         </div>
 
                         <Segmented
-                            label="Sleeping status"
+                            label={t('sleeping_status')}
                             name="sleep_status"
                             options={[
                                 { value: 'Good', label: '😴 Good', tone: 'bg-emerald-100 text-emerald-700' },
@@ -172,7 +169,7 @@ export default function ParentDailyUpdate() {
                         />
 
                         <Segmented
-                            label="Bath status"
+                            label={t('bath_status_label')}
                             name="bath_status"
                             options={[
                                 { value: 'Done', label: '🛁 Done', tone: 'bg-emerald-100 text-emerald-700' },
@@ -181,10 +178,10 @@ export default function ParentDailyUpdate() {
                         />
 
                         <div className="space-y-2">
-                            <Label>Health status</Label>
+                            <Label>{t('health_status')}</Label>
                             <Input
                                 className="h-11"
-                                placeholder="e.g. Healthy, slight fever…"
+                                placeholder={t('health_status_placeholder')}
                                 value={form.data.health_status}
                                 onChange={(e) => form.setData('health_status', e.target.value)}
                             />
@@ -194,7 +191,7 @@ export default function ParentDailyUpdate() {
                             <Label>{t('notes')}</Label>
                             <Textarea
                                 rows={3}
-                                placeholder="Any instructions for the teachers…"
+                                placeholder={t('parent_notes_placeholder')}
                                 value={form.data.parent_notes}
                                 onChange={(e) => form.setData('parent_notes', e.target.value)}
                             />
@@ -206,7 +203,7 @@ export default function ParentDailyUpdate() {
 
                         {Object.keys(form.errors).length > 0 && (
                             <div className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                                Please check the highlighted fields and try again.
+                                {t('check_fields')}
                             </div>
                         )}
 
@@ -215,7 +212,7 @@ export default function ParentDailyUpdate() {
                             disabled={form.processing}
                             className="h-12 w-full rounded-xl text-sm font-semibold"
                         >
-                            {form.processing ? 'Saving…' : 'Submit update'}
+                            {form.processing ? t('saving') : t('submit_update')}
                         </Button>
                     </CardContent>
                 </Card>

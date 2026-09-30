@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\AuthorisedCollector;
+use App\Models\Centre;
 use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\DailyUpdate;
@@ -168,6 +169,26 @@ class DatabaseSeeder extends Seeder
         });
 
         $demoStudent = $students->first();
+
+        // ---- Centres -------------------------------------------------------
+        // Spread the demo children and staff across the two centres so the
+        // centre switcher, per-centre dashboards and fee rates are all
+        // demonstrable on a fresh seed. (The backfill migration only covers
+        // rows that already existed when centres were introduced.)
+        $khalifah = Centre::where('code', 'khalifah-junior')->first();
+        $taska = Centre::where('code', 'taska-hikmah')->first();
+
+        if ($khalifah && $taska) {
+            $students->each(fn (Student $student, int $i) => $student->update([
+                'centre_id' => $i >= $students->count() - 3 ? $taska->id : $khalifah->id,
+            ]));
+
+            $teachers->each(fn (User $teacher, int $i) => $teacher->centres()->sync(match ($i) {
+                2 => [],                      // unrestricted — shows the UI warning
+                3 => [$taska->id],            // second centre
+                default => [$khalifah->id],
+            }));
+        }
 
         // ---- Guardians, emergency contacts & authorised collectors --------
         // Every child gets a mother + father; a couple get an extra contact or
