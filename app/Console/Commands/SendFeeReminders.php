@@ -4,17 +4,22 @@ namespace App\Console\Commands;
 
 use App\Models\FinancialRecord;
 use App\Notifications\FeeReminderNotification;
+use App\Support\Settings;
 use Illuminate\Console\Command;
 
 class SendFeeReminders extends Command
 {
-    protected $signature = 'fees:send-reminders {--days=3 : Remind when a fee is due within N days}';
+    protected $signature = 'fees:send-reminders {--days= : Remind when a fee is due within N days (default: settings)}';
 
     protected $description = 'Notify parents about fees that are due soon or already overdue';
 
     public function handle(): int
     {
-        $until = today()->addDays((int) $this->option('days'));
+        $days = $this->option('days') !== null
+            ? (int) $this->option('days')
+            : (int) setting('operations.fee_reminder_lead_days', 3);
+
+        $until = today()->addDays($days);
 
         $byParent = FinancialRecord::query()
             ->where('status', 'unpaid')
@@ -41,6 +46,8 @@ class SendFeeReminders extends Command
 
             $sent++;
         }
+
+        Settings::put('scheduler.fee_reminders_last_run', now()->toIso8601String());
 
         $this->info("Sent {$sent} fee reminder(s).");
 

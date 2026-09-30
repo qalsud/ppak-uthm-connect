@@ -38,11 +38,11 @@ class ImageStore
         $height = imagesy($image);
 
         // 1. Downscale to the maximum dimension.
-        [$fullW, $fullH] = $this->fit($width, $height, (int) config('media.max_dimension'));
+        [$fullW, $fullH] = $this->fit($width, $height, (int) setting('media.max_dimension', config('media.max_dimension')));
         $full = $this->resize($image, $fullW, $fullH);
 
         // 2. Stamp the proof-of-delivery watermark (child name + date/time).
-        if (config('media.watermark_enabled') && ! empty($options['watermark'])) {
+        if (setting('media.watermark_enabled', config('media.watermark_enabled')) && ! empty($options['watermark'])) {
             $this->watermark($full, $options['watermark']);
         }
 
@@ -52,7 +52,7 @@ class ImageStore
 
         // 4. Compress toward the target size (lower quality / dimensions).
         $quality = (int) config('media.quality');
-        [$full, $quality] = $this->compress($full, $quality, (int) config('media.target_kb'));
+        [$full, $quality] = $this->compress($full, $quality, (int) setting('media.target_kb', config('media.target_kb')));
 
         $finalW = imagesx($full);
         $finalH = imagesy($full);

@@ -54,9 +54,11 @@ class MessageController extends Controller
         abort_if($message->trashed(), 403);
         abort_if($message->sender_id !== $user->id, 403);
         abort_if($message->type !== Message::TYPE_USER, 403);
-        abort_if($message->created_at->diffInMinutes(now()) > 15, 403);
+        abort_if($message->created_at->diffInMinutes(now()) > (int) setting('operations.message_edit_minutes', 15), 403);
 
-        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:'.(int) setting('operations.message_max_length', 2000)],
+        ]);
 
         $message->update(['body' => $data['body'], 'edited_at' => now()]);
 

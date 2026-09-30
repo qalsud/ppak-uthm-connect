@@ -221,7 +221,7 @@ class AttendanceController extends Controller
     {
         abort_unless($request->user()->canManage($student), 403);
 
-        $required = (bool) config('media.checkout_photo_required');
+        $required = (bool) setting('media.checkout_photo_required', config('media.checkout_photo_required'));
         $skip = $request->boolean('skip_photo');
         $hasPhoto = $request->hasFile('photo');
 
@@ -230,7 +230,7 @@ class AttendanceController extends Controller
                 $required && ! $skip ? 'required' : 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:'.(int) config('media.max_upload_kb'),
+                'max:'.(int) setting('media.max_upload_kb', config('media.max_upload_kb')),
             ],
             'note' => ['nullable', 'string', 'max:255'],
             'date' => ['nullable', 'date', 'before_or_equal:today'],

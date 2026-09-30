@@ -193,13 +193,18 @@ class PaymentController extends Controller
         return back()->with('success', __('approval.deleted'));
     }
 
-    /** The 7th of the given month (current year) is the default due date. */
+    /**
+     * The due date for a month: the configured due day (settings → fees,
+     * default 7) in the current year.
+     */
     private function dueDateFor(string $month): string
     {
+        $day = (int) setting('fees.due_day', 7);
+
         try {
-            return Carbon::parse("7 {$month}")->toDateString();
+            return Carbon::parse("{$day} {$month}")->toDateString();
         } catch (\Throwable) {
-            return today()->addDays(7)->toDateString();
+            return today()->addDays($day)->toDateString();
         }
     }
 

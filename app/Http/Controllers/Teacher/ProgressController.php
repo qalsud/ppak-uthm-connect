@@ -101,7 +101,7 @@ class ProgressController extends Controller
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:'.(int) config('media.max_upload_kb'),
+                'max:'.(int) setting('media.max_upload_kb', config('media.max_upload_kb')),
             ],
         ]);
 

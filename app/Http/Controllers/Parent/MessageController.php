@@ -51,9 +51,9 @@ class MessageController extends Controller
         $this->authorizeConversation($request->user(), $conversation);
 
         $validated = $request->validate([
-            'body' => ['nullable', 'string', 'max:2000', 'required_without:attachments'],
-            'attachments' => ['nullable', 'array', 'max:3'],
-            'attachments.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.(int) config('media.max_upload_kb')],
+            'body' => ['nullable', 'string', 'max:'.(int) setting('operations.message_max_length', 2000), 'required_without:attachments'],
+            'attachments' => ['nullable', 'array', 'max:'.(int) setting('operations.message_attachment_limit', 3)],
+            'attachments.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.(int) setting('media.max_upload_kb', config('media.max_upload_kb'))],
         ]);
 
         try {

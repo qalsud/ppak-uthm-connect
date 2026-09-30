@@ -19,8 +19,14 @@ class AbsenceRequest extends Model
     /** pending | approved | declined */
     public const STATUSES = ['pending', 'approved', 'declined'];
 
-    /** Longest single request, in days (inclusive). */
+    /** Shipped default for the longest single request, in days (inclusive). */
     public const MAX_DAYS = 31;
+
+    /** The live limit from settings (falls back to MAX_DAYS). */
+    public static function maxDays(): int
+    {
+        return (int) setting('operations.absence_max_days', self::MAX_DAYS);
+    }
 
     protected $fillable = [
         'student_id',
@@ -80,7 +86,7 @@ class AbsenceRequest extends Model
 
         $period = CarbonPeriod::create($this->start_date, $this->end_date);
 
-        return collect($period)->take(self::MAX_DAYS + 1)->values();
+        return collect($period)->take(self::maxDays() + 1)->values();
     }
 
     /** Optional proof documents (medical certificate scans, photos). */

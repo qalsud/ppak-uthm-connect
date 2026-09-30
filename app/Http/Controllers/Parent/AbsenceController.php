@@ -49,9 +49,11 @@ class AbsenceController extends Controller
         $start = $request->date('start_date');
         $end = $request->date('end_date');
 
-        if ($start && $end && $start->diffInDays($end) > AbsenceRequest::MAX_DAYS) {
+        $maxDays = AbsenceRequest::maxDays();
+
+        if ($start && $end && $start->diffInDays($end) > $maxDays) {
             throw ValidationException::withMessages([
-                'end_date' => __('absence_range_too_long', ['days' => AbsenceRequest::MAX_DAYS]),
+                'end_date' => __('absence_range_too_long', ['days' => $maxDays]),
             ]);
         }
 

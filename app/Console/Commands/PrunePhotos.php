@@ -7,6 +7,7 @@ use App\Models\AttendancePhoto;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
+use App\Support\Settings;
 use Illuminate\Console\Command;
 
 class PrunePhotos extends Command
@@ -17,7 +18,9 @@ class PrunePhotos extends Command
 
     public function handle(): int
     {
-        $days = (int) config('media.retention_days');
+        $days = (int) setting('media.retention_days', config('media.retention_days'));
+
+        Settings::put('scheduler.media_prune_last_run', now()->toIso8601String());
 
         if ($days <= 0) {
             $this->info('Retention is disabled; nothing to prune.');

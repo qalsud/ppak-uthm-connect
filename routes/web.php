@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MemoController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentContactController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
@@ -171,6 +172,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
             Route::get('/fees', [FeeSettingController::class, 'show'])->name('fees.show');
             Route::put('/fees', [FeeSettingController::class, 'update'])->name('fees.update');
+
+            // Editable operational settings (fee due day, absence window, …).
+            Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+            Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
             // Admin-editable fixed lists (classes, blood types, …).
             Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
