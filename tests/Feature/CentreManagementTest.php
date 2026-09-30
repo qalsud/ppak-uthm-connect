@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Models\Centre;
+use App\Models\FinancialRecord;
+use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\ActiveCentre;
@@ -61,6 +63,51 @@ test('an explicit centre filter overrides the active centre on the student list'
         ->assertInertia(fn (Assert $page) => $page
             ->has('students.data', 1)
             ->where('students.data.0.id', $khalifah->id)
+        );
+});
+
+test('the payments and transactions lists respect the active centre', function () {
+    $khalifahChild = Student::factory()->create(['class' => '5tahun', 'centre_id' => $this->khalifah->id]);
+    $taskaChild = Student::factory()->create(['class' => '5tahun', 'centre_id' => $this->taska->id]);
+
+    foreach ([$khalifahChild, $taskaChild] as $child) {
+        FinancialRecord::create([
+            'student_id' => $child->id,
+            'month' => 'June',
+            'amount' => 300,
+            'overtime_hours' => 0,
+            'status' => 'unpaid',
+        ]);
+
+        Payment::create([
+            'user_id' => User::factory()->role(UserRole::Parent)->create()->id,
+            'student_id' => $child->id,
+            'amount' => 300,
+            'financial_record_ids' => [],
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+    }
+
+    // Default ("all centres") shows both.
+    $this->actingAs($this->admin)->get(route('admin.payments.index'))
+        ->assertInertia(fn (Assert $page) => $page->has('records.data', 2));
+    $this->actingAs($this->admin)->get(route('admin.transactions.index'))
+        ->assertInertia(fn (Assert $page) => $page->has('payments.data', 2));
+
+    // Switching to Taska hides the other centre's money.
+    $this->actingAs($this->admin)
+        ->post(route('admin.centres.switch', ['centre_id' => $this->taska->id]));
+
+    $this->actingAs($this->admin)->get(route('admin.payments.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('records.data', 1)
+            ->where('records.data.0.student_id', $taskaChild->id)
+        );
+    $this->actingAs($this->admin)->get(route('admin.transactions.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('payments.data', 1)
+            ->where('payments.data.0.student.id', $taskaChild->id)
         );
 });
 

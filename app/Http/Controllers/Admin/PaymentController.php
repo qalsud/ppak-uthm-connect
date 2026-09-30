@@ -27,7 +27,15 @@ class PaymentController extends Controller
 
     public function index(Request $request): Response
     {
-        $query = FinancialRecord::query()->with('student:id,name,class');
+        $centreId = ActiveCentre::id();
+
+        // Fee records belong to a centre through their child.
+        $inCentre = fn ($q) => $q->when(
+            $centreId,
+            fn ($qq) => $qq->whereHas('student', fn ($s) => $s->where('centre_id', $centreId)),
+        );
+
+        $query = $inCentre(FinancialRecord::query()->with('student:id,name,class'));
 
         if ($request->filled('month')) {
             $query->where('month', $request->string('month'));
@@ -54,18 +62,18 @@ class PaymentController extends Controller
         return Inertia::render('Admin/Payments', [
             'records' => $records,
             'months' => self::MONTHS,
-            'classes' => Student::CLASSES,
-            'students' => Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']),
-            'fee' => FeeSetting::current(ActiveCentre::id()),
+            'classes' => Student::classKeys(),
+            'students' => Student::query()->active()->forActiveCentre()->orderBy('name')->get(['id', 'name', 'class']),
+            'fee' => FeeSetting::current($centreId),
             'summary' => [
-                'collected_month' => (float) FinancialRecord::query()
+                'collected_month' => (float) $inCentre(FinancialRecord::query())
                     ->where('status', 'paid')
                     ->where('month', $currentMonth)
                     ->sum('amount'),
-                'outstanding' => (float) FinancialRecord::query()
+                'outstanding' => (float) $inCentre(FinancialRecord::query())
                     ->where('status', 'unpaid')
                     ->sum('amount'),
-                'unpaid_count' => FinancialRecord::query()->where('status', 'unpaid')->count(),
+                'unpaid_count' => $inCentre(FinancialRecord::query())->where('status', 'unpaid')->count(),
                 'current_month' => $currentMonth,
             ],
             'filters' => [
