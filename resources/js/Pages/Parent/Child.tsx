@@ -275,12 +275,12 @@ export default function ParentChild() {
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="font-medium">{u.date}</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {u.arrival_time ? `Tiba ${u.arrival_time}` : ''}
+                                            {u.arrival_time ? `${t('arrived_at')} ${u.arrival_time}` : ''}
                                         </span>
                                     </div>
                                     <p className="text-[11px] text-muted-foreground">
-                                        Tidur: {u.sleep_status} · Mandi: {u.bath_status}
-                                        {u.health_status ? ` · Sihat: ${u.health_status}` : ''}
+                                        {t('sleep')}: {u.sleep_status} · {t('bath')}: {u.bath_status}
+                                        {u.health_status ? ` · ${t('health')}: ${u.health_status}` : ''}
                                     </p>
                                     {u.parent_notes && (
                                         <p className="mt-1 text-[11px] italic">{u.parent_notes}</p>
