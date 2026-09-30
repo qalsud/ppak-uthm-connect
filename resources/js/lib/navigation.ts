@@ -6,6 +6,7 @@ import {
     CalendarClock,
     ClipboardList,
     CreditCard,
+    Eye,
     FileText,
     GraduationCap,
     History,
@@ -30,6 +31,8 @@ export type NavItem = {
     shortLabel?: string;
     href: string;
     icon: LucideIcon;
+    /** When present, this item is a collapsible group (its own href is ignored). */
+    children?: NavItem[];
 };
 
 export const adminNav: NavItem[] = [
@@ -40,11 +43,19 @@ export const adminNav: NavItem[] = [
     { label: 'parents', href: '/admin/parents', icon: UserRound },
     { label: 'payments', href: '/admin/payments', icon: Wallet },
     { label: 'transactions', href: '/admin/transactions', icon: CreditCard },
-    { label: 'attendance', href: '/admin/register/attendance', icon: CalendarClock },
-    { label: 'daily_activities', href: '/admin/register/activities', icon: CalendarCheck },
-    { label: 'progress', href: '/admin/register/progress', icon: BookOpen },
-    { label: 'growth', href: '/admin/register/growth', icon: Ruler },
-    { label: 'daily_updates', href: '/admin/register/daily-updates', icon: BellRing },
+    // The teacher screens admins can act on, grouped so the sidebar stays short.
+    {
+        label: 'teacher_views',
+        href: '',
+        icon: Eye,
+        children: [
+            { label: 'attendance', href: '/admin/register/attendance', icon: CalendarClock },
+            { label: 'daily_activities', href: '/admin/register/activities', icon: CalendarCheck },
+            { label: 'progress', href: '/admin/register/progress', icon: BookOpen },
+            { label: 'growth', href: '/admin/register/growth', icon: Ruler },
+            { label: 'daily_updates', href: '/admin/register/daily-updates', icon: BellRing },
+        ],
+    },
     { label: 'conversations', href: '/admin/conversations', icon: MessageSquare },
     { label: 'memos', href: '/admin/memos', icon: FileText },
     { label: 'activity_log', href: '/admin/activity', icon: History },

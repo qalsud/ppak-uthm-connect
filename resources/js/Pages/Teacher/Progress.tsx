@@ -76,9 +76,9 @@ export default function Progress({
     summary,
     assignedClass,
     filters,
-    shellProp,
+    shell: shellProp,
 }: {
-    shellProp?: string;
+    shell?: string;
     students: Student[];
     records: Record[];
     summary: Summary | null;

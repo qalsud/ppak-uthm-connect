@@ -39,9 +39,9 @@ export default function DailyUpdates({
     students,
     selectedClass,
     assignedClass,
-    shellProp,
+    shell: shellProp,
 }: {
-    shellProp?: string;
+    shell?: string;
     students: Student[];
     selectedClass: string;
     assignedClass?: string | null;

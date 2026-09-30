@@ -78,9 +78,9 @@ export default function TeacherAttendance({
     absenceRequests,
     upcomingAbsences,
     absenceCounts,
-    shellProp,
+    shell: shellProp,
 }: {
-    shellProp?: string;
+    shell?: string;
     students: Student[];
     selectedClass: string;
     assignedClass?: string | null;

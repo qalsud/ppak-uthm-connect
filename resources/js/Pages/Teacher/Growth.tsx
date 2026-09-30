@@ -42,9 +42,9 @@ export default function TeacherGrowth({
     averageBmi,
     selectedClass,
     assignedClass,
-    shellProp,
+    shell: shellProp,
 }: {
-    shellProp?: string;
+    shell?: string;
     students: Student[];
     records: Record[];
     latest: Record[];

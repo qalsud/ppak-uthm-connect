@@ -1,6 +1,6 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { LifeBuoy, LogOut } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ChevronDown, LifeBuoy, LogOut } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import GlobalSearch from '@/Components/global-search';
 import LanguageSwitcher from '@/Components/language-switcher';
@@ -36,9 +36,10 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
     const unreadMessages = (page.props.unreadMessages as number) ?? 0;
     const activeUrl = page.url;
 
-    const allNav = [...nav, ...bottomNav];
+    // Groups carry their links in `children`; flatten for active-state matching.
+    const allNav = [...nav.flatMap((item) => item.children ?? [item]), ...bottomNav];
     const matchScore = (href: string) =>
-        activeUrl === href ? href.length + 1000 : activeUrl.startsWith(`${href}/`) ? href.length : -1;
+        href && activeUrl === href ? href.length + 1000 : href && activeUrl.startsWith(`${href}/`) ? href.length : -1;
     const activeHref = allNav.reduce(
         (best, item) => (matchScore(item.href) > matchScore(best) ? item.href : best),
         '',
@@ -46,6 +47,23 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
     const activeNav = allNav.find((item) => item.href === activeHref);
     const heading = title ?? (activeNav ? t(activeNav.label) : t('dashboard'));
+
+    // Collapsible nav groups (e.g. admin → Teacher views). Auto-open the group
+    // that contains the current page so the active link is always visible.
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+    useEffect(() => {
+        setOpenGroups((prev) => {
+            const next = { ...prev };
+
+            nav.forEach((item) => {
+                if (item.children?.some((child) => child.href === activeHref)) {
+                    next[item.label] = true;
+                }
+            });
+
+            return next;
+        });
+    }, [activeHref, nav]);
 
     const initials = (user?.name ?? 'U')
         .split(' ')
@@ -76,15 +94,54 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
                         {/* Navigation */}
                         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-                            {nav.map((item, index) => (
-                                <SidebarLink
-                                    key={item.href}
-                                    item={item}
-                                    active={isActive(item.href)}
-                                    isNew={index === 0}
-                                    badge={item.label === 'messages' ? unreadMessages : 0}
-                                />
-                            ))}
+                            {nav.map((item, index) =>
+                                item.children ? (
+                                    <div key={item.label}>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setOpenGroups((prev) => ({
+                                                    ...prev,
+                                                    [item.label]: !prev[item.label],
+                                                }))
+                                            }
+                                            className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                                                item.children.some((child) => isActive(child.href))
+                                                    ? 'text-white'
+                                                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white'
+                                            }`}
+                                        >
+                                            <item.icon className="size-4 shrink-0" />
+                                            <span className="flex-1 text-left">{t(item.label)}</span>
+                                            <ChevronDown
+                                                className={`size-4 shrink-0 transition-transform ${
+                                                    openGroups[item.label] ? 'rotate-180' : ''
+                                                }`}
+                                            />
+                                        </button>
+                                        {openGroups[item.label] && (
+                                            <div className="mt-0.5 space-y-0.5">
+                                                {item.children.map((child) => (
+                                                    <SidebarLink
+                                                        key={child.href}
+                                                        item={child}
+                                                        active={isActive(child.href)}
+                                                        compact
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <SidebarLink
+                                        key={item.href}
+                                        item={item}
+                                        active={isActive(item.href)}
+                                        isNew={index === 0}
+                                        badge={item.label === 'messages' ? unreadMessages : 0}
+                                    />
+                                ),
+                            )}
                         </nav>
 
                         {/* Support + user */}
@@ -229,11 +286,14 @@ function SidebarLink({
     active,
     isNew,
     badge = 0,
+    compact = false,
 }: {
     item: NavItem;
     active: boolean;
     isNew?: boolean;
     badge?: number;
+    /** Nested link inside a collapsed group — smaller and indented. */
+    compact?: boolean;
 }) {
     const { t } = useI18n();
     const Icon = item.icon;
@@ -241,13 +301,15 @@ function SidebarLink({
     return (
         <Link
             href={item.href}
-            className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`group flex items-center gap-3 rounded-lg font-medium transition-colors ${
+                compact ? 'py-2 pl-8 pr-3 text-[13px]' : 'px-3 py-2.5 text-sm'
+            } ${
                 active
                     ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-white'
             }`}
         >
-            <Icon className="size-4 shrink-0" />
+            <Icon className={compact ? 'size-3.5 shrink-0' : 'size-4 shrink-0'} />
             <span className="flex-1">{t(item.label)}</span>
             {badge > 0 && (
                 <span className="rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">

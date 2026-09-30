@@ -28,9 +28,9 @@ export default function Activities({
     today,
     fields,
     records,
-    shellProp,
+    shell: shellProp,
 }: {
-    shellProp?: string;
+    shell?: string;
     students: Student[];
     today: string;
     fields: FieldMap;
