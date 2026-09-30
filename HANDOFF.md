@@ -58,6 +58,9 @@ register is clear**.
 
 ## Immediate next steps
 
+0. **PERMATA curriculum integration** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md)
+   (planned, not started): model the real curriculum (6 Bidang Pembelajaran + 4 Asas Pengasuhan),
+   theme/sub-theme planner, per-domain child assessment, and a curriculum-aligned portfolio report.
 1. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
    runs and the scheduler (`schedule:run`) is active.
 2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,

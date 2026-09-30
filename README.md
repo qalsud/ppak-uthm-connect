@@ -196,6 +196,7 @@ lang/en.json · lang/ms.json        bilingual keys
 |---|---|
 | [`HANDOFF.md`](HANDOFF.md) | **Read first in a new session** — verified state, environment, next steps |
 | [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) | The phased admin plan (all phases done) + issue register |
+| [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md) | **Planned** — model the PERMATA curriculum (6 domains, 4 asas, themes, assessment, portfolio) |
 | [`PARENT-TEACHER-REVIEW.md`](PARENT-TEACHER-REVIEW.md) | Historical parent/teacher audit + progress overhaul |
 | [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md) | Admin sweep: what was fixed, backlog progress |
 | [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md) | Photo upload design (watermark, retention, chat delivery) |
@@ -221,6 +222,8 @@ views) and **D** (admin accounts), a full **UI/i18n sweep**, and an **enriched s
 first — verified state, environment notes, working agreements and next steps.
 
 **Good places to pick up:**
+- **PERMATA curriculum** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md) (planned: the real
+  6 domains + 4 asas, theme planner, per-domain assessment, portfolio report).
 - **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger), then `migrate --force` + the scheduler.
 - **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
   growth chart, school calendar/events, light admissions pipeline.
