@@ -88,6 +88,15 @@ class User extends Authenticatable
         return $this->status === AccountStatus::Active;
     }
 
+    /** How many administrators can actually log in right now. */
+    public static function activeAdminCount(): int
+    {
+        return static::query()
+            ->where('role', UserRole::Admin)
+            ->where('status', AccountStatus::Active)
+            ->count();
+    }
+
     /** The class this teacher manages, or null when unrestricted. */
     public function assignedClass(): ?string
     {

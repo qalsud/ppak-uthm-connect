@@ -15,6 +15,7 @@ import {
     Ruler,
     Settings,
     Settings2,
+    ShieldCheck,
     Trash2,
     UserRound,
     Users,
@@ -52,6 +53,7 @@ export const adminNav: NavItem[] = [
     { label: 'centres', href: '/admin/centres', icon: Building2 },
     { label: 'fee_settings', href: '/admin/fees', icon: Settings },
     { label: 'settings', href: '/admin/settings', icon: Settings2 },
+    { label: 'administrators', href: '/admin/administrators', icon: ShieldCheck },
 ];
 
 /** Mobile bottom tab bar for admins (max 5 items). */

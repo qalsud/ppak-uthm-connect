@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -54,8 +53,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Never let the last administrator delete themselves out of the system.
-        if ($user->isAdmin() && User::query()->where('role', UserRole::Admin)->count() <= 1) {
+        // Never let the last active administrator delete themselves out.
+        if ($user->isAdmin() && User::activeAdminCount() <= 1) {
             throw ValidationException::withMessages([
                 'password' => __('approval.last_admin_guard'),
             ]);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\AdministratorController;
 use App\Http\Controllers\Admin\CentreController;
 use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -170,6 +171,12 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/parents', [ParentController::class, 'store'])->name('parents.store');
             Route::put('/parents/{user}', [ParentController::class, 'update'])->name('parents.update');
             Route::delete('/parents/{user}', [ParentController::class, 'destroy'])->name('parents.destroy');
+
+            // Administrator accounts (create/edit/deactivate; guard the last one).
+            Route::get('/administrators', [AdministratorController::class, 'index'])->name('administrators.index');
+            Route::post('/administrators', [AdministratorController::class, 'store'])->name('administrators.store');
+            Route::put('/administrators/{user}', [AdministratorController::class, 'update'])->name('administrators.update');
+            Route::delete('/administrators/{user}', [AdministratorController::class, 'destroy'])->name('administrators.destroy');
 
             Route::get('/memos', [MemoController::class, 'index'])->name('memos.index');
             Route::post('/memos', [MemoController::class, 'store'])->name('memos.store');

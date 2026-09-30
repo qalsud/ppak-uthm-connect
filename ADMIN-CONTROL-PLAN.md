@@ -166,9 +166,11 @@ cross-centre leak in `canManage()` widens with every screen added.
 
 ## Phase D — Admin account management
 
-- [ ] **D1** There is **no way to create, edit or delete an admin account** — they are
-      seeder-only. Add an admin-users screen (create, reset password, deactivate).
-- [ ] **D2** Guard against removing the last active admin.
+- [x] **D1** Admin-users screen at `/admin/administrators` — create, edit, reset password,
+      activate/deactivate, delete. ✅
+- [x] **D2** Guards: **cannot delete your own admin account** here, and **cannot remove the last
+      active admin** (on delete or deactivate). The profile self-delete guard now counts *active*
+      admins too. ✅
 
 ---
 
@@ -224,4 +226,6 @@ _Append as each phase lands._
 | Register clearing 2 | ✅ **done** (30 Sep 2026) — G-i3, G-i9, C-i4, C-i6, C-i7 fixed; G-i11/C-i5/C-i8 accepted by decision |
 | B — Settings + money | ✅ **done** — B1–B8 (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler; Stripe transactions + refunds) |
 | E — Oversight views | ✅ **done** — E1 (student detail gaps), E2 (activity-log filters + CSV), E3 (conversation reply/reassign/close), E4 (dashboard) |
-| D — Admin accounts | ⬜ **next** |
+| D — Admin accounts | ✅ **done** — `/admin/administrators` + last-admin guards |
+
+**All phases complete.** F · A · C · G · B · E · D are done and the issue register is clear.

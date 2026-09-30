@@ -19,7 +19,7 @@
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` — "clear remaining register items" |
-| Tests | **240 passing** (`php artisan test`) |
+| Tests | **247 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — 91 frontend route names verified |
 | Seeder | idempotent, re-runnable (`php artisan migrate:fresh --seed`) |
@@ -44,7 +44,9 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 | **G — Two centres** | ✅ done (per-centre fee rates landed in Phase B) | `7ac8415` → `4e634f0` |
 | **B — Settings + money** | ✅ done — B1–B8 | — |
 | **E — Oversight views** | ✅ done — E1–E4 | — |
-| **D — Admin accounts** | ⬜ next | — |
+| **D — Admin accounts** | ✅ done | — |
+
+**All phases of `ADMIN-CONTROL-PLAN.md` are complete** (F · A · C · G · B · E · D).
 
 ### Two centres — done
 
@@ -77,10 +79,10 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 
 ## Immediate next steps
 
-1. **Phases B and E are done** — settings + money (per-centre fees, record editing, Stripe
-   refunds), and oversight (student-detail gaps, activity-log filters + CSV, conversation
-   reply/reassign/close, dashboard year + tiles).
-2. Continue with **Phase D** (admin account management) — see `ADMIN-CONTROL-PLAN.md`.
+1. **All planned phases are done** (F · A · C · G · B · E · D) and the issue register is clear.
+2. **Next, by value:** hosting/deploy (see `DEPLOY.md`); then the remaining
+   `FUNCTIONAL-REVIEW.md` / `LITTLELIVES-COMPARISON.md` Tier-2 items (absence requests ✅ already
+   shipped, term progress-report PDF, growth chart, school calendar, true realtime chat).
 
 ### Issue register — status (30 Sep 2026)
 
