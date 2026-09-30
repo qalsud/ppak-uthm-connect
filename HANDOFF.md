@@ -4,6 +4,10 @@
 **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this first in a new
 session.***
 
+> **Session wrap — 1 Oct 2026.** Paused here. Everything is **committed and pushed** to `main`, the
+> working tree is **clean**, and **no work is in progress**. The only open thread is the
+> [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) (KIV). Nothing blocks a fresh start.
+
 ---
 
 ## Read these, in this order

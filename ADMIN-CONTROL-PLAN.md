@@ -243,3 +243,9 @@ _Append as each phase lands._
   issues found were fixed (see the *UI/i18n sweep* row above). i18n parity is clean, EN ↔ MS.
 - **Demo data** — the seeder now produces a dataset that exercises every feature, so a fresh
   `migrate:fresh --seed` is a ready demo.
+
+## Next initiative (not part of this plan)
+
+- **[`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md)** — model the real PERMATA curriculum
+  (6 Bidang Pembelajaran + 4 Asas Pengasuhan), a theme planner, per-domain assessment and a
+  curriculum-aligned portfolio. **On hold (KIV)** pending stakeholder input.
