@@ -9,7 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Conversation extends Model
 {
-    protected $fillable = ['student_id', 'teacher_id'];
+    protected $fillable = ['student_id', 'teacher_id', 'closed_at'];
+
+    protected $casts = [
+        'closed_at' => 'datetime',
+    ];
+
+    public function isClosed(): bool
+    {
+        return $this->closed_at !== null;
+    }
 
     public function student(): BelongsTo
     {

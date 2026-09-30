@@ -111,7 +111,8 @@ All of these are PHP constants today, **duplicated in the frontend** (so they ca
       alongside attendance/progress/updates/activities/payments. ✅
       _Still open: editing the child record from the detail page (use the Students list for now)._
 - [x] **E2 Activity log** — filter by user / action / date range; CSV export (respects the filters). ✅
-- [ ] **E3 Conversations** — send, delete, reassign the assigned teacher, archive/close.
+- [x] **E3 Conversations** — admin can **reply** as themselves, **delete** any message, **reassign**
+      the teacher (centre-scoped), and **close/reopen** the thread. ✅
 - [x] **E4 Dashboard** — year selector for the income chart, **month-over-month** delta, and
       actionable **"unpaid this month"** / **"not checked in today"** tiles that link through. ✅
 
@@ -222,5 +223,5 @@ _Append as each phase lands._
 | Register clearing | ✅ **done** (`e6e2464`) |
 | Register clearing 2 | ✅ **done** (30 Sep 2026) — G-i3, G-i9, C-i4, C-i6, C-i7 fixed; G-i11/C-i5/C-i8 accepted by decision |
 | B — Settings + money | ✅ **done** — B1–B8 (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler; Stripe transactions + refunds) |
-| E — Oversight views | ⬜ **next** |
-| D — Admin accounts | ⬜ not started |
+| E — Oversight views | ✅ **done** — E1 (student detail gaps), E2 (activity-log filters + CSV), E3 (conversation reply/reassign/close), E4 (dashboard) |
+| D — Admin accounts | ⬜ **next** |

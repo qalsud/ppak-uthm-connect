@@ -127,6 +127,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
             Route::get('/conversations/export', [ConversationController::class, 'export'])->name('conversations.export');
             Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+            Route::post('/conversations/{conversation}', [ConversationController::class, 'send'])->name('conversations.send');
+            Route::patch('/conversations/{conversation}/teacher', [ConversationController::class, 'reassign'])->name('conversations.reassign');
+            Route::patch('/conversations/{conversation}/close', [ConversationController::class, 'close'])->name('conversations.close');
+            Route::patch('/conversations/{conversation}/reopen', [ConversationController::class, 'reopen'])->name('conversations.reopen');
 
             Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/export', [TeacherController::class, 'export'])->name('teachers.export');

@@ -19,7 +19,7 @@
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` — "clear remaining register items" |
-| Tests | **226 passing** (`php artisan test`) |
+| Tests | **240 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — 91 frontend route names verified |
 | Seeder | idempotent, re-runnable (`php artisan migrate:fresh --seed`) |
@@ -43,8 +43,8 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 | **C — Editable lists** | ✅ done | `1885857` |
 | **G — Two centres** | ✅ done (per-centre fee rates landed in Phase B) | `7ac8415` → `4e634f0` |
 | **B — Settings + money** | ✅ done — B1–B8 | — |
-| **E — Oversight views** | ⬜ next | — |
-| **D — Admin accounts** | ⬜ not started | — |
+| **E — Oversight views** | ✅ done — E1–E4 | — |
+| **D — Admin accounts** | ⬜ next | — |
 
 ### Two centres — done
 
@@ -77,9 +77,10 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 
 ## Immediate next steps
 
-1. **Phase B is done** — `/admin/settings` plus money: versioned **per-centre fee rates**,
-   editable fee records, and **Stripe refunds** (`/admin/transactions`).
-2. Continue with **Phase E** (oversight views) — see `ADMIN-CONTROL-PLAN.md`.
+1. **Phases B and E are done** — settings + money (per-centre fees, record editing, Stripe
+   refunds), and oversight (student-detail gaps, activity-log filters + CSV, conversation
+   reply/reassign/close, dashboard year + tiles).
+2. Continue with **Phase D** (admin account management) — see `ADMIN-CONTROL-PLAN.md`.
 
 ### Issue register — status (30 Sep 2026)
 

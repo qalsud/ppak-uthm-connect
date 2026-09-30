@@ -6,6 +6,7 @@ import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
@@ -32,6 +33,7 @@ type Row = {
     messages_count: number;
     last_message: string | null;
     last_date: string | null;
+    closed: boolean;
 };
 
 
@@ -123,6 +125,11 @@ export default function AdminConversations() {
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     {row.student}
+                                                    {row.closed && (
+                                                        <Badge variant="outline" className="text-[10px] font-normal">
+                                                            {t('closed_label')}
+                                                        </Badge>
+                                                    )}
                                                 </span>
                                             </TableCell>
                                             <TableCell>{classLabel(row.class)}</TableCell>

@@ -83,6 +83,7 @@ class ConversationService
             'messages' => $messages,
             'has_more' => $hasMore,
             'oldest_id' => $messages->first()?->id,
+            'closed' => $conversation->isClosed(),
         ];
     }
 
@@ -202,6 +203,27 @@ class ConversationService
             ))
             ->when($class, fn ($q) => $q->where(fn ($w) => $w->where('class', $class)->orWhereNull('class')))
             ->get();
+    }
+
+    /**
+     * Active teachers an admin may assign to a conversation — scoped to the
+     * child's centre (plus unassigned/unrestricted staff).
+     *
+     * @return Collection<int, User>
+     */
+    public function reassignableTeachers(Conversation $conversation): Collection
+    {
+        $centreId = $conversation->student?->centre_id;
+
+        return User::query()
+            ->where('role', UserRole::Teacher)
+            ->where('status', AccountStatus::Active)
+            ->when($centreId, fn ($q) => $q->where(fn ($w) => $w
+                ->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId))
+                ->orWhereDoesntHave('centres')
+            ))
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     /** Unread inbound messages for a user (drives the nav/bell badge). */

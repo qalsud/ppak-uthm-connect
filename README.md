@@ -111,7 +111,7 @@ otherwise `php artisan serve` → http://localhost:8000.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 226 tests / 1538 assertions
+php artisan test      # Pest - 240 tests / 1711 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -182,11 +182,10 @@ lang/en.json · lang/ms.json        bilingual keys
 ## Continuing this work (handoff)
 
 **Where we left off.** All work is committed and pushed to `main`
-(`git log -1` for the latest commit). **226 tests / 1538 assertions** pass
+(`git log -1` for the latest commit). **240 tests / 1711 assertions** pass
 (`php artisan test`), and the frontend builds clean (`npm run build`). The admin **issue
-register is clear**, and **Phase B is done** — `/admin/settings`, versioned per-centre fee
-rates, editable fee records, and Stripe refunds (`/admin/transactions`). **Phase E
-(oversight views)** is next.
+register is clear**; **Phase B (settings + money)** and **Phase E (oversight views)** are done.
+**Phase D (admin account management)** is next.
 
 **Live demo:** stopped/finished — the Cloudflare quick tunnel URL is no longer live. To bring it back,
 follow [`DEPLOY.md`](DEPLOY.md) (the URL changes on each restart, so regenerate the demo PDF too).

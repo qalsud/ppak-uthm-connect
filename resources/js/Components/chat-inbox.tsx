@@ -62,6 +62,7 @@ export type ChatOpen = {
     messages: ChatMessage[];
     has_more: boolean;
     oldest_id: number | null;
+    closed?: boolean;
 };
 
 type Props = {
@@ -74,6 +75,8 @@ type Props = {
     onStart: (studentId: number) => void;
     onBack?: () => void;
     readOnly?: boolean;
+    /** Admin oversight: allow deleting any message, not just your own. */
+    canModerate?: boolean;
 };
 
 const initials = (name: string) =>
@@ -103,6 +106,7 @@ export default function ChatInbox({
     onStart,
     onBack,
     readOnly = false,
+    canModerate = false,
 }: Props) {
     const { t } = useI18n();
     const [body, setBody] = useState('');
@@ -527,18 +531,20 @@ export default function ChatInbox({
                                                     </span>
                                                 </div>
 
-                                                {mine && !readOnly && !m.is_deleted && (
+                                                {!readOnly && !m.is_deleted && (mine || canModerate) && (
                                                     <div className="flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditing(m);
-                                                                setEditBody(m.body);
-                                                            }}
-                                                            className="rounded-md p-1 text-muted-foreground hover:bg-accent"
-                                                            aria-label={t('edit')}
-                                                        >
-                                                            <Pencil className="size-3.5" />
-                                                        </button>
+                                                        {mine && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditing(m);
+                                                                    setEditBody(m.body);
+                                                                }}
+                                                                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+                                                                aria-label={t('edit')}
+                                                            >
+                                                                <Pencil className="size-3.5" />
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => remove(m)}
                                                             className="rounded-md p-1 text-destructive hover:bg-accent"
