@@ -1,11 +1,19 @@
 # PERMATA Curriculum — integration plan
 
-*Planning pass, 30 Sep 2026. Based on online research into **Kurikulum PERMATA Negara** and **KSPK**,
-mapped against what the system already stores. Nothing here is built yet — this is the design to review
-before we start.*
+> ## 🟡 Status: ON HOLD (KIV) — 1 Oct 2026
+>
+> **Parked pending stakeholder input.** The plan is researched and drafted, but we need answers to the
+> questions in [§7 *Stakeholder input needed*](#7-stakeholder-input-needed-blocking-start) **before**
+> writing any code. **Nothing here is built yet.** Do not treat the phases below as approved — they are
+> a proposal to discuss with the centre's stakeholders.
+>
+> When input arrives, restart at **Phase P1** and update this status.
 
-> **Goal.** Make the system a first-class **PERMATA** tool: model the real curriculum (the 4 Asas
-> Pengasuhan and the 6 Bidang Pembelajaran), the theme/sub-theme activity structure, per-child
+*Planning pass, 30 Sep 2026. Based on online research into **Kurikulum PERMATA Negara** and **KSPK**,
+mapped against what the system already stores.*
+
+> **Goal (proposal).** Make the system a first-class **PERMATA** tool: model the real curriculum (the
+> 4 Asas Pengasuhan and the 6 Bidang Pembelajaran), the theme/sub-theme activity structure, per-child
 > developmental assessment, and a curriculum-aligned portfolio — instead of today's loose
 > "development area" free text.
 
@@ -172,18 +180,31 @@ quality_assessments (later)
 
 ---
 
-## 7. Dependencies & open questions
+## 7. Stakeholder input needed (blocking start)
 
-1. **Academic terms (F5)** — P2's "per period" assessment and P5's term report both want a **`terms`
-   table** (`name`, `start`, `end`, current term setting) and `term_id` on progress/assessments. Propose
-   adding a **lightweight terms** slice at the start of P2.
-2. **Which Tadika curriculum?** — model **KSPK** now, or wait for **Kurikulum Prasekolah 2026**? (The
-   catalogue is data-driven, so both are possible.)
-3. **Rating scale** — 3-point (Emerging/Developing/Secure) vs 4-point (add Exceeding). *Proposed: 4-point, editable.*
-4. **Domain names** — is BM the canonical label with EN translation, or bilingual from the start? *Proposed: both, BM canonical.*
-5. **Legacy data** — keep the existing `development_proficiency` values as-is and map them where sensible (no data loss).
-6. **Age banding** — does Taska use *only* PERMATA and Tadika *only* KSPK, or can a centre run both? *Proposed: centre → curriculum, editable.*
-7. **PERMATA Q** — in scope or nice-to-have? *Proposed: later.*
+**Who to ask:** PPAK UTHM centre leadership / the curriculum coordinator (and any KPM Bahagian PERMATA
+or PERMATA Q documents the centre already follows).
+
+**Must be answered before P1 — nothing gets built until these are settled.**
+
+| # | Question | Why it matters | Proposed default |
+|---|---|---|---|
+| 1 | Is the centre **officially using Kurikulum PERMATA Negara** (PERMATA-registered / PERMATA Q), or does it follow its own curriculum? | Decides whether we model PERMATA at all versus a custom curriculum | Model PERMATA |
+| 2 | **Which curriculum per age band?** Taska (0–4) → PERMATA; Tadika (5–6) → **KSPK** or the new **Kurikulum Prasekolah 2026**? | Decides the domain sets | Taska PERMATA / Tadika KSPK |
+| 3 | **Who owns and maintains the lists** (domains, themes, ratings), and do they want to edit them in-app? | Decides whether lists live in the DB (admin-editable) or are fixed | Admin-editable |
+| 4 | The **real theme/sub-theme plan** for the current year (not our invented starter set). | We should seed *their* themes, not guesses. | Gather their yearly plan |
+| 5 | How do they **record progress today** (report card, portfolio, PERMATA Q self-assessment)? | Decides the rating scale and the report format | Match their documents |
+| 6 | Does the centre run **academic terms/semesters**, and what are the dates? | P2/P5 need a term concept | Add a lightweight `terms` table |
+| 7 | Do they have **PERMATA Q indicators** or a portfolio template to match? | Decides P5 output + P6 scope | Match their documents |
+| 8 | **Priority** — which of the 6 phases actually matter, and in what order? | We may not need all six | Confirm before building |
+| 9 | **Language** — is BM the canonical label with EN translation? | Affects list seeding + parity tests | BM canonical, EN translation |
+
+**Proposed flow once answers arrive:** confirm scope → collect the real curriculum/theme documents →
+seed the lists (P1) → agree the report/portfolio format (P5) → build P1→P5 (P6 optional).
+
+_The other notes (legacy `development_proficiency` values are kept as-is with no data loss; the
+catalogue is data-driven so supporting several curricula is straightforward) are implementation details,
+not blockers._
 
 ---
 
@@ -199,11 +220,15 @@ _Found during a phase, deferred to a later pass. Nothing here yet._
 
 ## 9. Progress log
 
+**All phases are parked (KIV) pending stakeholder input — see §7.**
+
 | Phase | Status |
 |---|---|
-| P1 — Curriculum catalogue | ⬜ not started |
-| P2 — Developmental assessment (+ terms) | ⬜ not started |
-| P3 — Theme lesson planner | ⬜ not started |
-| P4 — 4 Asas Pengasuhan tracking | ⬜ not started |
-| P5 — Portfolio / term report (PDF) | ⬜ not started |
-| P6 — PERMATA Q self-assessment | ⬜ not started |
+| P1 — Curriculum catalogue | ⏸️ parked |
+| P2 — Developmental assessment (+ terms) | ⏸️ parked |
+| P3 — Theme lesson planner | ⏸️ parked |
+| P4 — 4 Asas Pengasuhan tracking | ⏸️ parked |
+| P5 — Portfolio / term report (PDF) | ⏸️ parked |
+| P6 — PERMATA Q self-assessment | ⏸️ parked |
+
+_Resume when §7 is answered._

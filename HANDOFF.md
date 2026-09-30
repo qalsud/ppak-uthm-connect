@@ -1,7 +1,8 @@
 # Session Handoff — PPAK UTHM Connect
 
-*Updated 30 Sep 2026 at the end of the session that completed the admin plan. **Read this first in a
-new session.***
+*Updated 1 Oct 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026. The
+**PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this first in a new
+session.***
 
 ---
 
@@ -59,8 +60,8 @@ register is clear**.
 ## Immediate next steps
 
 0. **PERMATA curriculum integration** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md)
-   (planned, not started): model the real curriculum (6 Bidang Pembelajaran + 4 Asas Pengasuhan),
-   theme/sub-theme planner, per-domain child assessment, and a curriculum-aligned portfolio report.
+   is **on hold (KIV)** pending **stakeholder input** (see §7 of that file). Researched and drafted,
+   not built; resume when the stakeholder questions are answered.
 1. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
    runs and the scheduler (`schedule:run`) is active.
 2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
