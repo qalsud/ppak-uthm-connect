@@ -97,7 +97,8 @@ All of these are PHP constants today, **duplicated in the frontend** (so they ca
       plus **per-centre overrides** (`fee_settings.centre_id`, closes **G-i5**). ✅
 - [x] **B3 Financial records** — admin can edit **amount, month, due date, overtime**. ✅
 - [x] **B4 Due-date day** — now `setting('fees.due_day', 7)`. ✅
-- [ ] **B5 Stripe `Payment` transactions** — admin list/detail **and refund**.
+- [x] **B5 Stripe `Payment` transactions** — admin list + detail and **refund** (`refund_id`,
+      `refunded_amount`, `refund_reason`, `refunded_at`); a refund puts the covered months back to unpaid. ✅
 - [x] **B6 Media/photo settings** — retention days, watermark on/off, max upload, target size. ✅
 - [x] **B7 Operational rules** — absence `MAX_DAYS`, chat edit window, message
       length/attachment limits, reminder lead days. ✅
@@ -180,11 +181,7 @@ completes. Nothing here is a blocker; it is a debt list.
 
 ### Still open
 
-| # | Issue | Impact | Where |
-|---|---|---|---|
-| G-i5 | `FeeSetting` is global — one rate for both centres | Per-centre fee rates impossible | `Admin/PaymentController`, `FeeSetting` — **closes in Phase B** |
-
-_Everything else that used to be here was cleared or accepted on 30 Sep 2026 (see below)._
+_None — the register is clear._ `G-i5` closed with Phase B (per-centre fee rates).
 
 ### Accepted by decision (documented, no code change)
 
@@ -196,6 +193,8 @@ _Everything else that used to be here was cleared or accepted on 30 Sep 2026 (se
 | **G-i12** | Dev DB needed a re-seed after adding centres | Informational — not a bug. Struck from the register. |
 
 ### Cleared (kept for the record)
+
+**By Phase B:** G-i5 (per-centre fee rates — `fee_settings.centre_id`).
 
 **Register-clearing pass 2 (30 Sep 2026):** G-i3 (centre filter on the student/teacher lists),
 G-i9 (unrestricted-staff UI warning), C-i4 (seeder values verified against the live lists),
@@ -221,6 +220,6 @@ _Append as each phase lands._
 | G — Two centres | ✅ **done** except per-centre fee rates (`G8`) — `7ac8415` → `4e634f0` |
 | Register clearing | ✅ **done** (`e6e2464`) |
 | Register clearing 2 | ✅ **done** (30 Sep 2026) — G-i3, G-i9, C-i4, C-i6, C-i7 fixed; G-i11/C-i5/C-i8 accepted by decision |
-| B — Settings + money | 🟡 **in progress** — B1/B2/B3/B4/B6/B7/B8 done (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler). **B5 remaining** (Stripe refunds) |
-| E — Oversight views | ⬜ not started |
+| B — Settings + money | ✅ **done** — B1–B8 (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler; Stripe transactions + refunds) |
+| E — Oversight views | ⬜ **next** |
 | D — Admin accounts | ⬜ not started |

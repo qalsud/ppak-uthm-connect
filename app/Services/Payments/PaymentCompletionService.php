@@ -63,6 +63,48 @@ class PaymentCompletionService
         return $result;
     }
 
+    /**
+     * Refund a completed payment: mark it refunded and put its covered fee
+     * records back to unpaid (the fee is owed again). Idempotent.
+     */
+    public function refund(Payment $payment, ?string $refundId = null, ?string $reason = null): Payment
+    {
+        if ($payment->status === 'refunded') {
+            return $payment->fresh();
+        }
+
+        return DB::transaction(function () use ($payment, $refundId, $reason) {
+            $ids = $payment->financial_record_ids ?? [];
+
+            $query = FinancialRecord::query()->where('status', 'paid');
+
+            if (! empty($ids)) {
+                $query->whereIn('id', $ids);
+            } else {
+                $query->where('student_id', $payment->student_id);
+            }
+
+            foreach ($query->get() as $record) {
+                $record->update([
+                    'status' => 'unpaid',
+                    'paid_on' => null,
+                    'ReceiptGenerated' => false,
+                    'stripe_session_id' => null,
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'refunded',
+                'refund_id' => $refundId,
+                'refunded_amount' => $payment->amount,
+                'refund_reason' => $reason,
+                'refunded_at' => now(),
+            ]);
+
+            return $payment->fresh();
+        });
+    }
+
     /** The financial records this payment covers (for the success page/receipt). */
     public function coveredRecords(Payment $payment)
     {

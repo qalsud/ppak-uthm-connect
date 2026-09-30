@@ -19,7 +19,7 @@
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` — "clear remaining register items" |
-| Tests | **208 passing** (`php artisan test`) |
+| Tests | **226 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — 91 frontend route names verified |
 | Seeder | idempotent, re-runnable (`php artisan migrate:fresh --seed`) |
@@ -41,10 +41,10 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 | **F — Delete safety** | ✅ done | `9a407eb` |
 | **A — Admin acts everywhere a teacher can** | ✅ done | `fdaa0c5` |
 | **C — Editable lists** | ✅ done | `1885857` |
-| **G — Two centres** | ✅ done except **per-centre fee rates (G8)** | `7ac8415` → `4e634f0` |
-| **B — Settings + money** | ❌ not started | — |
-| **E — Oversight views** | ❌ not started | — |
-| **D — Admin accounts** | ❌ not started | — |
+| **G — Two centres** | ✅ done (per-centre fee rates landed in Phase B) | `7ac8415` → `4e634f0` |
+| **B — Settings + money** | ✅ done — B1–B8 | — |
+| **E — Oversight views** | ⬜ next | — |
+| **D — Admin accounts** | ⬜ not started | — |
 
 ### Two centres — done
 
@@ -77,15 +77,15 @@ committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clear
 
 ## Immediate next steps
 
-1. **Issue register is now clear** — the only open item is **G-i5** (per-centre fee rates),
-   which is a Phase B deliverable.
-2. Continue with **Phase B** (settings + money), which also closes **G-i5**.
+1. **Phase B is done** — `/admin/settings` plus money: versioned **per-centre fee rates**,
+   editable fee records, and **Stripe refunds** (`/admin/transactions`).
+2. Continue with **Phase E** (oversight views) — see `ADMIN-CONTROL-PLAN.md`.
 
 ### Issue register — status (30 Sep 2026)
 
 Full detail lives in `ADMIN-CONTROL-PLAN.md` → *Issue register*.
 
-**Open:** `G-i5` — `FeeSetting` is global; one rate for both centres. **Closes in Phase B.**
+**Open:** none — the register is clear. `G-i5` (per-centre fee rates) closed with Phase B.
 
 **Fixed in the second clearing pass:** `G-i3` (centre filter on the student/teacher lists),
 `G-i9` (unrestricted-staff UI warning), `C-i4` (seeder values verified against the live lists —

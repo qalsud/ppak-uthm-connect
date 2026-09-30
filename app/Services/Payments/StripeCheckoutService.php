@@ -5,7 +5,9 @@ namespace App\Services\Payments;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\User;
+use RuntimeException;
 use Stripe\Checkout\Session as StripeSession;
+use Stripe\Refund as StripeRefund;
 use Stripe\Stripe;
 
 class StripeCheckoutService
@@ -67,5 +69,33 @@ class StripeCheckoutService
 
         return $session->payment_status === 'paid'
             || $session->status === 'complete';
+    }
+
+    /**
+     * Refund a completed payment in full via Stripe and return the refund id.
+     *
+     * @throws RuntimeException when Stripe is unavailable or the payment has no
+     *                          retrievable payment intent.
+     */
+    public function refund(Payment $payment): string
+    {
+        if (! $this->isConfigured() || ! $payment->stripe_session_id) {
+            throw new RuntimeException('Stripe is not configured for this payment.');
+        }
+
+        Stripe::setApiKey(config('services.stripe.secret_key'));
+
+        $session = StripeSession::retrieve($payment->stripe_session_id);
+        $intent = $session->payment_intent;
+
+        if (! $intent) {
+            throw new RuntimeException('The payment has no charge to refund.');
+        }
+
+        $refund = StripeRefund::create([
+            'payment_intent' => is_string($intent) ? $intent : $intent->id,
+        ]);
+
+        return $refund->id;
     }
 }

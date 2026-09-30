@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ListController;
 use App\Http\Controllers\Admin\MemoController;
 use App\Http\Controllers\Admin\ParentController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentTransactionController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StudentContactController;
@@ -191,6 +192,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/centres/switch', [CentreController::class, 'switch'])->name('centres.switch');
             Route::put('/centres/{centre}', [CentreController::class, 'update'])->name('centres.update');
             Route::delete('/centres/{centre}', [CentreController::class, 'destroy'])->name('centres.destroy');
+
+            // Online (Stripe) transactions: list + refund.
+            Route::get('/transactions', [PaymentTransactionController::class, 'index'])->name('transactions.index');
+            Route::post('/transactions/{payment}/refund', [PaymentTransactionController::class, 'refund'])->name('transactions.refund');
 
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
             Route::get('/payments/{record}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
