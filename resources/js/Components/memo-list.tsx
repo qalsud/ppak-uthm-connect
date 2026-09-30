@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { formatDate } from '@/lib/date';
 
 type Memo = {
     id: number;
@@ -23,8 +24,7 @@ export default function MemoList({ memos, emptyLabel }: { memos: Memo[]; emptyLa
                         <CardHeader className="pb-3">
                             <CardTitle>{memo.title}</CardTitle>
                             <CardDescription>
-                                {memo.author?.name} ·{' '}
-                                {new Date(memo.created_at).toLocaleDateString()}
+                                {memo.author?.name} · {formatDate(memo.created_at)}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
@@ -65,7 +66,7 @@ export default function PaymentSuccess({
                         {payment.paid_at && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">{t('payments.paid_on')}</span>
-                                <span>{new Date(payment.paid_at).toLocaleString()}</span>
+                                <span>{formatDate(payment.paid_at)}</span>
                             </div>
                         )}
 
@@ -105,7 +106,7 @@ export default function PaymentSuccess({
                                             <TableCell>{r.month}</TableCell>
                                             <TableCell>RM {Number(r.amount).toFixed(2)}</TableCell>
                                             <TableCell>
-                                                {r.paid_on ? new Date(r.paid_on).toLocaleDateString() : '—'}
+                                                {r.paid_on ? formatDate(r.paid_on) : '—'}
                                             </TableCell>
                                         </TableRow>
                                     ))}
