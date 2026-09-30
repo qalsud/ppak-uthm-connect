@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\Centre;
 use App\Models\DailyActivity;
+use App\Models\GrowthRecord;
+use App\Models\MedicationRequest;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\Lists;
@@ -108,6 +111,27 @@ class StudentController extends Controller
                 ->latest('created_at')
                 ->limit(8)
                 ->get(['id', 'month', 'amount', 'status', 'paid_on']),
+            'absences' => $student->absenceRequests()
+                ->with('attachments')
+                ->latest('start_date')
+                ->limit(6)
+                ->get()
+                ->map(fn (AbsenceRequest $a) => $a->summary())
+                ->values(),
+            'medications' => $student->medicationRequests()
+                ->latest('date')
+                ->latest('id')
+                ->limit(10)
+                ->get()
+                ->map(fn (MedicationRequest $m) => $m->summary())
+                ->values(),
+            'growth' => $student->growthRecords()
+                ->latest('date')
+                ->latest('id')
+                ->limit(12)
+                ->get()
+                ->map(fn (GrowthRecord $r) => $r->summary())
+                ->values(),
             'fields' => DailyActivity::fields(),
         ]);
     }

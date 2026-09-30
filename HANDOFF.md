@@ -132,6 +132,10 @@ class is already the enforced key), `C-i5` (migration defaults — document, don
    Use the `edit` tool, or `[System.IO.File]::WriteAllText` with explicit `::ReadAllText`.
 4. **`php artisan check:routes`** exists precisely to catch frontend/backend route drift.
 5. Keep `ADMIN-CONTROL-PLAN.md` → *Issue register* updated as issues are found **and** fixed.
+6. **After any migration, run `php artisan migrate` on the dev MySQL DB.** Tests use SQLite
+   `:memory:` and rebuild the schema every run, so a missing table/column **passes the suite** and
+   only surfaces in the browser as a `Column not found` 500. The demo `docker/entrypoint.sh`
+   migrates automatically; local Laragon does not.
 
 ---
 

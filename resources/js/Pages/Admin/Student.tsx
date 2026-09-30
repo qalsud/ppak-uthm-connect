@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarCheck, CalendarX, CreditCard, GraduationCap, History, Pill, Ruler, Users } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
 import PhotoThumb from '@/Components/photo-thumb';
@@ -50,6 +50,50 @@ type Progress = {
     photo?: PhotoInfo | null;
 };
 
+type Absence = {
+    id: number;
+    start_date: string | null;
+    end_date: string | null;
+    days: number;
+    type: string;
+    reason: string | null;
+    status: string;
+    review_note: string | null;
+    reviewed_by: string | null;
+    requested_by: string | null;
+    attachments: Array<{
+        id: number;
+        url: string;
+        thumb: string;
+        name: string | null;
+        mime: string;
+        is_pdf: boolean;
+    }>;
+};
+
+type Medication = {
+    id: number;
+    date: string | null;
+    medicine: string;
+    dosage: string | null;
+    time_due: string | null;
+    notes: string | null;
+    status: string;
+    given_at: string | null;
+    given_by: string | null;
+    administered_note: string | null;
+};
+
+type Growth = {
+    id: number;
+    date: string | null;
+    height_cm: number | null;
+    weight_kg: number | null;
+    bmi: number | null;
+    notes: string | null;
+    recorded_by: string | null;
+};
+
 type Page = PageProps<{
     student: Student;
     profile: StudentProfile;
@@ -73,6 +117,9 @@ type Page = PageProps<{
         status: 'paid' | 'unpaid';
         paid_on: string | null;
     }>;
+    absences: Absence[];
+    medications: Medication[];
+    growth: Growth[];
     fields: Record<string, string>;
 }>;
 
@@ -80,7 +127,14 @@ export default function AdminStudent() {
     const { t } = useI18n();
     const lists = useLists();
     const { props } = usePage<Page>();
-    const { student, profile, contacts, attendance, updates, activities, progress, payments, fields } = props;
+    const { student, profile, contacts, attendance, updates, activities, progress, payments, absences, medications, growth, fields } =
+        props;
+
+    const absenceVariant = (status: string) =>
+        status === 'approved' ? 'active' : status === 'declined' ? 'rejected' : 'pending';
+
+    const medicationVariant = (status: string) =>
+        status === 'given' ? 'active' : status === 'declined' ? 'rejected' : 'pending';
 
     const statusMeta = (status: HistoryRow['status']) =>
         status === 'school'
@@ -200,6 +254,141 @@ export default function AdminStudent() {
                                     </div>
                                 );
                             })}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Absences */}
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <CalendarX className="size-4 text-primary" />
+                        {t('absences')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {absences.length === 0 ? (
+                        <p className="py-6 text-center text-sm text-muted-foreground">{t('no_data')}</p>
+                    ) : (
+                        <div className="space-y-1.5">
+                            {absences.map((a) => (
+                                <div
+                                    key={a.id}
+                                    className="flex items-start justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-medium">
+                                            {formatDate(a.start_date)} → {formatDate(a.end_date)}
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            {t(a.type, a.type)} · {a.days} {t('absence_days')}
+                                            {a.reason ? ` · ${a.reason}` : ''}
+                                        </p>
+                                        {a.attachments.length > 0 && (
+                                            <div className="mt-1 flex flex-wrap gap-2">
+                                                {a.attachments.map((att) => (
+                                                    <a
+                                                        key={att.id}
+                                                        href={att.url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-[11px] text-primary underline"
+                                                    >
+                                                        {att.name ?? t('absence_proof')}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <StatusBadge
+                                        status={absenceVariant(a.status)}
+                                        label={t(a.status, a.status)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Medication */}
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <Pill className="size-4 text-primary" />
+                        {t('medications')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {medications.length === 0 ? (
+                        <p className="py-6 text-center text-sm text-muted-foreground">{t('no_medication')}</p>
+                    ) : (
+                        <div className="space-y-1.5">
+                            {medications.map((m) => (
+                                <div
+                                    key={m.id}
+                                    className="flex items-start justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-medium">
+                                            {formatDate(m.date)} · {m.medicine}
+                                            {m.dosage ? ` (${m.dosage})` : ''}
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            {m.time_due ? `${t('time_due')}: ${m.time_due}` : ''}
+                                            {m.given_by ? ` · ${t('recorded_by')}: ${m.given_by}` : ''}
+                                            {m.given_at ? ` @ ${m.given_at}` : ''}
+                                        </p>
+                                        {(m.notes || m.administered_note) && (
+                                            <p className="text-[11px] italic text-muted-foreground">
+                                                {m.administered_note ?? m.notes}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <StatusBadge
+                                        status={medicationVariant(m.status)}
+                                        label={t(`medication.${m.status}`, m.status)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Growth */}
+            <Card className="mb-4 rounded-2xl border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <Ruler className="size-4 text-primary" />
+                        {t('growth')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {growth.length === 0 ? (
+                        <p className="py-6 text-center text-sm text-muted-foreground">{t('no_growth')}</p>
+                    ) : (
+                        <div className="space-y-1.5">
+                            {growth.map((g) => (
+                                <div
+                                    key={g.id}
+                                    className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2 text-xs"
+                                >
+                                    <span className="font-medium">{formatDate(g.date)}</span>
+                                    <span className="flex flex-wrap items-center gap-3 text-muted-foreground">
+                                        <span>
+                                            {t('height_cm')}: {g.height_cm ?? '—'}
+                                        </span>
+                                        <span>
+                                            {t('weight_kg')}: {g.weight_kg ?? '—'}
+                                        </span>
+                                        <span className="font-medium text-foreground">
+                                            {t('bmi')}: {g.bmi ?? '—'}
+                                        </span>
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </CardContent>

@@ -14,6 +14,13 @@ Laravel. Three realistic options, fastest first:
 
 A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option B works as-is.
 
+> ⚠️ **Schema changes don't migrate themselves.** The Pest suite runs on **SQLite `:memory:`** and
+> rebuilds the schema on every run, so it stays green even when the **MySQL dev DB** is missing a
+> new table/column. After creating or pulling a migration, run **`php artisan migrate`** locally
+> (and **`php artisan migrate --force`** on any server/demo host). A `SQLSTATE[42S22]: Column not
+> found` 500 is almost always this. The demo `docker/entrypoint.sh` migrates automatically; local
+> **Laragon does not**.
+
 ---
 
 ## Live demo — currently stopped
@@ -157,6 +164,8 @@ A short demo script:
 
 ## Before you demo
 
+- [ ] `php artisan migrate --force` — **no pending migrations** (see the SQLite caveat at the top;
+      the test suite will *not* warn you about MySQL drift)
 - [ ] `APP_URL` matches the public URL, `APP_DEBUG=false`, `APP_ENV=production`
 - [ ] `APP_KEY` set on the host (don't let it regenerate on every boot)
 - [ ] `DEMO_SEED=true` for a fresh instance (seeding is idempotent — it skips when data exists)

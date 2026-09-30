@@ -107,8 +107,9 @@ All of these are PHP constants today, **duplicated in the frontend** (so they ca
 
 ## Phase E — Oversight views
 
-- [ ] **E1 Student detail page** — it currently **does not show absences, medication or
-      growth at all**. Add them, plus inline edit.
+- [x] **E1 Student detail page** — now shows **absences (with proof), medication and growth**
+      alongside attendance/progress/updates/activities/payments. ✅
+      _Still open: editing the child record from the detail page (use the Students list for now)._
 - [ ] **E2 Activity log** — filter by user / action / date range; CSV export.
 - [ ] **E3 Conversations** — send, delete, reassign the assigned teacher, archive/close.
 - [ ] **E4 Dashboard** — date range, month-over-month, and actionable "unpaid this month" /
