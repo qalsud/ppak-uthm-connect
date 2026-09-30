@@ -1,13 +1,21 @@
 import { router, usePage } from '@inertiajs/react';
-import { History, Search } from 'lucide-react';
+import { Download, History, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
 import Pagination, { type PaginationLink } from '@/Components/pagination';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -31,6 +39,14 @@ type Log = {
     created_at: string;
 };
 
+type Filters = {
+    search: string;
+    user: string;
+    action: string;
+    from: string;
+    to: string;
+};
+
 type Page = PageProps<{
     logs: {
         data: Log[];
@@ -39,16 +55,36 @@ type Page = PageProps<{
         to: number | null;
         total: number;
     };
-    filters: { search: string };
+    users: Array<{ id: number; name: string }>;
+    actions: string[];
+    filters: Filters;
 }>;
 
 export default function Activity() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
-    const { logs, filters } = props;
+    const { logs, users, actions, filters } = props;
 
     const [search, setSearch] = useState(filters.search);
     const firstRender = useRef(true);
+
+    const visit = (params: Partial<Filters>) => {
+        const next: Filters = {
+            search: params.search ?? search,
+            user: params.user ?? filters.user,
+            action: params.action ?? filters.action,
+            from: params.from ?? filters.from,
+            to: params.to ?? filters.to,
+        };
+
+        const query = Object.fromEntries(Object.entries(next).filter(([, value]) => value !== ''));
+
+        router.get('/admin/activity', query, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
 
     useEffect(() => {
         if (firstRender.current) {
@@ -59,11 +95,7 @@ export default function Activity() {
 
         const id = setTimeout(() => {
             if (search !== filters.search) {
-                router.get('/admin/activity', search ? { search } : {}, {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                });
+                visit({ search });
             }
         }, 350);
 
@@ -71,12 +103,69 @@ export default function Activity() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
+    const exportQuery = new URLSearchParams(
+        Object.entries(filters).filter(([, value]) => value !== ''),
+    ).toString();
+
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
-            <PageHeader title={t('activity_log')} description={t('activity_desc')} />
+            <PageHeader title={t('activity_log')} description={t('activity_desc')}>
+                <Button variant="outline" className="gap-1.5" asChild>
+                    <a href={`${route('admin.activity.export')}${exportQuery ? `?${exportQuery}` : ''}`}>
+                        <Download className="size-4" />
+                        {t('export_csv')}
+                    </a>
+                </Button>
+            </PageHeader>
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
-                <div className="flex items-center gap-3 border-b px-4 py-3">
+                <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
+                    <Select value={filters.user || '__all'} onValueChange={(v) => visit({ user: v === '__all' ? '' : v })}>
+                        <SelectTrigger className="w-44">
+                            <SelectValue placeholder={t('user')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__all">{t('all_roles')}</SelectItem>
+                            {users.map((u) => (
+                                <SelectItem key={u.id} value={String(u.id)}>
+                                    {u.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select
+                        value={filters.action || '__all'}
+                        onValueChange={(v) => visit({ action: v === '__all' ? '' : v })}
+                    >
+                        <SelectTrigger className="w-48">
+                            <SelectValue placeholder={t('action')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="__all">{t('all')}</SelectItem>
+                            {actions.map((a) => (
+                                <SelectItem key={a} value={a}>
+                                    {a}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Input
+                        type="date"
+                        value={filters.from}
+                        onChange={(e) => visit({ from: e.target.value })}
+                        className="w-40"
+                        aria-label={t('absence_from')}
+                    />
+                    <Input
+                        type="date"
+                        value={filters.to}
+                        onChange={(e) => visit({ to: e.target.value })}
+                        className="w-40"
+                        aria-label={t('absence_to')}
+                    />
+
                     <div className="relative min-w-56 flex-1">
                         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input

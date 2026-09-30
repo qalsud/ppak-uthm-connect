@@ -122,6 +122,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/registrations/bulk', [RegistrationController::class, 'bulk'])->name('users.bulk');
 
             Route::get('/activity', [ActivityLogController::class, 'index'])->name('activity.index');
+            Route::get('/activity/export', [ActivityLogController::class, 'export'])->name('activity.export');
 
             Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
             Route::get('/conversations/export', [ConversationController::class, 'export'])->name('conversations.export');

@@ -110,7 +110,7 @@ All of these are PHP constants today, **duplicated in the frontend** (so they ca
 - [x] **E1 Student detail page** — now shows **absences (with proof), medication and growth**
       alongside attendance/progress/updates/activities/payments. ✅
       _Still open: editing the child record from the detail page (use the Students list for now)._
-- [ ] **E2 Activity log** — filter by user / action / date range; CSV export.
+- [x] **E2 Activity log** — filter by user / action / date range; CSV export (respects the filters). ✅
 - [ ] **E3 Conversations** — send, delete, reassign the assigned teacher, archive/close.
 - [ ] **E4 Dashboard** — date range, month-over-month, and actionable "unpaid this month" /
       "not checked in today" tiles that link through.
