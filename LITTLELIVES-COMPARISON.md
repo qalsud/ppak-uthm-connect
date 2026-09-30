@@ -45,7 +45,7 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 |---|---|---|---|
 | Single login, role-based (admin/teacher/parent) | ✅ | ✅ admin · teacher · parent | ✅ |
 | Account approval workflow | ✅ | ✅ pending → approve/reject (+ bulk) | ✅ |
-| Student/child records | Full (photo, IC, medical, emergency contacts) | Basic (name, age, class, parent) + **allergies / medical notes** | 🟡 |
+| Student/child records | Full (photo, IC, medical, emergency contacts) | Name/age/class + **allergies & medical notes**, **guardians / emergency contacts / authorised collectors** (no child photo/IC yet) | 🟡 |
 | **Attendance** | Digital, temperature, visual health check | Teacher-marked arrive/depart, class+date register, **temperature + health note at check-in** | ✅ |
 | **Check-in / check-out photos** | Yes (parent selfie/wefie at kiosk) | Yes — teacher photo, **watermarked** with name+date/time, **auto-deleted after 3 days**, auto-posted to chat | 🟢 |
 | Parent notified on check-out | ✅ | ✅ notification + chat message with photo | ✅ |
@@ -57,23 +57,23 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 | **Portfolio (photos/videos + evaluation)** | ✅ strong (video too) | Progress records + photos (no video, no portfolio feed) | 🟡 |
 | Progress reports against curriculum | ✅ configurable checklist | ✅ PERMATA + KSPK, configurable per record | 🟢 local fit |
 | Term/child **progress report export** | ✅ portfolio report | — | 🔴 |
-| Two-way chat | ✅ | ✅ parent ↔ teacher per child | ✅ |
+| Two-way chat | ✅ | ✅ parent ↔ teacher per child + **admin reply / reassign / close** | ✅ |
 | Announcements / bulletins | ✅ + virtual whiteboard | ✅ memos with **audience targeting** (all/parents/teachers/class) | ✅ |
 | **School calendar / events** | ✅ (sync to phone) | — | 🔴 |
 | **Fees: invoicing + receipts** | ✅ | ✅ monthly records, Stripe Checkout, **PDF receipts** | ✅ |
 | **Fee reminders (scheduled)** | ✅ | ✅ `fees:send-reminders` — daily 08:00, fees due within 3 days or overdue | ✅ |
-| Flexible billing (discounts, subsidies, late fees, autopay) | ✅ | Fixed fee + overtime; no discounts/autopay | 🔴 |
-| Revenue / outstanding reporting | ✅ account reports | ✅ collected / outstanding / unpaid summary | 🟡 |
-| **Admin analytics & reports** | ✅ graphs, audit-ready | Dashboard (income chart, class split) + **activity log** | 🟡 |
+| Flexible billing (discounts, subsidies, late fees, autopay) | ✅ | Fixed fee + overtime, now **versioned & per-centre**; no discounts/autopay | 🟡 |
+| Revenue / outstanding reporting | ✅ account reports | ✅ collected / outstanding / unpaid summary with **overdue flags** | 🟡 |
+| **Admin analytics & reports** | ✅ graphs, audit-ready | Dashboard (year filter, month-over-month, actionable tiles, class split) + **activity log (user/action/date filters + CSV)** | 🟡 |
 | **Enrolment / enquiry pipeline** | ✅ (Little Check In) | Self-registration + approval only | 🔴 |
-| Absence requests | ✅ | — | 🔴 |
+| Absence requests | ✅ | ✅ parent files (with proof) → teacher approves/declines; syncs into attendance | ✅ |
 | Staff attendance / scheduling / ratios | ✅ | — | 🔴 |
 | Staff training / performance | ✅ (LittleAcademy) | — | 🔴 |
 | Food program / menu | ✅ (per reviews) | — | 🔴 |
 | Digital forms / paperwork | ✅ | — | 🔴 |
 | Native mobile apps + push | ✅ iOS/Android | Responsive web (PWA intentionally disabled) | 🔴 |
 | Multi-language | 5+ (EN/VI/中文/MS/ID) | EN + BM | ✅ for local need |
-| Multi-branch | ✅ | Single centre (2 centres via class) | 🔴 |
+| Multi-branch | ✅ | ✅ **two centres** with a header switcher; centre-scoped data, memos and fee rates | ✅ |
 | Security posture | ISO 27001, ECDA vendor | Role-based, approval, **private photo storage**, audit log | 🟡 |
 | Cost | Paid SaaS, quote-based | Self-hosted, no subscription | 🟢 |
 
@@ -86,7 +86,10 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 - **Checkout photos that are arguably better**: watermarked with child + timestamp, compressed to
   ≤1 MB, stored on a **private disk behind an authorised route**, auto-pruned after 3 days, and
   delivered straight into the parent's chat.
-- **Admin audit log** of who changed what.
+- **Admin audit log** of who changed what — filterable by user/action/date with CSV export.
+- **Everything is admin-controlled** — editable settings and lists, **versioned per-centre fee rates**,
+  editable fee records, **Stripe refunds**, an **administrator management screen**, and centre-scoped
+  dashboards.
 - **Health & safety in the flow, not bolted on** — temperature + health note captured at check-in,
   allergies surfaced in the teacher's register, and a parent-initiated medication request feeding a
   teacher administration log with a parent notification.
@@ -109,7 +112,7 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 
 ### Tier 2 — clear value, moderate effort
 5. **Growth chart** — plot height/weight/BMI over time per child (the numbers are already recorded).
-6. **Absence requests** — parent files an absence, teacher acknowledges; ties into attendance.
+6. ~~**Absence requests**~~ — ✅ shipped (parent files, teacher approves/declines, syncs into attendance).
 7. **Term progress report** — generate a per-child PDF from existing progress records and share it
    to the parent chat (reuses our PDF + image/chat plumbing).
 8. **School calendar / events** with bulletins and "add to calendar" links.
@@ -130,16 +133,18 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 ## 5. Suggested next step
 
 **Tier 1 is shipped** (see §4): temperature/health at check-in, allergies/medical notes, medication
-requests + administration log, growth tracking, and scheduled fee reminders.
+requests + administration log, growth tracking, scheduled fee reminders — and now **absence requests**,
+**two centres with per-centre fees**, and a full **admin control layer** (settings, editable lists,
+refunds, admin accounts, oversight).
 
 Next best value, in order:
 
-1. **Absence requests** — parent files, teacher acknowledges; slots straight into the attendance module
-   and reuses the existing notification + chat plumbing.
-2. **Term progress report PDF** — reuses the PDF + chat plumbing for a LittleLives-style portfolio report.
-3. **Growth chart** — the data is already collected and we already compute the class average; a per-child
+1. **Term progress report PDF** — reuses the PDF + chat plumbing for a LittleLives-style portfolio report.
+2. **Growth chart** — the data is already collected and we already compute the class average; a per-child
    trend chart completes the feature.
-4. **School calendar / events**.
+3. **School calendar / events** with bulletins and "add to calendar" links.
+4. **Light admissions pipeline** — enquiry → admin list → convert to student.
+5. **True realtime chat** (Laravel Echo/Pusher) — polling is in place for now.
 
 ---
 

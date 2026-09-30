@@ -148,17 +148,28 @@ available"*). For a demo that's fine. To keep them, either:
 | Parent | `parent@ppakuthm.com` | `password123` |
 | Pending parent | `pending@ppakuthm.com` | `password123` |
 
+> A fresh seed produces a **full two-centre demo**: 10 children split **7 Tadika Khalifah Junior /
+> 3 Taska Hikmah**, today's attendance (incl. an **elevated-temperature** check-in and one checkout),
+> medication, growth, an upcoming absence, **per-centre fee rates** (Taska RM 290 vs global RM 310)
+> and **overdue** fee records.
+
 A short demo script:
 
-1. **Teacher** → attendance register → mark a child **"At school"** with a **temperature** (watch the chip
-   turn amber with an "Elevated" flag) → the child's **allergy warning** shows on the register.
-2. Still as teacher → **check a child out with a photo** (it posts into the parent's chat) → and, if the
-   parent requested medicine, mark it **given** on the medications card.
-3. Teacher → **Growth** → record a height/weight (BMI appears) and show the **class average**.
-4. **Parent** → child page → see the attendance + **temperature**, the **medication request + status**, and
-   the **growth** tiles/trend; submit a **medication request**.
-5. **Admin** → registrations, students (add **allergies**), payments, activity log, conversations
-   oversight — and the **fee reminder** command (`php artisan fees:send-reminders`).
+1. **Admin → Dashboard** — the **month-over-month** delta, the **year** selector, and the actionable
+   **"unpaid this month" / "not checked in today"** tiles.
+2. **Admin → Teacher views → Attendance** — mark a child **"At school"** with a **temperature** (amber
+   "Elevated" flag) → the **allergy warning** shows; **approve** the upcoming absence in the card.
+3. **Teacher** (own login) → **check a child out with a photo** (posts into the parent's chat); mark a
+   **medication request given**; record **Growth** (BMI + class average).
+4. **Parent** → child page → attendance + **temperature**, **medication** status, **growth** tiles,
+   **absence request**; **Financials** → pay a month via **Stripe Checkout** → **PDF receipt**.
+5. **Admin → Money** — **Fee settings** (switch centre to show the per-centre rate), **Payments**
+   (edit a record; note the **overdue** flags), **Transactions** (**refund** a payment → the month
+   re-opens), **Settings** (change the due day; see **scheduler health**).
+6. **Admin → Administrators** — add a second admin, then try to remove the **last** one (guarded).
+   **Activity log** → filter by user/action/date and **export CSV**. **Conversations** → reply,
+   **reassign** the teacher, **close** the thread.
+7. Optional: the **fee reminder** command (`php artisan fees:send-reminders`).
 
 ---
 
@@ -171,8 +182,9 @@ A short demo script:
 - [ ] `DEMO_SEED=true` for a fresh instance (seeding is idempotent — it skips when data exists)
 - [ ] Log in once with each of the three demo roles
 - [ ] Open a chat thread and check the composer stays pinned
+- [ ] Open `/admin/settings` — operational rules and the **scheduler health** panel load
 - [ ] Optional: set `MAIL_MAILER` (email) and run the scheduler (`schedule:run`) so fee reminders +
-      photo pruning fire
+      photo pruning fire (the settings page then shows them as recently run)
 
 ## Security when the link is public
 

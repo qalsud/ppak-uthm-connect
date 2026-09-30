@@ -1,15 +1,17 @@
 # Session Handoff — PPAK UTHM Connect
 
-*Written 30 Sep 2026 at the end of a long session. Read this first in a new session.*
+*Updated 30 Sep 2026 at the end of the session that completed the admin plan. **Read this first in a
+new session.***
 
 ---
 
 ## Read these, in this order
 
-1. **`ADMIN-CONTROL-PLAN.md`** — the phased plan we are executing, plus the **issue register**
-2. **`README.md`** — the feature map and handoff section
+1. **`README.md`** — the feature map
+2. **`ADMIN-CONTROL-PLAN.md`** — the phased plan (all phases done) + issue register
 3. **`FUNCTIONAL-REVIEW.md`** — module-by-module gaps
 4. **`LITTLELIVES-COMPARISON.md`** — feature comparison / roadmap
+5. **`DEPLOY.md`** — deploying the demo
 
 ---
 
@@ -18,88 +20,56 @@
 | | |
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
-| Last commit | `git log -1` — "clear remaining register items" |
-| Tests | **247 passing** (`php artisan test`) |
+| Last commit | `git log -1` |
+| Tests | **248 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
-| Route guard | `php artisan check:routes` — 91 frontend route names verified |
-| Seeder | idempotent, re-runnable (`php artisan migrate:fresh --seed`) |
+| Route guard | `php artisan check:routes` — **103** frontend route names verified |
+| Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
+| Working tree | clean |
 
-### ✅ Working tree is clean
-
-The first register-clearing batch (described in the previous revision of this file) was
-committed as **`e6e2464`**, and the handoff doc as **`0587870`**. A second clearing pass
-(G-i3, G-i9, C-i4, C-i6, C-i7) followed on 30 Sep 2026 — see *Immediate next steps*.
+**All phases of `ADMIN-CONTROL-PLAN.md` are complete** (F · A · C · G · B · E · D) and the **issue
+register is clear**.
 
 ---
 
-## What has been completed
+## What this session shipped
 
-### Phases (see `ADMIN-CONTROL-PLAN.md`)
-
-| Phase | Status | Commit |
-|---|---|---|
-| **F — Delete safety** | ✅ done | `9a407eb` |
-| **A — Admin acts everywhere a teacher can** | ✅ done | `fdaa0c5` |
-| **C — Editable lists** | ✅ done | `1885857` |
-| **G — Two centres** | ✅ done (per-centre fee rates landed in Phase B) | `7ac8415` → `4e634f0` |
-| **B — Settings + money** | ✅ done — B1–B8 | — |
-| **E — Oversight views** | ✅ done — E1–E4 | — |
-| **D — Admin accounts** | ✅ done | — |
-
-**All phases of `ADMIN-CONTROL-PLAN.md` are complete** (F · A · C · G · B · E · D).
-
-### Two centres — done
-
-- `centres` table; `centre_id` on `students` + `memos`; `centre_user` pivot (teachers may
-  work at **multiple** centres)
-- Backfill: historical data → **Tadika Khalifah Junior**
-- **`class` is centre-scoped everywhere** — `Student::scopeVisibleTo()` is the one place
-  this lives
-- **Access control fixed**: `canManage()` matched only a class *string*, so a `5tahun`
-  teacher could manage the other centre's `5tahun` children. Now centre-first.
-- Admin centre switcher (session-backed `App\Support\ActiveCentre`)
-- `/admin/centres` CRUD (deactivate, never delete)
-- Centre assignment on students (form) and teachers (multi-select)
-- Dashboard, memos and parent views are centre-aware
-
-**16 isolation tests** prove cross-centre leaks are closed
-(`CentreScopingTest`, `CentreIsolationTest`, `CentreManagementTest`, `CentreScopingUiTest`).
-
-### Admin-editable lists (Phase C)
-
-- **`list_options`** table (`group`/`key`/`label`/`sort`/`is_active`) — one table, so adding
-  a list needs no migration
-- **`App\Support\Lists`** is the single source of truth: backend validation *and* frontend
-  forms read it. Hardcoded `DEFAULTS` act as a fallback so an empty/unmigrated table never
-  breaks the app.
-- 14 manageable lists at **`/admin/lists`**
-- `classLabel` was copy-pasted in **14 files**; now one `useClassLabel()` hook
+- **Phase B — Settings + money.** `settings` table + `setting('key', config('…'))` helper and
+  **`/admin/settings`** (fee due day, absence window, message edit/length/attachments, photo
+  retention/watermark/upload, reminder lead time, scheduler health). **Versioned, per-centre fee
+  rates** (`/admin/fees`, closes **G-i5**); **editable fee records**; **Stripe transactions +
+  refunds** (`/admin/transactions`).
+- **Phase E — Oversight.** Student detail gained **absences / medication / growth**; the **activity
+  log** gained user/action/date filters + **CSV export**; **admin conversations** can reply, delete,
+  reassign and close; the **dashboard** gained a year filter, month-over-month and actionable tiles.
+- **Phase D — Admin accounts.** **`/admin/administrators`** (create/edit/deactivate/delete) with
+  guards for the **last active admin** and self-deletion.
+- **Hardening.** Blank settings revert to default (were coerced to `0`); a lock prevents double
+  Stripe refunds; parents are notified on refund; payments/transactions are centre-scoped.
+- **UI/i18n sweep.** Dashboard chart/donut, Payments overdue+edit, Transactions mobile layout,
+  admin chat layout, the admin sidebar **"Teacher views"** dropdown (a wrong-prop bug had hidden the
+  admin sidebar on teacher screens), and localisation of the parent child/daily-update pages and the
+  **auth + profile pages**. i18n parity is clean (0 missing keys, EN ↔ MS).
+- **Enriched seeder + re-seed.** Fresh seed now demonstrates every feature (centres, attendance with
+  an elevated temperature, medication, growth, an absence request, a per-centre fee, overdue fees,
+  centre-aware memos, activity-log rows).
 
 ---
 
 ## Immediate next steps
 
-1. **All planned phases are done** (F · A · C · G · B · E · D) and the issue register is clear.
-2. **Next, by value:** hosting/deploy (see `DEPLOY.md`); then the remaining
-   `FUNCTIONAL-REVIEW.md` / `LITTLELIVES-COMPARISON.md` Tier-2 items (absence requests ✅ already
-   shipped, term progress-report PDF, growth chart, school calendar, true realtime chat).
+1. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
+   runs and the scheduler (`schedule:run`) is active.
+2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
+   growth chart, school calendar/events, light admissions pipeline.
+3. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — Laravel Echo/Pusher to replace polling;
+   a general/centre thread.
 
-### Issue register — status (30 Sep 2026)
+### Issue register — clear
 
-Full detail lives in `ADMIN-CONTROL-PLAN.md` → *Issue register*.
-
-**Open:** none — the register is clear. `G-i5` (per-centre fee rates) closed with Phase B.
-
-**Fixed in the second clearing pass:** `G-i3` (centre filter on the student/teacher lists),
-`G-i9` (unrestricted-staff UI warning), `C-i4` (seeder values verified against the live lists —
-now guarded by a test), `C-i6` (progress PERMATA/free/development lists are admin-editable),
-`C-i7` (daily-activity fields are admin-editable — rename/reorder/hide; keys stay fixed columns).
-
-**Accepted by decision (documented):** `G-i11` (one shared class list is intentional — centre +
-class is already the enforced key), `C-i5` (migration defaults — document, don't migrate),
-`C-i8` (payment months are fixed), `G-i12` (informational).
-
-**Earlier resolved:** C-i1, C-i2, C-i3, C-i9, G-i1, G-i2, G-i4, G-i6, G-i7, G-i8, G-i10.
+Full detail lives in `ADMIN-CONTROL-PLAN.md` → *Issue register*. The only previously-open item
+(`G-i5`, per-centre fee rates) closed with Phase B; `G-i11` / `C-i5` / `C-i8` were accepted by
+decision and documented.
 
 ---
 
@@ -107,33 +77,33 @@ class is already the enforced key), `C-i5` (migration defaults — document, don
 
 - **URL:** `http://ppak-uthm-connect.test` (Laragon)
 - **DB:** `ppak_uthm` / `ppak_uthm` / `ppak_secret`
-- ⚠️ **XAMPP's MySQL owns 127.0.0.1:3306** — that is what the app uses. Laragon's MySQL is
-  shadowed. There are three mysqld processes running.
+- ⚠️ **XAMPP's MySQL owns 127.0.0.1:3306** — that is what the app uses. Laragon's MySQL is shadowed.
 - Tests use **SQLite in-memory** (`phpunit.xml`), so `php artisan test` is DB-independent.
 
-### Demo accounts (from `--seed`)
+### Demo accounts & data (from `--seed`)
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@ppakuthm.com` | `password123` |
 | Teacher | `teacher@ppakuthm.com` | `password123` |
 | Parent | `parent@ppakuthm.com` | `password123` |
+| Pending parent | `pending@ppakuthm.com` | `password123` |
 
-⚠️ A locally-seeded DB may still use the rotated demo password `Ppak-9ZmBdw-3266`. A fresh
-`migrate:fresh --seed` produces `password123`.
+A fresh `migrate:fresh --seed` produces: 11 users · **10 children (7 Khalifah Junior / 3 Taska
+Hikmah)** · today's attendance (one with a 37.8 °C check-in) · medication, growth, an upcoming
+absence · a **Taska-specific fee rate (RM 290 vs global RM 310)** · overdue fee records · centre-aware
+memos · activity-log rows.
 
 ---
 
-## Working agreements (important — learned the hard way)
+## Working agreements (learned the hard way)
 
-1. **Verify after every edit.** The `edit` tool silently fails on CRLF/whitespace mismatches
-   and still reports success. After a non-trivial edit, confirm with a grep or a syntax check.
-   When in doubt, read the file back or use a direct write.
-2. **Run the suite after each batch**, not at the end. A test written against code that was
-   never written wastes a lot of time.
-3. **Avoid PowerShell `-replace` for code edits** — it eats backticks and mangles escapes.
-   Use the `edit` tool, or `[System.IO.File]::WriteAllText` with explicit `::ReadAllText`.
-4. **`php artisan check:routes`** exists precisely to catch frontend/backend route drift.
+1. **Verify after every edit.** The `edit` tool can fail on CRLF/whitespace mismatches and still
+   report success. After a non-trivial edit, confirm (grep/syntax check/read back).
+2. **Run the suite after each batch**, not at the end.
+3. **Avoid PowerShell `-replace` for code edits** — it eats backticks. Use the `edit` tool, or
+   `[System.IO.File]::WriteAllText` with explicit `::ReadAllText`.
+4. **`php artisan check:routes`** exists to catch frontend/backend route-name drift.
 5. Keep `ADMIN-CONTROL-PLAN.md` → *Issue register* updated as issues are found **and** fixed.
 6. **After any migration, run `php artisan migrate` on the dev MySQL DB.** Tests use SQLite
    `:memory:` and rebuild the schema every run, so a missing table/column **passes the suite** and
@@ -149,13 +119,14 @@ php artisan test                    # Pest suite
 npm run build                       # tsc typecheck + Vite build
 vendor/bin/pint app tests database  # code style
 php artisan check:routes            # frontend route names vs registered routes
-php artisan migrate:fresh --seed    # reset local DB with demo data
+php artisan migrate                 # apply pending migrations (dev MySQL!)
+php artisan migrate:fresh --seed    # reset local DB with the full demo dataset
 ```
 
 ---
 
 ## Deferred / not planned
 
-- **Hosting** — user explicitly deferred; see `DEPLOY.md` (Railway or Hostinger).
 - **Pusher realtime chat** — polling fallback is in place.
 - **PWA / push** — intentionally disabled during development.
+- Auth pages use Laravel Breeze defaults (now localised, styled with the app's design tokens).

@@ -5,6 +5,10 @@
 > set see [`README.md`](README.md); for the admin area see [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md); for
 > photos see [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md); for the competitive view see
 > [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md).
+>
+> **30 Sep 2026:** the admin plan (settings + per-centre fees, oversight views, admin accounts, two
+> centres, absence requests) and a full UI/i18n sweep are complete — see
+> [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) and [`HANDOFF.md`](HANDOFF.md).
 
 Deep review of every parent/teacher flow (controllers, models, migrations, routes, UI).
 Scope: daily updates, daily activities, progress, payments, messaging, notifications, data integrity.
@@ -207,8 +211,9 @@ Added after the audit above, so any overlapping "still open" notes here are supe
 Superseded above: §5.4 (health records) is **partly resolved** — allergies, medical notes, temperature and
 medication are structured now; immunisation records are still open.
 
-**Still open from this audit:** absence requests, structured immunisation records, reports/exports beyond
-CSV, queued notifications, staff attendance/scheduling.
+**Still open from this audit:** structured immunisation records, reports/exports beyond CSV (activity
+log CSV ✅, term progress-report PDF still open), queued notifications, staff attendance/scheduling.
+**Shipped since:** absence requests, parent "Teachers" contact page, per-centre fees, oversight views.
 
 ---
 

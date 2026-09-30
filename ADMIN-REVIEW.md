@@ -98,12 +98,29 @@ A full sweep of the admin area (`/admin`) focused on making it intuitive, safe, 
 - **Admin student detail page** — `/admin/students/{id}` shows attendance (with checkout photos), progress (with photos), daily updates, activities and payments.
 - **Bulk actions** — multi-select delete for Students/Teachers and bulk approve/reject for Registrations.
 
+## Later sessions (30 Sep 2026)
+
+Beyond the original sweep, the admin portal now also has:
+
+- **Settings** (`/admin/settings`) — operational rules (fee due day, absence window, message
+  edit/length/attachments, photo retention/watermark/upload, reminder lead time) plus **scheduler health**.
+- **Transactions** (`/admin/transactions`) — online Stripe payments with **refunds** (a refund re-opens
+  the covered months).
+- **Administrators** (`/admin/administrators`) — create / edit / deactivate / delete admin accounts,
+  guarded against removing the **last active admin** and self-deletion.
+- **Versioned per-centre fee rates** (`/admin/fees`) and **editable fee records**.
+- **Editable lists** (`/admin/lists`) and **Centres** (`/admin/centres`) with a header **centre switcher**.
+- **Teacher views** — the teacher screens grouped in the sidebar; admins act on them directly (this also
+  gives admins a **whole-class attendance register**).
+- **Dashboard** — year filter, month-over-month and actionable tiles; **Activity log** — user/action/date
+  filters + CSV export; **Student detail** — absences, medication and growth; **Conversations** — reply,
+  delete, reassign, close.
+
 ## Still open (backlog)
 
 - **SMS notifications** — in-app (database + broadcast) plus an **email channel** for approve/reject, messages (opt-in per parent) and fee/medication events; **SMS** is still open.
 - **Further audit coverage** — logins, exports and profile changes aren't logged yet.
-- **Admin attendance register** — admins can view a child's attendance but not a whole-class register.
 
 ---
 
-*Verified with the browser on all admin pages (no console errors) and 133 Pest tests / 664 assertions.*
+*Verified with the browser on all admin pages (no console errors) and 248 Pest tests / 1756 assertions.*

@@ -76,7 +76,8 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 *Reviewed against `Conversation`/`Message` models, `Parent\MessageController`, `Teacher\MessageController`,
 `ChatInbox`, the two Messages pages, routes and the `conversations`/`messages` schema on 28 Sep 2026.
 Re-checked 29 Sep 2026 after the health/medication/growth pass — the messages module was unchanged, so
-everything above still holds.*
+everything above still holds. **30 Sep 2026:** admin moderation (reply/delete/reassign/close) shipped;
+the remaining open items are unchanged.*
 
 ---
 
@@ -105,6 +106,7 @@ everything above still holds.*
 | U9/V5 | Conversation rows show **avatar, time, system preview icon, unread dot/count** |
 | U10 | `role="log"` + `aria-live`, `aria-label`s on icon buttons |
 | F1 (interim) | **5-second polling** of the open thread (visibility-aware) — new messages appear without a refresh |
+| **F8+ Admin moderation** (30 Sep 2026) | Admins can now **reply as themselves**, **delete any message**, **reassign** the assigned teacher (centre-scoped) and **close/reopen** the thread (closes blocks replies). |
 
 **⏳ Still open**
 

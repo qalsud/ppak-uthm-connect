@@ -1,5 +1,9 @@
 # Admin Portal — "Control Everything" Plan
 
+> ✅ **Status: complete.** Phases **F · A · C · G · B · E · D** have all shipped and the **issue
+> register is clear** (see the *Progress log* and *Issue register* at the bottom of this file).
+> The per-phase checklists below are kept as the **original plan record** — treat them as done.
+
 *Planning pass, 30 Sep 2026. Based on a full inventory of admin routes, controllers and
 frontend, compared against the teacher and parent portals.*
 
@@ -227,5 +231,15 @@ _Append as each phase lands._
 | B — Settings + money | ✅ **done** — B1–B8 (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler; Stripe transactions + refunds) |
 | E — Oversight views | ✅ **done** — E1 (student detail gaps), E2 (activity-log filters + CSV), E3 (conversation reply/reassign/close), E4 (dashboard) |
 | D — Admin accounts | ✅ **done** — `/admin/administrators` + last-admin guards |
+| Hardening | ✅ **done** — blank settings revert to default; refund double-submit lock; refund notification; payments/transactions centre-scoped |
+| UI/i18n sweep | ✅ **done** — dashboard chart/donut, payments overdue + edit, transactions mobile, admin chat layout, **admin sidebar "Teacher views" dropdown** (+ a wrong-prop bug that hid the admin sidebar on teacher screens), auth/profile localization |
+| Seeder + re-seed | ✅ **done** — enriched demo dataset (attendance, health, growth, absences, per-centre fee, overdue fees, centre memos); dev DB rebuilt |
 
 **All phases complete.** F · A · C · G · B · E · D are done and the issue register is clear.
+
+## Post-plan work (beyond the phases)
+
+- **Design/UX pass** — the whole app was driven in a browser (admin · teacher · parent · auth) and the
+  issues found were fixed (see the *UI/i18n sweep* row above). i18n parity is clean, EN ↔ MS.
+- **Demo data** — the seeder now produces a dataset that exercises every feature, so a fresh
+  `migrate:fresh --seed` is a ready demo.

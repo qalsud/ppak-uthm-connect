@@ -1,6 +1,7 @@
 # Feature Plan — Checkout Photo (image uploads)
 
 **Status:** ✅ Implemented (Phase 0 + Phase 1). Phase 2 partly shipped, Phase 3 partly shipped (both tracked at the bottom). Updated 29 Sep 2026.
+**30 Sep 2026:** retention days, watermark on/off, max upload and target size are now **admin-editable at `/admin/settings`** (`setting('media.…', config('media.…'))`); the `.env` / `config/media.php` values are the fallback defaults.
 **Scope:** Teacher submits a photo when checking a child out ("Back home"). Built as the first consumer of a reusable image-upload capability.
 
 **Addendum (implemented):**
@@ -244,7 +245,7 @@ Authz helper (or a policy) as described in §5; streams the file.
 - [x] Server-side type/size validation (no trust in client)
 - [x] `nosniff`, private cache headers
 - [ ] Upload rate-limiting (`throttle:30,1` on checkout) — add
-- [ ] Retention policy + cleanup command (Phase 2)
+- [x] Retention policy + cleanup command (`media:prune-photos`, retention now `/admin/settings`)
 - [ ] Consent note in privacy policy (product-level)
 
 ---

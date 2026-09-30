@@ -34,11 +34,23 @@ value · **P3** = nice-to-have.
 | **Growth tracking** | Teacher records **height/weight → BMI** (same-day re-entry updates rather than duplicates), **class average BMI**, latest-per-child and full history tables; parents get tiles + a trend list on the child page. |
 | **Fee reminders** | `fees:send-reminders` scheduled **daily 08:00** — one notification per family for fees due within 3 days or overdue. |
 
-**⏳ Still open** (next passes): guardians (F4) · academic terms (F5) · centres (F6) · absence requests +
-absent/sick attendance states · bulk class activities/progress · student **photo/IC** (medical ✅) +
-class-move history + CSV upsert/dry-run · memo attachments/scheduling/read receipts · **term
-progress-report PDF** + monthly statements · growth **chart** (data ✅) · reports/analytics · backups ·
-PWA/push · queueing notifications · audit coverage (logins/exports) · accessibility pass.
+**✅ Admin plan + settings/oversight pass (30 Sep 2026)** — the whole `ADMIN-CONTROL-PLAN.md`
+
+| Item | What shipped |
+|---|---|
+| **Guardians (F4)** | Per-child **guardians** (mother + father, relationship, primary, can-collect), **emergency contacts** and **authorised collectors** with IC/photo. |
+| **Two centres (F6)** | `centres` + a header **switcher**; **`class` is centre-scoped** everywhere; per-centre dashboards, memos and **fee rates**. |
+| **Absence requests** | Parent files an absence (with optional proof) → teacher **approves/declines**; it syncs into attendance. |
+| **Settings + money** | **`/admin/settings`** (operational rules) with `setting('x', config('y'))`; **versioned per-centre fee rates**; **editable fee records**; **Stripe refunds** (`/admin/transactions`). |
+| **Admin accounts** | `/admin/administrators` (create/edit/deactivate/delete) with last-admin guards. |
+| **Editable lists** | One `list_options` source of truth (classes, relationships, progress options, daily-activity fields, …) for backend **and** frontend. |
+| **Oversight** | Student detail gained **absences / medication / growth**; **activity-log filters + CSV**; **conversation** reply/reassign/close; dashboard **year + month-over-month + actionable tiles**. |
+| **i18n + UX** | Full bilingual coverage (incl. **auth/profile**); admin sidebar **"Teacher views"** group; misc UI fixes. |
+
+**⏳ Still open** (next passes): academic **terms (F5)** · bulk class activities/progress · student
+**photo/IC** + class-move history + CSV upsert/dry-run · memo attachments/scheduling/read receipts ·
+**term progress-report PDF** + monthly statements · growth **chart** (data ✅) · reports/analytics ·
+backups · PWA/push · queueing notifications · audit coverage (logins/exports) · accessibility pass.
 
 ---
 
