@@ -93,9 +93,9 @@ All of these are PHP constants today, **duplicated in the frontend** (so they ca
 
 - [x] **B1 `settings` table + `/admin/settings`** with grouped tabs. Code reads
       `setting('x', config('y'))` so nothing breaks if a row is missing. ✅
-- [ ] **B2 Fees** — create/version/deactivate `FeeSetting` (currently update-only, two fields).
-- [ ] **B3 Financial records** — admin can edit **amount, month, due date, overtime**
-      (today: create + delete but no field edit).
+- [x] **B2 Fees** — versioned rates: create a new version (retires the old), deactivate,
+      plus **per-centre overrides** (`fee_settings.centre_id`, closes **G-i5**). ✅
+- [x] **B3 Financial records** — admin can edit **amount, month, due date, overtime**. ✅
 - [x] **B4 Due-date day** — now `setting('fees.due_day', 7)`. ✅
 - [ ] **B5 Stripe `Payment` transactions** — admin list/detail **and refund**.
 - [x] **B6 Media/photo settings** — retention days, watermark on/off, max upload, target size. ✅
@@ -221,6 +221,6 @@ _Append as each phase lands._
 | G — Two centres | ✅ **done** except per-centre fee rates (`G8`) — `7ac8415` → `4e634f0` |
 | Register clearing | ✅ **done** (`e6e2464`) |
 | Register clearing 2 | ✅ **done** (30 Sep 2026) — G-i3, G-i9, C-i4, C-i6, C-i7 fixed; G-i11/C-i5/C-i8 accepted by decision |
-| B — Settings + money | 🟡 **in progress** — B1/B4/B6/B7/B8 done (settings table + `/admin/settings`, due day, media, ops, scheduler). B2/B3/B5 remaining (fees versioning + G-i5, record edit, Stripe refunds) |
+| B — Settings + money | 🟡 **in progress** — B1/B2/B3/B4/B6/B7/B8 done (settings + `/admin/settings`; versioned per-centre fees, closes G-i5; record editing; due day; media; ops; scheduler). **B5 remaining** (Stripe refunds) |
 | E — Oversight views | ⬜ not started |
 | D — Admin accounts | ⬜ not started |

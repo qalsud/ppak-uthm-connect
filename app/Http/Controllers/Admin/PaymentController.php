@@ -8,6 +8,7 @@ use App\Models\FeeSetting;
 use App\Models\FinancialRecord;
 use App\Models\Student;
 use App\Notifications\FeeRecordAddedNotification;
+use App\Support\ActiveCentre;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ class PaymentController extends Controller
             'months' => self::MONTHS,
             'classes' => Student::CLASSES,
             'students' => Student::query()->active()->orderBy('name')->get(['id', 'name', 'class']),
-            'fee' => FeeSetting::current(),
+            'fee' => FeeSetting::current(ActiveCentre::id()),
             'summary' => [
                 'collected_month' => (float) FinancialRecord::query()
                     ->where('status', 'paid')
@@ -93,7 +94,10 @@ class PaymentController extends Controller
             return back()->with('error', __('approval.duplicate_payment'));
         }
 
-        $fee = FeeSetting::current();
+        $student = Student::with('parent')->findOrFail($data['student_id']);
+
+        // Use the rate for the child's centre, falling back to the global rate.
+        $fee = FeeSetting::current($student->centre_id);
         $overtimeAmount = $data['overtime_hours'] * $fee->overtime_rate;
 
         $record = FinancialRecord::create([
@@ -104,8 +108,6 @@ class PaymentController extends Controller
             'amount' => $fee->monthly_fee + $overtimeAmount,
             'status' => 'unpaid',
         ]);
-
-        $student = Student::with('parent')->find($data['student_id']);
 
         if ($student?->parent) {
             Notification::send($student->parent, new FeeRecordAddedNotification($record));
@@ -125,7 +127,6 @@ class PaymentController extends Controller
             'month' => ['required', Rule::in(self::MONTHS)],
         ]);
 
-        $fee = FeeSetting::current();
         $created = 0;
 
         $students = Student::query()->active()->with('parent')->get();
@@ -139,6 +140,9 @@ class PaymentController extends Controller
             if ($exists) {
                 continue;
             }
+
+            // A centre may have its own rate; otherwise the global rate applies.
+            $fee = FeeSetting::current($student->centre_id);
 
             $record = FinancialRecord::create([
                 'student_id' => $student->id,
@@ -164,6 +168,28 @@ class PaymentController extends Controller
                 ? __('approval.fees_generated', ['count' => $created, 'month' => $data['month']])
                 : __('approval.fees_generated_none', ['month' => $data['month']])
         );
+    }
+
+    /** Edit a fee record (amount, month, overtime and due date). */
+    public function update(Request $request, FinancialRecord $record): RedirectResponse
+    {
+        $data = $request->validate([
+            'month' => ['required', Rule::in(self::MONTHS)],
+            'amount' => ['required', 'numeric', 'min:0', 'max:100000'],
+            'overtime_hours' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'due_on' => ['nullable', 'date'],
+        ]);
+
+        $record->update([
+            'month' => $data['month'],
+            'amount' => $data['amount'],
+            'overtime_hours' => $data['overtime_hours'],
+            'due_on' => $data['due_on'] ?? null,
+        ]);
+
+        ActivityLog::record('payment.updated', $record, $record->student?->name.' · '.$data['month'], $data);
+
+        return back()->with('success', __('approval.updated'));
     }
 
     public function updateStatus(Request $request, FinancialRecord $record): RedirectResponse

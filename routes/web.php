@@ -170,8 +170,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::put('/memos/{memo}', [MemoController::class, 'update'])->name('memos.update');
             Route::delete('/memos/{memo}', [MemoController::class, 'destroy'])->name('memos.destroy');
 
-            Route::get('/fees', [FeeSettingController::class, 'show'])->name('fees.show');
+            Route::get('/fees', [FeeSettingController::class, 'index'])->name('fees.index');
+            Route::post('/fees', [FeeSettingController::class, 'store'])->name('fees.store');
             Route::put('/fees', [FeeSettingController::class, 'update'])->name('fees.update');
+            Route::delete('/fees/{fee}', [FeeSettingController::class, 'destroy'])->name('fees.destroy');
 
             // Editable operational settings (fee due day, absence window, …).
             Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
@@ -194,6 +196,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/payments/{record}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
             Route::post('/payments/generate', [PaymentController::class, 'generate'])->name('payments.generate');
             Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+            Route::put('/payments/{record}', [PaymentController::class, 'update'])->name('payments.update');
             Route::patch('/payments/{record}', [PaymentController::class, 'updateStatus'])->name('payments.status');
             Route::delete('/payments/{record}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 

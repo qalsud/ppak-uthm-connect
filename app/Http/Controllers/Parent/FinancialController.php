@@ -23,7 +23,8 @@ class FinancialController extends Controller
 
         return Inertia::render('Parent/Financials', [
             'children' => $children,
-            'fee' => FeeSetting::current(),
+            // The rate for the family's centre falls back to the global rate.
+            'fee' => FeeSetting::current($children->first()?->centre_id),
         ]);
     }
 }

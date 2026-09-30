@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { CalendarPlus, Plus, Receipt, Search, Trash2 } from 'lucide-react';
+import { CalendarPlus, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -41,6 +41,7 @@ type PaymentRecord = {
     overtime_hours: string;
     status: 'paid' | 'unpaid';
     paid_on: string | null;
+    due_on: string | null;
     student: { id: number; name: string; class: string };
 };
 
@@ -65,6 +66,7 @@ export default function Payments({ records, months, classes, students, fee, summ
     const classLabel = useClassLabelHook();
     const [open, setOpen] = useState(false);
     const [genOpen, setGenOpen] = useState(false);
+    const [editTarget, setEditTarget] = useState<PaymentRecord | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<PaymentRecord | null>(null);
     const [search, setSearch] = useState(filters.search);
     const firstRender = useRef(true);
@@ -94,6 +96,7 @@ export default function Payments({ records, months, classes, students, fee, summ
 
     const addForm = useForm({ student_id: '', month: '', overtime_hours: '0' });
     const genForm = useForm({ month: summary.current_month });
+    const editForm = useForm({ month: '', amount: '', overtime_hours: '0', due_on: '' });
 
     const submit = () =>
         addForm.post(route('admin.payments.store'), {
@@ -102,6 +105,28 @@ export default function Payments({ records, months, classes, students, fee, summ
                 addForm.reset();
             },
         });
+
+    const openEdit = (record: PaymentRecord) => {
+        setEditTarget(record);
+        editForm.setData({
+            month: record.month,
+            amount: String(record.amount),
+            overtime_hours: String(record.overtime_hours),
+            due_on: record.due_on ?? '',
+        });
+        editForm.clearErrors();
+    };
+
+    const submitEdit = () => {
+        if (!editTarget) {
+            return;
+        }
+
+        editForm.put(route('admin.payments.update', { record: editTarget.id }), {
+            preserveScroll: true,
+            onSuccess: () => setEditTarget(null),
+        });
+    };
 
     const generate = () =>
         genForm.post(route('admin.payments.generate'), {
@@ -278,6 +303,14 @@ export default function Payments({ records, months, classes, students, fee, summ
                                         <Button
                                             size="sm"
                                             variant="ghost"
+                                            onClick={() => openEdit(record)}
+                                            title={t('edit')}
+                                        >
+                                            <Pencil className="size-4" />
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
                                             className="text-destructive"
                                             onClick={() => setDeleteTarget(record)}
                                         >
@@ -424,6 +457,61 @@ export default function Payments({ records, months, classes, students, fee, summ
                         step="0.5"
                         value={addForm.data.overtime_hours}
                         onChange={(e) => addForm.setData('overtime_hours', e.target.value)}
+                    />
+                </FormField>
+            </FormDialog>
+
+            {/* Edit payment */}
+            <FormDialog
+                open={editTarget !== null}
+                onOpenChange={(v) => !v && setEditTarget(null)}
+                title={`${t('edit')} ${t('payment')}`}
+                description={editTarget?.student.name}
+                onSubmit={submitEdit}
+                submitLabel={t('save')}
+                processing={editForm.processing}
+                maxWidth="max-w-lg"
+            >
+                <FormField label={t('month')} error={editForm.errors.month}>
+                    <Select value={editForm.data.month} onValueChange={(v) => editForm.setData('month', v)}>
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {months.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </FormField>
+
+                <FormField label={`${t('amount')} (RM)`} error={editForm.errors.amount}>
+                    <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editForm.data.amount}
+                        onChange={(e) => editForm.setData('amount', e.target.value)}
+                    />
+                </FormField>
+
+                <FormField label={t('overtime')} error={editForm.errors.overtime_hours}>
+                    <Input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={editForm.data.overtime_hours}
+                        onChange={(e) => editForm.setData('overtime_hours', e.target.value)}
+                    />
+                </FormField>
+
+                <FormField label={t('due_on')} error={editForm.errors.due_on}>
+                    <Input
+                        type="date"
+                        value={editForm.data.due_on}
+                        onChange={(e) => editForm.setData('due_on', e.target.value)}
                     />
                 </FormField>
             </FormDialog>
