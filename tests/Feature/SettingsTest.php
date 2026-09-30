@@ -42,6 +42,24 @@ test('an admin can save settings', function () {
         ->and(Setting::where('key', 'fees.due_day')->value('value'))->toBe('15');
 });
 
+test('a blank setting reverts to its default', function () {
+    $admin = settingsAdmin();
+
+    $this->actingAs($admin)->put(route('admin.settings.update'), [
+        'settings' => ['fees' => ['due_day' => 20]],
+    ])->assertRedirect();
+
+    expect(setting('fees.due_day'))->toBe(20);
+
+    // Clearing the field must remove the override, not store a zero.
+    $this->actingAs($admin)->put(route('admin.settings.update'), [
+        'settings' => ['fees' => ['due_day' => '']],
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(setting('fees.due_day'))->toBe(7)
+        ->and(Setting::where('key', 'fees.due_day')->exists())->toBeFalse();
+});
+
 test('out-of-range settings are rejected', function () {
     $this->actingAs(settingsAdmin())->put(route('admin.settings.update'), [
         'settings' => ['fees' => ['due_day' => 99]],

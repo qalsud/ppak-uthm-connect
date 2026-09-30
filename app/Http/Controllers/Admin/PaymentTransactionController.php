@@ -10,6 +10,7 @@ use App\Services\Payments\PaymentCompletionService;
 use App\Services\Payments\StripeCheckoutService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -88,15 +89,24 @@ class PaymentTransactionController extends Controller
             return back()->with('error', __('payments.refund_unavailable'));
         }
 
+        // A double-submit must never create two Stripe refunds.
+        $lock = Cache::lock("payment-refund:{$payment->id}", 15);
+
+        if (! $lock->get()) {
+            return back()->with('error', __('payments.refund_in_progress'));
+        }
+
         try {
             $refundId = $stripe->refund($payment);
+
+            $completion->refund($payment, $refundId, $data['reason'] ?? null);
         } catch (\Throwable $e) {
             report($e);
 
             return back()->with('error', __('payments.refund_failed'));
+        } finally {
+            $lock->release();
         }
-
-        $completion->refund($payment, $refundId, $data['reason'] ?? null);
 
         ActivityLog::record('payment.refunded', $payment, $payment->student?->name, [
             'refund_id' => $refundId,

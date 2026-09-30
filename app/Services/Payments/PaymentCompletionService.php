@@ -6,6 +6,7 @@ use App\Models\FinancialRecord;
 use App\Models\Payment;
 use App\Notifications\PaymentCompletedNotification;
 use App\Notifications\PaymentReceivedNotification;
+use App\Notifications\PaymentRefundedNotification;
 use App\Support\AdminNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -73,7 +74,7 @@ class PaymentCompletionService
             return $payment->fresh();
         }
 
-        return DB::transaction(function () use ($payment, $refundId, $reason) {
+        $result = DB::transaction(function () use ($payment, $refundId, $reason) {
             $ids = $payment->financial_record_ids ?? [];
 
             $query = FinancialRecord::query()->where('status', 'paid');
@@ -103,6 +104,11 @@ class PaymentCompletionService
 
             return $payment->fresh();
         });
+
+        // Tell the family their payment was refunded and the months are due again.
+        Notification::send($result->user, new PaymentRefundedNotification($result));
+
+        return $result;
     }
 
     /** The financial records this payment covers (for the success page/receipt). */

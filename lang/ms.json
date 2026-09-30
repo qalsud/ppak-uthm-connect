@@ -124,6 +124,7 @@
     "payments.not_paid": "Pembayaran ini belum disempurnakan.",
     "payments.refund_unavailable": "Bayaran balik dalam talian memerlukan Stripe dikonfigurasikan. Rujuk papan pemuka Stripe anda.",
     "payments.refund_failed": "Bayaran balik tidak dapat diselesaikan. Sila cuba lagi.",
+    "payments.refund_in_progress": "Bayaran balik untuk pembayaran ini sedang diproses.",
     "payments.refunded": "Pembayaran dikembalikan.",
     "payments.not_refundable": "Hanya pembayaran yang telah selesai boleh dikembalikan.",
     "payments.receipt": "Resit",

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Setting;
 use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,15 @@ class SettingsController extends Controller
 
             $raw = Arr::get($input, $key);
 
+            // A blank value reverts the setting to its shipped default rather
+            // than being coerced (e.g. an empty due-day becoming 0).
+            if ($raw === null) {
+                Setting::query()->where('key', $key)->delete();
+                $changed[$key] = null;
+
+                continue;
+            }
+
             $value = match ($def['type']) {
                 'bool' => (bool) $raw,
                 'int' => (int) $raw,
@@ -64,6 +74,8 @@ class SettingsController extends Controller
             Settings::put($key, $value);
             $changed[$key] = $value;
         }
+
+        Settings::forget();
 
         ActivityLog::record('settings.updated', null, null, $changed);
 

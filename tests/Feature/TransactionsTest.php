@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\Payments\StripeCheckoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -90,6 +91,29 @@ test('only a completed payment can be refunded', function () {
         ->assertSessionHas('error', __('payments.not_refundable'));
 
     expect($payment->fresh()->status)->toBe('pending');
+});
+
+test('a refund already in progress is rejected', function () {
+    [$payment] = paidPayment();
+
+    $this->mock(StripeCheckoutService::class, function ($mock) {
+        $mock->shouldReceive('isConfigured')->andReturn(true);
+        // Stripe must NOT be called while another refund holds the lock.
+        $mock->shouldNotReceive('refund');
+    });
+
+    $lock = Cache::lock("payment-refund:{$payment->id}", 15);
+    expect($lock->get())->toBeTrue();
+
+    try {
+        $this->actingAs(transactionsAdmin())
+            ->post(route('admin.transactions.refund', $payment))
+            ->assertSessionHas('error', __('payments.refund_in_progress'));
+    } finally {
+        $lock->release();
+    }
+
+    expect($payment->fresh()->status)->toBe('paid');
 });
 
 test('the transactions page renders', function () {
