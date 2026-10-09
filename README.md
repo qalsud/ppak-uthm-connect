@@ -242,8 +242,7 @@ first — verified state, environment notes, working agreements and next steps.
 **growth tracking** (height/weight/BMI + class average) · scheduled **fee reminders** ·
 **absence requests** · **per-centre fees** · **Stripe refunds**.
 
-**Next up:** school **calendar/events** · term **progress-report export** · growth **chart** ·
-light **admissions pipeline**.
+**Next up:** school **calendar/events** · growth **chart** · light **admissions pipeline**.
 
 **Later:** native/push (PWA web push), staff attendance & scheduling, a **general/centre chat thread**.
 

@@ -10,6 +10,7 @@ use App\Models\DailyActivity;
 use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Student;
+use App\Services\Reports\ProgressReport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -104,5 +105,20 @@ class ChildController extends Controller
         ActivityLog::record('student.profile_updated', $student, $student->name);
 
         return back()->with('success', __('approval.profile_updated'));
+    }
+
+    /** The child's progress report PDF, for the child's own parent. */
+    public function report(Request $request, Student $student, ProgressReport $report)
+    {
+        abort_unless($student->parent_id === $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+        ]);
+
+        $data = $report->data($student, $validated['from'] ?? null, $validated['to'] ?? null);
+
+        return $report->pdf($data)->download('laporan-perkembangan-'.$student->id.'.pdf');
     }
 }

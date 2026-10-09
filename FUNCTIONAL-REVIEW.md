@@ -222,7 +222,7 @@ check-out, plus the day's **medication requests** with mark-given/not-given.
 | One child at a time | P2 | Bulk entry for a class-wide activity. |
 | No reuse/templates | P2 | "Copy last week's entry" / templates by sub-theme. |
 | 3-point scale only | P3 | Configurable scale; domain-specific ratings. |
-| No published report | P2 | **Term progress report PDF** per child (reuses dompdf) + share to chat. |
+| ~~No published report~~ ✅ done | — | **Term progress report PDF** per child (reuses dompdf), downloadable by teacher/admin (class-scoped) and the parent. |
 
 ---
 
@@ -287,7 +287,7 @@ check-out, plus the day's **medication requests** with mark-given/not-given.
 6. **Real global search** (or remove the dead box). ✅ *done*
 7. **Absence requests** + absent/sick attendance states.
 8. **F4/F5 — guardians & terms** (structural, enables proper reports).
-9. **Term progress report PDF** + monthly statement.
+9. **Term progress report PDF** ✅ *done* + monthly statement.
 10. **Growth chart** + reports/analytics (fee reminders ✅ done, scheduler must run).
 
 ---

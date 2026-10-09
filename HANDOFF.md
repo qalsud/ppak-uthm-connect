@@ -26,7 +26,7 @@ session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **256 passing** (`php artisan test`) |
+| Tests | **261 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **103** frontend route names verified |
 | Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
@@ -39,6 +39,10 @@ register is clear**.
 
 ## What this session shipped
 
+- **Progress-report PDF (10 Oct 2026).** A per-child report generated from existing progress records,
+  over a selectable period (defaults to the last 90 days). Downloadable by the **teacher/admin**
+  (scoped to their class) and by the **parent** for their own child. Shared `ProgressReport` service +
+  `pdf/progress-report` view (dompdf, landscape) so the report can't drift between roles.
 - **Memo photos (10 Oct 2026).** Admins can attach up to **3 photos** to a memo (create or edit; remove
   existing ones while editing). Stored on the private disk via `ImageStore` and served through an
   authorised `memo.photos.show` route that mirrors `Memo::visibleTo`, so a photo is only visible to the

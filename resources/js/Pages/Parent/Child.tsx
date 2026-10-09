@@ -1,5 +1,5 @@
 import { Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, GraduationCap, History, MessagesSquare, Pill, Ruler } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarCheck, CreditCard, Download, GraduationCap, History, MessagesSquare, Pill, Ruler } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useI18n } from '@/lib/i18n';
-import { formatDate } from '@/lib/date';
+import { formatDate, localDate, shiftDate } from '@/lib/date';
 import { listLabel, useLists } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PhotoInfo } from '@/lib/photo';
@@ -111,6 +111,10 @@ export default function ParentChild() {
     const { child, updates, activities, progress, attendanceHistory, medications, growth, profile, fields } = props;
     const [paying, setPaying] = useState(false);
     const [showMed, setShowMed] = useState(false);
+
+    // Progress-report period (defaults to the last 90 days).
+    const [reportFrom, setReportFrom] = useState(shiftDate(localDate(), -90));
+    const [reportTo, setReportTo] = useState(localDate());
 
     const medForm = useForm({
         date: new Date().toISOString().slice(0, 10),
@@ -518,6 +522,38 @@ export default function ParentChild() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-3 flex flex-wrap items-end gap-3 rounded-xl border bg-muted/20 p-3">
+                        <div className="space-y-1">
+                            <Label className="text-[11px]">{t('from')}</Label>
+                            <Input
+                                type="date"
+                                className="h-9 w-40"
+                                value={reportFrom}
+                                onChange={(e) => setReportFrom(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-[11px]">{t('to')}</Label>
+                            <Input
+                                type="date"
+                                className="h-9 w-40"
+                                value={reportTo}
+                                onChange={(e) => setReportTo(e.target.value)}
+                            />
+                        </div>
+                        <a
+                            href={route('parent.children.progress-report', {
+                                student: child.id,
+                                from: reportFrom,
+                                to: reportTo,
+                            })}
+                        >
+                            <Button variant="outline" className="gap-1.5">
+                                <Download className="size-4" />
+                                {t('progress_report')}
+                            </Button>
+                        </a>
+                    </div>
                     {progress.length === 0 ? (
                         <p className="py-6 text-center text-sm text-muted-foreground">{t('no_data')}</p>
                     ) : (

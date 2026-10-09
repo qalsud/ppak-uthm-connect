@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
-import { BookOpen, CalendarDays, Info, LineChart, Save, User } from 'lucide-react';
+import { BookOpen, CalendarDays, Download, Info, LineChart, Save, User } from 'lucide-react';
+import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
 import PhotoThumb from '@/Components/photo-thumb';
@@ -17,7 +18,7 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { formatDate, localDate } from '@/lib/date';
+import { formatDate, localDate, shiftDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import {
     listLabel,
@@ -94,6 +95,10 @@ export default function Progress({
     const gradeOptions = useList('progress_grade');
     const classOptions = useList('class');
     const shell = shellFor(shellProp);
+
+    // Progress-report period (defaults to the last 90 days).
+    const [reportFrom, setReportFrom] = useState(shiftDate(localDate(), -90));
+    const [reportTo, setReportTo] = useState(localDate());
 
     const progressLabel = (group: string, value?: string | null) => listLabel(lists, group, value);
 
@@ -358,6 +363,42 @@ export default function Progress({
                         {records.length} {t('records')}
                     </span>
                 </div>
+
+                {/* Progress report download (per selected student) */}
+                {filters.student && (
+                    <div className="flex flex-wrap items-end gap-3 border-b bg-muted/20 px-4 py-3">
+                        <div className="space-y-1">
+                            <Label className="text-[11px]">{t('from')}</Label>
+                            <Input
+                                type="date"
+                                className="h-9 w-40"
+                                value={reportFrom}
+                                onChange={(e) => setReportFrom(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-[11px]">{t('to')}</Label>
+                            <Input
+                                type="date"
+                                className="h-9 w-40"
+                                value={reportTo}
+                                onChange={(e) => setReportTo(e.target.value)}
+                            />
+                        </div>
+                        <a
+                            href={actionRoute(shell.isAdmin, 'progress.report', {
+                                student: filters.student,
+                                from: reportFrom,
+                                to: reportTo,
+                            })}
+                        >
+                            <Button variant="outline" className="gap-1.5">
+                                <Download className="size-4" />
+                                {t('progress_report')}
+                            </Button>
+                        </a>
+                    </div>
+                )}
 
                 {/* Per-student summary */}
                 {summary && (

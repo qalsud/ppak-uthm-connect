@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Notifications\ProgressRecordedNotification;
 use App\Services\Images\ImageStore;
 use App\Services\Messaging\ConversationService;
+use App\Services\Reports\ProgressReport;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -182,5 +183,20 @@ class ProgressController extends Controller
         ]);
 
         return back()->with('success', __('approval.progress_saved'));
+    }
+
+    /** Per-child progress report PDF (the teacher's class, or admin oversight). */
+    public function report(Request $request, Student $student, ProgressReport $report)
+    {
+        abort_unless($request->user()->canManage($student), 403);
+
+        $validated = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+        ]);
+
+        $data = $report->data($student, $validated['from'] ?? null, $validated['to'] ?? null);
+
+        return $report->pdf($data)->download('laporan-perkembangan-'.$student->id.'.pdf');
     }
 }

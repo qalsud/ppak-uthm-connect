@@ -239,6 +239,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
             Route::get('/register/progress', [TeacherProgressController::class, 'index'])->name('register.progress.index');
             Route::post('/register/progress', [TeacherProgressController::class, 'store'])->name('register.progress.store');
+            Route::get('/register/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('register.progress.report');
 
             Route::get('/register/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('register.daily-updates.index');
 
@@ -257,6 +258,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/activities', [TeacherActivityController::class, 'store'])->name('activities.store');
             Route::get('/progress', [TeacherProgressController::class, 'index'])->name('progress.index');
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
+            Route::get('/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('progress.report');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
             Route::get('/growth', [TeacherGrowthController::class, 'index'])->name('growth.index');
             Route::post('/growth', [TeacherGrowthController::class, 'store'])->name('growth.store');
@@ -284,6 +286,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/activities', [ParentActivityController::class, 'index'])->name('activities.index');
             Route::get('/children/{student}', [ParentChildController::class, 'show'])->name('children.show');
             Route::patch('/children/{student}/profile', [ParentChildController::class, 'updateProfile'])->name('children.profile');
+            Route::get('/children/{student}/progress-report', [ParentChildController::class, 'report'])->name('children.progress-report');
             Route::post('/children/{student}/medications', [ParentMedicationController::class, 'store'])->name('medications.store');
             Route::post('/children/{student}/absences', [ParentAbsenceController::class, 'store'])->name('absences.store');
             Route::post('/absences/{absence}/document', [ParentAbsenceController::class, 'attach'])->name('absences.attach');
