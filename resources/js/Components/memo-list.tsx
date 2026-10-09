@@ -1,4 +1,4 @@
-import PhotoThumb from '@/Components/photo-thumb';
+import MemoPhotos from '@/Components/memo-photos';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatDate } from '@/lib/date';
 import type { PhotoInfo } from '@/lib/photo';
@@ -32,13 +32,7 @@ export default function MemoList({ memos, emptyLabel }: { memos: Memo[]; emptyLa
                         </CardHeader>
                         <CardContent>
                             <p className="whitespace-pre-wrap text-sm">{memo.description}</p>
-                            {memo.photos && memo.photos.length > 0 && (
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {memo.photos.map((photo) => (
-                                        <PhotoThumb key={photo.id} photo={photo} size="size-24" />
-                                    ))}
-                                </div>
-                            )}
+                            <MemoPhotos photos={memo.photos ?? []} />
                         </CardContent>
                     </Card>
                 ))

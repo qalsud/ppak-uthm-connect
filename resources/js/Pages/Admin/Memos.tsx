@@ -5,9 +5,9 @@ import { useState } from 'react';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import MemoPhotos from '@/Components/memo-photos';
 import PageHeader from '@/Components/page-header';
 import PhotoPicker from '@/Components/photo-picker';
-import PhotoThumb from '@/Components/photo-thumb';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -209,17 +209,7 @@ export default function Memos({
                                     >
                                         {memo.description}
                                     </p>
-                                    {memo.photos.length > 0 && (
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {memo.photos.map((photo) => (
-                                                <PhotoThumb
-                                                    key={photo.id}
-                                                    photo={photo}
-                                                    size="size-20"
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                                    <MemoPhotos photos={memo.photos} />
                                     {memo.description.length > 180 && (
                                         <button
                                             type="button"

@@ -533,6 +533,8 @@
     "photos": "Photos",
     "add_photo": "Add photo",
     "photos_hint": "Up to 3 photos",
+    "previous": "Previous",
+    "next": "Next",
     "view_photo": "View photo",
     "checkout_note": "Note (optional)",
     "checkout_note_placeholder": "e.g. collected by grandmother",
