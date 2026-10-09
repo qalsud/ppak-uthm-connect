@@ -199,7 +199,7 @@ export default function TeacherDashboard() {
                     </div>
                 </div>
 
-                <CardContent className="space-y-3 pt-4 lg:hidden">
+                <CardContent className="max-h-[65vh] space-y-3 overflow-y-auto overscroll-contain pt-4 lg:hidden">
                     {filteredStudents.length === 0 ? (
                         <p className="py-8 text-center text-sm text-muted-foreground">
                             {t('no_match')}
@@ -243,8 +243,8 @@ export default function TeacherDashboard() {
                             {t('no_match')}
                         </p>
                     ) : (
-                        <Table>
-                            <TableHeader>
+                        <Table containerClassName="max-h-[65vh] overscroll-contain">
+                            <TableHeader className="[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-muted">
                                 <TableRow className="bg-muted/40">
                                     <TableHead>{t('name')}</TableHead>
                                     <TableHead>{t('class')}</TableHead>
