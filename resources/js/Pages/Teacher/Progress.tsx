@@ -367,20 +367,20 @@ export default function Progress({
                 {/* Progress report download (per selected student) */}
                 {filters.student && (
                     <div className="flex flex-wrap items-end gap-3 border-b bg-muted/20 px-4 py-3">
-                        <div className="space-y-1">
+                        <div className="w-full space-y-1 md:w-40">
                             <Label className="text-[11px]">{t('from')}</Label>
                             <Input
                                 type="date"
-                                className="h-9 w-40"
+                                className="h-9"
                                 value={reportFrom}
                                 onChange={(e) => setReportFrom(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
+                        <div className="w-full space-y-1 md:w-40">
                             <Label className="text-[11px]">{t('to')}</Label>
                             <Input
                                 type="date"
-                                className="h-9 w-40"
+                                className="h-9"
                                 value={reportTo}
                                 onChange={(e) => setReportTo(e.target.value)}
                             />

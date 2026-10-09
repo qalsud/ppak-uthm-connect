@@ -523,20 +523,20 @@ export default function ParentChild() {
                 </CardHeader>
                 <CardContent>
                     <div className="mb-3 flex flex-wrap items-end gap-3 rounded-xl border bg-muted/20 p-3">
-                        <div className="space-y-1">
+                        <div className="w-full space-y-1 md:w-40">
                             <Label className="text-[11px]">{t('from')}</Label>
                             <Input
                                 type="date"
-                                className="h-9 w-40"
+                                className="h-9"
                                 value={reportFrom}
                                 onChange={(e) => setReportFrom(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
+                        <div className="w-full space-y-1 md:w-40">
                             <Label className="text-[11px]">{t('to')}</Label>
                             <Input
                                 type="date"
-                                className="h-9 w-40"
+                                className="h-9"
                                 value={reportTo}
                                 onChange={(e) => setReportTo(e.target.value)}
                             />

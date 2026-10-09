@@ -155,14 +155,14 @@ export default function Activity() {
                         type="date"
                         value={filters.from}
                         onChange={(e) => visit({ from: e.target.value })}
-                        className="w-40"
+                        className="w-full md:w-40"
                         aria-label={t('absence_from')}
                     />
                     <Input
                         type="date"
                         value={filters.to}
                         onChange={(e) => visit({ to: e.target.value })}
-                        className="w-40"
+                        className="w-full md:w-40"
                         aria-label={t('absence_to')}
                     />
 
