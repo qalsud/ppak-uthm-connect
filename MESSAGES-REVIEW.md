@@ -105,15 +105,15 @@ the remaining open items are unchanged.*
 | U6/U7 | **Optimistic send** + **partial reloads** (`only: ['open','conversations']`) |
 | U9/V5 | Conversation rows show **avatar, time, system preview icon, unread dot/count** |
 | U10 | `role="log"` + `aria-live`, `aria-label`s on icon buttons |
-| F1 (interim) | **5-second polling** of the open thread (visibility-aware) — new messages appear without a refresh |
+| F1 (interim) | **5-second polling** of the open thread (visibility-aware) — new messages appear without a refresh. Superseded by true realtime (below) |
 | **F8+ Admin moderation** (30 Sep 2026) | Admins can now **reply as themselves**, **delete any message**, **reassign** the assigned teacher (centre-scoped) and **close/reopen** the thread (closes blocks replies). |
+| **F1 Realtime** (10 Oct 2026) | **Laravel Reverb + Echo** replace the 5s poll. A `MessageSent` event (`ShouldBroadcastNow`, so no queue worker needed) broadcasts on the thread channel **and** each recipient's user channel, so the open thread updates instantly and the bell refreshes live. Channel authorization mirrors the controller rules. Polling is kept only as a fallback while the socket is disconnected. Run `php artisan reverb:start`. |
 
 **⏳ Still open**
 
-- **F1 true realtime** — add Laravel Echo + Pusher (keys already supported) to replace polling; also poll the badge globally.
 - **F12 general/centre thread** — chats are still per-child (needs new schema; deliberately deferred).
 - **U8** richer empty states (parent guidance / first-message CTA).
-- **Typing indicators**, **message pinning/starring**, **archive/mute**, and per-conversation **unread badge polling**.
+- **Typing indicators**, **message pinning/starring**, **archive/mute**.
 
 > **Continuing this work?** Resume the session (or start fresh) using the handoff section in
 > [`README.md`](README.md#continuing-this-work-handoff).

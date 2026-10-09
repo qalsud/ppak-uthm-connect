@@ -1,4 +1,5 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { useEcho } from '@laravel/echo-react';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -10,6 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
+import type { PageProps } from '@/types';
 
 type Item = {
     id: string;
@@ -23,6 +25,7 @@ type Item = {
  * its own and becomes live/instant when Pusher keys are configured server-side.
  */
 export default function NotificationBell() {
+    const userId = usePage<PageProps>().props.auth.user.id;
     const [items, setItems] = useState<Item[]>([]);
     const [count, setCount] = useState(0);
 
@@ -42,6 +45,10 @@ export default function NotificationBell() {
 
         return () => clearInterval(interval);
     }, [load]);
+
+    // Instant refresh when a new message is delivered to this user. The slow
+    // poll above stays as a safety net when Reverb is unreachable.
+    useEcho(`App.Models.User.${userId}`, '.message.sent', () => load(), [userId, load]);
 
     const open = async (item: Item) => {
         try {

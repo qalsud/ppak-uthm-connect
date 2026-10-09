@@ -8,6 +8,11 @@ import { toast } from 'sonner';
 
 import { Toaster } from '@/Components/ui/sonner';
 import type { PageProps } from '@/types';
+import { configureEcho } from '@laravel/echo-react';
+
+configureEcho({
+    broadcaster: 'reverb',
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'PPAK UTHM';
 

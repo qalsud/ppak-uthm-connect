@@ -1,4 +1,5 @@
 ﻿import { router } from '@inertiajs/react';
+import { useConnectionStatus, useEcho } from '@laravel/echo-react';
 import {
     ArrowDown,
     Check,
@@ -98,6 +99,34 @@ const todayIso = () => {
     return new Date(d.getTime() - offset).toISOString().slice(0, 10);
 };
 
+/**
+ * Subscribes to the open conversation's private channel and triggers a partial
+ * reload when someone else posts. Rendered only while a thread is open, so the
+ * subscription follows the selected conversation.
+ */
+function MessageStream({ conversationId, currentUserId }: { conversationId: number; currentUserId: number }) {
+    useEcho(
+        `conversation.${conversationId}`,
+        '.message.sent',
+        (payload) => {
+            if (payload.message.sender_id === currentUserId) {
+                return;
+            }
+
+            // Background tab? Let the notification bell surface it instead of
+            // silently marking the message read.
+            if (document.visibilityState !== 'visible') {
+                return;
+            }
+
+            router.reload({ only: ['open', 'conversations'] });
+        },
+        [conversationId, currentUserId],
+    );
+
+    return null;
+}
+
 export default function ChatInbox({
     conversations,
     open,
@@ -126,6 +155,7 @@ export default function ChatInbox({
     const fileInput = useRef<HTMLInputElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const lastIdRef = useRef<number>(0);
+    const connection = useConnectionStatus();
 
     // Reset transient state when the thread changes; keep newest visible.
     useEffect(() => {
@@ -141,14 +171,15 @@ export default function ChatInbox({
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [open?.messages.length, pending.length]);
 
-    // Lightweight polling so new messages arrive without a refresh.
+    // Realtime is the primary path (see <MessageStream />). This is only a
+    // safety net while the WebSocket is not connected — e.g. Reverb is down.
     useEffect(() => {
-        if (!open || readOnly) {
+        if (!open || readOnly || connection === 'connected') {
             return;
         }
 
         const id = setInterval(async () => {
-            if (document.visibilityState !== 'visible' || !open) {
+            if (document.visibilityState !== 'visible') {
                 return;
             }
 
@@ -165,10 +196,10 @@ export default function ChatInbox({
             } catch {
                 /* ignore */
             }
-        }, 5000);
+        }, 20000);
 
         return () => clearInterval(id);
-    }, [open?.id, readOnly]);
+    }, [open?.id, readOnly, connection]);
 
     // Message search (debounced).
     useEffect(() => {
@@ -294,6 +325,10 @@ export default function ChatInbox({
                 hideList ? '' : 'lg:grid-cols-3'
             }`}
         >
+            {open && !readOnly && (
+                <MessageStream conversationId={open.id} currentUserId={currentUserId} />
+            )}
+
             {/* Conversation list */}
             {!hideList && (
             <div className={`flex min-h-0 flex-col rounded-2xl border bg-card ${open ? 'hidden lg:flex' : 'flex'}`}>

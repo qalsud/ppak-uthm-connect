@@ -4,6 +4,7 @@ namespace App\Services\Messaging;
 
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\MessageAttachment;
@@ -143,32 +144,46 @@ class ConversationService
         $message->unsetRelation('files');
 
         if ($notify) {
-            $this->notify($conversation, $sender, $message);
+            $recipients = $this->recipientsFor($conversation, $sender);
+
+            $this->notify($conversation, $sender, $message, $recipients);
+            MessageSent::dispatch($message, $recipients->pluck('id')->all());
         }
 
         return $message;
     }
 
-    /** Notify the opposite side of the conversation. */
-    public function notify(Conversation $conversation, User $sender, Message $message): void
+    /**
+     * Who should hear about a message from `$sender`: a parent's message goes to
+     * the class's active teachers; anyone else's goes to the child's parent.
+     *
+     * @return Collection<int, User>
+     */
+    public function recipientsFor(Conversation $conversation, User $sender): Collection
     {
-        $notification = new MessageReceivedNotification($conversation, $sender, $message->body);
-
         if ($sender->isParent()) {
-            $teachers = $this->teachersFor($conversation);
-
-            if ($teachers->isNotEmpty()) {
-                Notification::send($teachers, $notification);
-            }
-
-            return;
+            return $this->teachersFor($conversation);
         }
 
         $parent = $conversation->student?->parent;
 
-        if ($parent) {
-            Notification::send($parent, $notification);
+        return $parent ? collect([$parent]) : collect();
+    }
+
+    /**
+     * Notify the opposite side of the conversation.
+     *
+     * @param  Collection<int, User>|null  $recipients
+     */
+    public function notify(Conversation $conversation, User $sender, Message $message, ?Collection $recipients = null): void
+    {
+        $recipients ??= $this->recipientsFor($conversation, $sender);
+
+        if ($recipients->isEmpty()) {
+            return;
         }
+
+        Notification::send($recipients, new MessageReceivedNotification($conversation, $sender, $message->body));
     }
 
     /**
