@@ -93,7 +93,7 @@ export const teacherBottomNav: NavItem[] = [
     { label: 'attendance', href: '/teacher/attendance', icon: CalendarClock },
     { label: 'daily_activities', shortLabel: 'activities', href: '/teacher/activities', icon: CalendarCheck },
     { label: 'daily_updates', shortLabel: 'updates', href: '/teacher/daily-updates', icon: BellRing },
-    { label: 'messages', href: '/teacher/messages', icon: MessageSquare },
+    { label: 'progress', href: '/teacher/progress', icon: BookOpen },
 ];
 
 export const parentNav: NavItem[] = [

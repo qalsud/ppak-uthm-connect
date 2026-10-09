@@ -1,5 +1,5 @@
 ﻿import { Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, LifeBuoy, LogOut } from 'lucide-react';
+import { ChevronDown, LifeBuoy, LogOut, MessageSquare } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import GlobalSearch from '@/Components/global-search';
@@ -34,6 +34,10 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
     const page = usePage<PageProps>();
     const user = page.props.auth.user;
     const unreadMessages = (page.props.unreadMessages as number) ?? 0;
+
+    // Teachers reach Messages from the header (it is no longer in the bottom
+    // bar); the badge mirrors the unread count.
+    const messagesHref = user?.role === 'teacher' ? '/teacher/messages' : null;
     const activeUrl = page.url;
 
     // Groups carry their links in `children`; flatten for active-state matching.
@@ -180,6 +184,23 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                     <CentreSwitcher />
                                 </div>
                                 <GlobalSearch />
+                                {messagesHref && (
+                                    <Button
+                                        asChild
+                                        variant="ghost"
+                                        size="icon"
+                                        className="relative"
+                                    >
+                                        <Link href={messagesHref} aria-label={t('messages')}>
+                                            <MessageSquare className="size-5" />
+                                            {unreadMessages > 0 && (
+                                                <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                                    {unreadMessages > 9 ? '9+' : unreadMessages}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </Button>
+                                )}
                                 <NotificationBell />
                                 {nav.length === 0 && <LanguageSwitcher />}
                                 <DropdownMenu>
