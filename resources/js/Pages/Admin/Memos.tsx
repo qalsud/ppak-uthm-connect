@@ -6,6 +6,8 @@ import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
 import PageHeader from '@/Components/page-header';
+import PhotoPicker from '@/Components/photo-picker';
+import PhotoThumb from '@/Components/photo-thumb';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -24,6 +26,7 @@ import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { useList } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
+import type { PhotoInfo } from '@/lib/photo';
 import AppShell from '@/Layouts/app-shell';
 
 type Memo = {
@@ -36,9 +39,12 @@ type Memo = {
     centre: { id: number; name: string; short_name: string | null } | null;
     created_at: string;
     author: { id: number; name: string } | null;
+    photos: PhotoInfo[];
 };
 
 type CentreOption = { id: number; name: string; short_name: string | null };
+
+const MAX_PHOTOS = 3;
 
 
 export default function Memos({
@@ -57,7 +63,15 @@ export default function Memos({
     const [expanded, setExpanded] = useState<number[]>([]);
     const [deleteTarget, setDeleteTarget] = useState<Memo | null>(null);
 
-    const form = useForm({ title: '', description: '', audience: 'all', class: '', centre_id: '' });
+    const form = useForm({
+        title: '',
+        description: '',
+        audience: 'all',
+        class: '',
+        centre_id: '',
+        attachments: [] as File[],
+        remove_attachments: [] as number[],
+    });
 
     const audienceLabel = (memo: Memo) => {
         const base =
@@ -75,7 +89,15 @@ export default function Memos({
 
     const openCreate = () => {
         setEditing(null);
-        form.setData({ title: '', description: '', audience: 'all', class: '', centre_id: '' });
+        form.setData({
+            title: '',
+            description: '',
+            audience: 'all',
+            class: '',
+            centre_id: '',
+            attachments: [],
+            remove_attachments: [],
+        });
         form.clearErrors();
         setOpen(true);
     };
@@ -88,18 +110,28 @@ export default function Memos({
             audience: memo.audience,
             class: memo.class ?? '',
             centre_id: memo.centre_id ? String(memo.centre_id) : '',
+            attachments: [],
+            remove_attachments: [],
         });
         form.clearErrors();
         setOpen(true);
     };
 
+    const toggleExistingPhoto = (id: number) =>
+        form.setData(
+            'remove_attachments',
+            form.data.remove_attachments.includes(id)
+                ? form.data.remove_attachments.filter((x) => x !== id)
+                : [...form.data.remove_attachments, id],
+        );
+
     const submit = () => {
+        const options = { forceFormData: true, onSuccess: () => setOpen(false) };
+
         if (editing) {
-            form.put(route('admin.memos.update', { memo: editing.id }), {
-                onSuccess: () => setOpen(false),
-            });
+            form.put(route('admin.memos.update', { memo: editing.id }), options);
         } else {
-            form.post(route('admin.memos.store'), { onSuccess: () => setOpen(false) });
+            form.post(route('admin.memos.store'), options);
         }
     };
 
@@ -177,6 +209,17 @@ export default function Memos({
                                     >
                                         {memo.description}
                                     </p>
+                                    {memo.photos.length > 0 && (
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {memo.photos.map((photo) => (
+                                                <PhotoThumb
+                                                    key={photo.id}
+                                                    photo={photo}
+                                                    size="size-20"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                     {memo.description.length > 180 && (
                                         <button
                                             type="button"
@@ -248,6 +291,17 @@ export default function Memos({
                         rows={6}
                         value={form.data.description}
                         onChange={(e) => form.setData('description', e.target.value)}
+                    />
+                </FormField>
+
+                <FormField label={t('photos')} error={form.errors.attachments}>
+                    <PhotoPicker
+                        files={form.data.attachments}
+                        onChange={(files) => form.setData('attachments', files)}
+                        existing={editing?.photos ?? []}
+                        removed={form.data.remove_attachments}
+                        onToggleExisting={toggleExistingPhoto}
+                        max={MAX_PHOTOS}
                     />
                 </FormField>
             </FormDialog>

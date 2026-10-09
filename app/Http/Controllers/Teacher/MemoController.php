@@ -13,7 +13,7 @@ class MemoController extends Controller
     public function index(Request $request): Response
     {
         $memos = Memo::query()
-            ->with('author:id,name')
+            ->with(['author:id,name', 'attachments'])
             // Visibility lives in one place (Memo::visibleTo) so the memo list
             // and the dashboard badge can never disagree.
             ->visibleTo($request->user())

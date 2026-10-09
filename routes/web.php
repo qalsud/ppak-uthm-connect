@@ -85,6 +85,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('progress.photos.show');
     Route::get('/message-attachments/{photo}', [PhotoController::class, 'message'])
         ->name('message.photos.show');
+    Route::get('/memo-attachments/{photo}', [PhotoController::class, 'memo'])
+        ->name('memo.photos.show');
     Route::get('/absence-documents/{attachment}', [PhotoController::class, 'absence'])
         ->name('absence.documents.show');
     Route::get('/students/{student}/photo', [PhotoController::class, 'student'])

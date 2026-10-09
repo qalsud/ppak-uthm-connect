@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\ActiveCentre;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Memo extends Model
@@ -13,6 +14,9 @@ class Memo extends Model
 
     /** all | parents | teachers | class */
     public const AUDIENCES = ['all', 'parents', 'teachers', 'class'];
+
+    /** Most photos a single memo may carry. */
+    public const MAX_PHOTOS = 3;
 
     protected $fillable = [
         'author_id',
@@ -23,6 +27,9 @@ class Memo extends Model
         'centre_id',
     ];
 
+    /** Expose the photos (authorised URLs) to the frontend. */
+    protected $appends = ['photos'];
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
@@ -31,6 +38,19 @@ class Memo extends Model
     public function centre(): BelongsTo
     {
         return $this->belongsTo(Centre::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MemoAttachment::class);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function getPhotosAttribute(): array
+    {
+        return $this->attachments
+            ->map(fn (MemoAttachment $photo) => $photo->payload())
+            ->all();
     }
 
     /**

@@ -1,12 +1,12 @@
 # Session Handoff — PPAK UTHM Connect
 
-*Updated 1 Oct 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026. The
+*Updated 10 Oct 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026. The
 **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this first in a new
 session.***
 
-> **Session wrap — 1 Oct 2026.** Paused here. Everything is **committed and pushed** to `main`, the
-> working tree is **clean**, and **no work is in progress**. The only open thread is the
-> [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) (KIV). Nothing blocks a fresh start.
+> **Session — 10 Oct 2026.** **True realtime chat** shipped on **Laravel Reverb** (replacing the
+> messages polling). Changes are **local and uncommitted**. The
+> [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) remains KIV. Nothing blocks a fresh start.
 
 ---
 
@@ -26,7 +26,7 @@ session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **248 passing** (`php artisan test`) |
+| Tests | **256 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **103** frontend route names verified |
 | Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
@@ -38,6 +38,16 @@ register is clear**.
 ---
 
 ## What this session shipped
+
+- **Memo photos (10 Oct 2026).** Admins can attach up to **3 photos** to a memo (create or edit; remove
+  existing ones while editing). Stored on the private disk via `ImageStore` and served through an
+  authorised `memo.photos.show` route that mirrors `Memo::visibleTo`, so a photo is only visible to the
+  same audience as the memo. Shown as lightbox thumbnails in the admin, teacher and parent memo lists.
+- **Realtime chat (10 Oct 2026).** Laravel **Reverb** + Echo replace the 5s poll. `MessageSent`
+  (`ShouldBroadcastNow`, so no queue worker is required) fans out to the thread channel **and** each
+  recipient's user channel — the open thread updates instantly and the bell refreshes live. Channel
+  authorization mirrors the controllers; polling stays only as a fallback while the socket is down.
+  Requires `php artisan reverb:start` (the `composer dev` script now includes it).
 
 - **Phase B — Settings + money.** `settings` table + `setting('key', config('…'))` helper and
   **`/admin/settings`** (fee due day, absence window, message edit/length/attachments, photo
@@ -70,8 +80,8 @@ register is clear**.
    runs and the scheduler (`schedule:run`) is active.
 2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
    growth chart, school calendar/events, light admissions pipeline.
-3. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — Laravel Echo/Pusher to replace polling;
-   a general/centre thread.
+3. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped** on
+   Laravel Reverb (10 Oct 2026); still open: the **general/centre thread** (needs new schema).
 
 ### Issue register — clear
 
@@ -127,6 +137,7 @@ php artisan test                    # Pest suite
 npm run build                       # tsc typecheck + Vite build
 vendor/bin/pint app tests database  # code style
 php artisan check:routes            # frontend route names vs registered routes
+php artisan reverb:start            # realtime WebSockets for chat (ws://localhost:8080)
 php artisan migrate                 # apply pending migrations (dev MySQL!)
 php artisan migrate:fresh --seed    # reset local DB with the full demo dataset
 ```

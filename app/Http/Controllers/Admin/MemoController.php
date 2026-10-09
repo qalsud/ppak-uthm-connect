@@ -11,9 +11,11 @@ use App\Models\Memo;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\MemoPostedNotification;
+use App\Services\Images\ImageStore;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
@@ -23,10 +25,12 @@ use Inertia\Response;
 
 class MemoController extends Controller
 {
+    public function __construct(private ImageStore $images) {}
+
     public function index(): Response
     {
         $memos = Memo::query()
-            ->with(['author:id,name', 'centre:id,name,short_name'])
+            ->with(['author:id,name', 'centre:id,name,short_name', 'attachments'])
             ->forActiveCentre()
             ->orderBy('created_at', 'desc')
             ->get();
@@ -47,6 +51,8 @@ class MemoController extends Controller
             'author_id' => $request->user()->id,
         ]);
 
+        $this->storeAttachments($memo, $request->file('attachments') ?? [], $request->user());
+
         Notification::send($this->recipients($memo), new MemoPostedNotification($memo));
 
         ActivityLog::record('memo.created', $memo, $memo->title, ['audience' => $memo->audience]);
@@ -57,6 +63,9 @@ class MemoController extends Controller
     public function update(Request $request, Memo $memo): RedirectResponse
     {
         $memo->update($this->validated($request));
+
+        $this->removeAttachments($memo, (array) $request->input('remove_attachments', []));
+        $this->storeAttachments($memo, $request->file('attachments') ?? [], $request->user());
 
         ActivityLog::record('memo.updated', $memo, $memo->title, ['audience' => $memo->audience]);
 
@@ -75,13 +84,22 @@ class MemoController extends Controller
     /** @return array<string, mixed> */
     private function validated(Request $request): array
     {
+        $maxKb = (int) setting('media.max_upload_kb', config('media.max_upload_kb'));
+
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'audience' => ['nullable', Rule::in(Lists::keys('memo_audience'))],
             'class' => ['nullable', Rule::in(Student::classKeys())],
             'centre_id' => ['nullable', 'integer', Rule::exists('centres', 'id')],
+            'attachments' => ['nullable', 'array', 'max:'.Memo::MAX_PHOTOS],
+            'attachments.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$maxKb],
+            'remove_attachments' => ['nullable', 'array'],
+            'remove_attachments.*' => ['integer'],
         ]);
+
+        // Attachments are handled separately; only memo columns reach the model.
+        unset($data['attachments'], $data['remove_attachments']);
 
         $data['audience'] ??= 'all';
 
@@ -96,6 +114,44 @@ class MemoController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Store uploaded photos on the private disk and attach them to the memo.
+     *
+     * @param  array<int, UploadedFile|null>  $files
+     */
+    private function storeAttachments(Memo $memo, array $files, User $uploader): void
+    {
+        foreach (array_filter($files) as $file) {
+            $stored = $this->images->store($file, 'memos');
+
+            $memo->attachments()->create([
+                'disk' => $stored->disk,
+                'path' => $stored->path,
+                'thumb_path' => $stored->thumbPath,
+                'original_name' => $file->getClientOriginalName(),
+                'mime' => $stored->mime,
+                'size' => $stored->size,
+                'width' => $stored->width,
+                'height' => $stored->height,
+                'uploaded_by' => $uploader->id,
+            ]);
+        }
+    }
+
+    /**
+     * Delete the given attachments (only ones that belong to this memo).
+     *
+     * @param  array<int, int|string>  $ids
+     */
+    private function removeAttachments(Memo $memo, array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        $memo->attachments()->whereIn('id', $ids)->get()->each->delete();
     }
 
     /** @return Collection<int, User> */

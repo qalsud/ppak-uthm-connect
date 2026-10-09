@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AbsenceAttachment;
 use App\Models\AttendancePhoto;
 use App\Models\AuthorisedCollector;
+use App\Models\Memo;
+use App\Models\MemoAttachment;
 use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
 use App\Models\Student;
@@ -30,6 +32,19 @@ class PhotoController extends Controller
     public function message(Request $request, MessageAttachment $photo): StreamedResponse
     {
         return $this->serve($request, $photo);
+    }
+
+    /** A memo photo: visible to anyone who can see the memo itself. */
+    public function memo(Request $request, MemoAttachment $photo): StreamedResponse
+    {
+        $user = $request->user();
+
+        $allowed = $user !== null
+            && Memo::query()->visibleTo($user)->whereKey($photo->memo_id)->exists();
+
+        abort_unless($allowed, 403);
+
+        return $this->streamStored($photo);
     }
 
     /** Authorised collector's photo (staff only — used for verification). */
@@ -105,7 +120,13 @@ class PhotoController extends Controller
 
         abort_unless($allowed, 403);
 
-        $path = $request->query('variant') === 'thumb' && $photo->thumb_path
+        return $this->streamStored($photo);
+    }
+
+    /** Stream a stored image (or its thumbnail) from the private disk. */
+    private function streamStored(AttendancePhoto|ProgressPhoto|MessageAttachment|MemoAttachment $photo): StreamedResponse
+    {
+        $path = request()->query('variant') === 'thumb' && $photo->thumb_path
             ? $photo->thumb_path
             : $photo->path;
 

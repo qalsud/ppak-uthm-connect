@@ -15,7 +15,7 @@ class MemoController extends Controller
         $classes = $request->user()->students()->pluck('class')->unique();
 
         $memos = Memo::query()
-            ->with('author:id,name')
+            ->with(['author:id,name', 'attachments'])
             ->where(function ($query) use ($classes) {
                 $query->whereIn('audience', ['all', 'parents'])
                     ->orWhere(fn ($q) => $q->where('audience', 'class')->whereIn('class', $classes));

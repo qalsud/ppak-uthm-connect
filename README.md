@@ -22,7 +22,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 | Payments | Stripe Checkout + webhooks |
 | Receipts / reports | dompdf |
 | Images | GD + FreeType (private disk, watermark, compression) |
-| Realtime | Laravel Broadcasting (Pusher when keys are set; polling fallback) |
+| Realtime | Laravel Reverb + Echo (live chat + bell; polling fallback) |
 | Quality | Pest · Pint |
 
 ---
@@ -38,7 +38,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 - **Payments** — records CRUD **and field edit**, month/class/status filters, search, **overdue flags**, collected/outstanding summary, **bulk "generate monthly fees"** (each child at their **centre's rate**), mark paid/unpaid, **PDF receipt download**.
 - **Transactions** — online (Stripe) payments: list, detail, and **refund** (a refund re-opens the covered months).
 - **Fee settings** — **versioned** rates (create a new version, retire the old) with **per-centre overrides**.
-- **Memos** — create/edit/delete with **audience targeting** (Everyone / Parents / Teachers / a class) and a **centre**.
+- **Memos** - create/edit/delete with **audience targeting** (Everyone / Parents / Teachers / a class), a **centre**, and up to **3 photos** (private disk, authorised route).
 - **Lists** — admin-editable fixed lists (classes, blood types, relationships, absence reasons, progress options, daily-activity fields, …): one source of truth for backend validation *and* frontend forms.
 - **Centres** — CRUD (deactivate, never delete) plus a header **centre switcher** that scopes the whole admin portal.
 - **Settings** — operational rules (fee due day, absence window, message edit/length/attachments, photo retention/watermark/upload size, reminder lead time) and **scheduler health**.
@@ -138,11 +138,14 @@ STRIPE_WEBHOOK_SECRET=
 STRIPE_CURRENCY=myr
 # Webhook endpoint: POST /stripe/webhook  (checkout.session.completed)
 
-# Realtime (optional: leave empty and the bell still works via polling)
-PUSHER_APP_ID=
-PUSHER_APP_KEY=
-PUSHER_APP_SECRET=
-PUSHER_APP_CLUSTER=ap1
+# Realtime (Laravel Reverb). Start it with `php artisan reverb:start`; without it,
+# chat and the bell fall back to polling.
+REVERB_APP_ID=
+REVERB_APP_KEY=
+REVERB_APP_SECRET=
+REVERB_HOST="localhost"
+REVERB_PORT=8080
+REVERB_SCHEME=http
 
 # Attendance / progress photos
 MEDIA_DISK=attendance
@@ -227,7 +230,8 @@ first — verified state, environment notes, working agreements and next steps.
 - **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger), then `migrate --force` + the scheduler.
 - **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
   growth chart, school calendar/events, light admissions pipeline.
-- **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — true realtime chat (Pusher/Echo), a general thread.
+- **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped**
+  (Laravel Reverb, 10 Oct 2026); still open: the **general/centre thread** (new schema).
 
 ---
 
@@ -241,8 +245,7 @@ first — verified state, environment notes, working agreements and next steps.
 **Next up:** school **calendar/events** · term **progress-report export** · growth **chart** ·
 light **admissions pipeline**.
 
-**Later:** native/push (Pusher or PWA web push), staff attendance & scheduling, **true realtime chat**
-(Laravel Echo/Pusher — polling is in place for now).
+**Later:** native/push (PWA web push), staff attendance & scheduling, a **general/centre chat thread**.
 
 **Hosting:** deploy (Hostinger or Railway), configure `.env`, run migrations, and ensure the scheduler
 runs (`schedule:run` → `media:prune-photos` + `fees:send-reminders`), plus backups.
