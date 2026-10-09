@@ -53,7 +53,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 - **Growth** — record height/weight per child/day with automatic **BMI** (same-day re-entry updates), a **class average BMI**, and latest-per-child + full history tables.
 - **Daily activities** — PERMATA/KSPK checklist per child.
 - **Daily updates** — see parent-submitted morning check-ins per class.
-- **Progress** — grouped Lesson / Activities / Assessment form with helper text + rating chips, **optional photo**, per-student history with filters and a summary.
+- **Progress** — grouped Lesson / Activities / Assessment form with helper text + rating chips, **optional photo**, per-student history with filters and a summary, and a **progress-report PDF** download per student (period selectable).
 - **Messages** — parent ↔ teacher chat per child. **Memos**.
 - **Admin parity** — every teacher screen is also reachable by admins under **Teacher views** in the sidebar (acting as the admin, logged to the audit trail).
 
@@ -62,7 +62,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 - **Attendance** — read-only status + history with photos (marking is teacher-only).
 - **Daily update** — submit a child's morning check-in (arrival, sleep, bath, health, notes).
 - **Activities & progress** — latest activity and progress with rating chips and photos.
-- **Child page** — updates, activities, progress, attendance history (**with the check-in temperature**), **medication requests + status**, **growth (height/weight/BMI)**, **absence requests**, and **Pay**.
+- **Child page** — updates, activities, progress (**+ progress-report PDF**), attendance history (**with the check-in temperature**), **medication requests + status**, **growth (height/weight/BMI)**, **absence requests**, and **Pay**.
 - **Absences** — file an absence for a child; the teacher approves/declines and it syncs into attendance.
 - **Financials** — unpaid records, **Stripe Checkout**, payment history, **PDF receipts**.
 - **Messages · Memos · Teachers** (contact list).
@@ -72,6 +72,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 - **Bilingual** English / Bahasa Melayu across the whole app, **including the auth and profile pages**.
 - **Admin-editable settings & lists** — operational rules live in a `settings` table (`setting('x', config('y'))`, so config/`.env` remains the fallback), and fixed lists live in `list_options`; both are managed from the admin portal.
 - **Notifications** — in-app bell (database + broadcast) with an optional **email channel for messages**; unread badges. Parents are notified on **check-in**, **medication given**, fee records (+ **scheduled fee reminders**), progress, memos, chat, **check-out (with the photo posted into the chat)**, and **refunds**.
+- **Realtime** — chat and the notification bell update live over **Laravel Reverb** (self-hosted WebSockets, no vendor/subscription); a polling fallback covers when the socket is down. Start it with `php artisan reverb:start`.
 - **Scheduled tasks** — `media:prune-photos` (daily 03:00) and `fees:send-reminders` (daily 08:00); both stamp their last run, shown on `/admin/settings` (with a stale-schedule warning).
 - **Image pipeline** — re-encode + **EXIF/GPS stripped**, **timestamp watermark**, **≤1 MB** compression, thumbnail, **private storage served only through an authorising route**, and **configurable auto-retention** (default 3 days, `media:prune-photos`).
 - **Audit log** of admin mutations, filterable with CSV export.

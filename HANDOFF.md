@@ -4,8 +4,9 @@
 **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this first in a new
 session.***
 
-> **Session — 10 Oct 2026.** **True realtime chat** shipped on **Laravel Reverb** (replacing the
-> messages polling). Changes are **local and uncommitted**. The
+> **Session wrap — 10 Oct 2026.** Shipped **true realtime chat (Laravel Reverb)**, **memo photos**
+> (+ an inline carousel), a **per-child progress-report PDF**, and a teacher nav tweak. Everything is
+> **committed and pushed** to `main`; the working tree is **clean**. The
 > [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) remains KIV. Nothing blocks a fresh start.
 
 ---
@@ -52,6 +53,10 @@ register is clear**.
   recipient's user channel — the open thread updates instantly and the bell refreshes live. Channel
   authorization mirrors the controllers; polling stays only as a fallback while the socket is down.
   Requires `php artisan reverb:start` (the `composer dev` script now includes it).
+- **Memo carousel + teacher nav + mobile date fix (10 Oct 2026).** Memo photos render as an inline
+  scroll-snap **carousel** (swipe/arrows/dots, tap for the lightbox). The teacher mobile bottom bar
+  swaps **Messages → Progress**, with Messages moved to the **header** next to the notification bell
+  (same unread badge). Fixed the mobile date-picker icon clipping (full-width below `md`).
 
 - **Phase B — Settings + money.** `settings` table + `setting('key', config('…'))` helper and
   **`/admin/settings`** (fee due day, absence window, message edit/length/attachments, photo
@@ -82,8 +87,8 @@ register is clear**.
    not built; resume when the stakeholder questions are answered.
 1. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
    runs and the scheduler (`schedule:run`) is active.
-2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
-   growth chart, school calendar/events, light admissions pipeline.
+2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — growth chart, school
+   calendar/events, light admissions pipeline. (Term progress-report PDF ✅ shipped 10 Oct 2026.)
 3. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped** on
    Laravel Reverb (10 Oct 2026); still open: the **general/centre thread** (needs new schema).
 
@@ -101,6 +106,8 @@ decision and documented.
 - **DB:** `ppak_uthm` / `ppak_uthm` / `ppak_secret`
 - ⚠️ **XAMPP's MySQL owns 127.0.0.1:3306** — that is what the app uses. Laragon's MySQL is shadowed.
 - Tests use **SQLite in-memory** (`phpunit.xml`), so `php artisan test` is DB-independent.
+- **Realtime:** run **`php artisan reverb:start`** (ws://localhost:8080) for live chat + bell; without
+  it they fall back to polling. `.env` already holds generated `REVERB_*` keys.
 
 ### Demo accounts & data (from `--seed`)
 
@@ -150,6 +157,6 @@ php artisan migrate:fresh --seed    # reset local DB with the full demo dataset
 
 ## Deferred / not planned
 
-- **Pusher realtime chat** — polling fallback is in place.
+- **Pusher / Ably** — Reverb is the shipped transport; switching is a `BROADCAST_CONNECTION` change.
 - **PWA / push** — intentionally disabled during development.
 - Auth pages use Laravel Breeze defaults (now localised, styled with the app's design tokens).

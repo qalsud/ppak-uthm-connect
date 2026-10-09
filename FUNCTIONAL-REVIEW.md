@@ -48,8 +48,8 @@ value · **P3** = nice-to-have.
 | **i18n + UX** | Full bilingual coverage (incl. **auth/profile**); admin sidebar **"Teacher views"** group; misc UI fixes. |
 
 **⏳ Still open** (next passes): academic **terms (F5)** · bulk class activities/progress · student
-**photo/IC** + class-move history + CSV upsert/dry-run · memo attachments/scheduling/read receipts ·
-**term progress-report PDF** + monthly statements · growth **chart** (data ✅) · reports/analytics ·
+**photo/IC** + class-move history + CSV upsert/dry-run · memo scheduling/read receipts ·
+monthly statements · growth **chart** (data ✅) · reports/analytics ·
 backups · PWA/push · queueing notifications · audit coverage (logins/exports) · accessibility pass.
 
 ---
@@ -158,7 +158,7 @@ parent pays the **total unpaid** via Stripe; admin downloads a per-record PDF re
 
 | Gap | Priority | Suggested |
 |---|---|---|
-| Text only | P2 | Attachments (PDF/image) + optional link. |
+| ~~Text only~~ ✅ done | — | Up to **3 photos** per memo (private disk, authorised route), shown as a carousel. |
 | No scheduling or expiry | P2 | `publish_at` / `expires_at`. |
 | No read receipts | P3 | "Seen by 12/20 parents". |
 | No edit history | P3 | Use the audit log. |
@@ -267,7 +267,7 @@ check-out, plus the day's **medication requests** with mark-given/not-given.
 | Gap | Priority | Suggested |
 |---|---|---|
 | **Header search box does nothing** | P1 | Either implement a real global search (students/memos/payments) or remove it. |
-| No push/mobile; PWA disabled | P2 | Enable PWA + web push, or Pusher; optional native wrapper. |
+| No push/mobile; PWA disabled | P2 | Enable PWA + web push; optional native wrapper. |
 | Scheduler not running in dev/prod | P2 | Ensure cron → `schedule:run` (drives **fee reminders** + photo pruning). |
 | Notifications send synchronously | P2 | Queue them (`ShouldQueue`) once many recipients. |
 | No reports/analytics beyond the dashboard | P2 | Attendance %, fee collection by class/month, progress summaries; CSV/PDF export. |

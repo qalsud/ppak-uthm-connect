@@ -56,8 +56,8 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 | **Growth tracking (height/weight/BMI)** | ✅ | ✅ height/weight → BMI per child + **class average BMI** + history (no chart yet) | 🟡 |
 | **Portfolio (photos/videos + evaluation)** | ✅ strong (video too) | Progress records + photos (no video, no portfolio feed) | 🟡 |
 | Progress reports against curriculum | ✅ configurable checklist | ✅ PERMATA + KSPK, configurable per record | 🟢 local fit |
-| Term/child **progress report export** | ✅ portfolio report | — | 🔴 |
-| Two-way chat | ✅ | ✅ parent ↔ teacher per child + **admin reply / reassign / close** | ✅ |
+| Term/child **progress report export** | ✅ portfolio report | ✅ per-child PDF (period selectable), downloadable by teacher/admin + parent | ✅ |
+| Two-way chat | ✅ | ✅ parent ↔ teacher per child + **admin reply / reassign / close**, **live via Reverb** | ✅ |
 | Announcements / bulletins | ✅ + virtual whiteboard | ✅ memos with **audience targeting** (all/parents/teachers/class) | ✅ |
 | **School calendar / events** | ✅ (sync to phone) | — | 🔴 |
 | **Fees: invoicing + receipts** | ✅ | ✅ monthly records, Stripe Checkout, **PDF receipts** | ✅ |
@@ -113,13 +113,12 @@ Legend: ✅ at parity · 🟢 we're ahead · 🟡 partial · 🔴 missing
 ### Tier 2 — clear value, moderate effort
 5. **Growth chart** — plot height/weight/BMI over time per child (the numbers are already recorded).
 6. ~~**Absence requests**~~ — ✅ shipped (parent files, teacher approves/declines, syncs into attendance).
-7. **Term progress report** — generate a per-child PDF from existing progress records and share it
-   to the parent chat (reuses our PDF + image/chat plumbing).
+7. ~~**Term progress report**~~ — ✅ shipped (per-child PDF, period selectable; teacher/admin + parent).
 8. **School calendar / events** with bulletins and "add to calendar" links.
 9. **Light admissions pipeline** — enquiry form → admin list → convert to student.
 
 ### Tier 3 — larger, decide if needed
-10. **Real push / mobile** — enable Pusher or add PWA **web push** (our PWA is currently disabled).
+10. **Real push / mobile** — add PWA **web push** (our PWA is currently disabled); realtime chat itself already ships on Reverb.
 11. **Staff attendance & scheduling / ratio monitoring.**
 12. **Multi-centre** dashboards.
 13. **Video support** in progress/portfolio.
@@ -139,12 +138,12 @@ refunds, admin accounts, oversight).
 
 Next best value, in order:
 
-1. **Term progress report PDF** — reuses the PDF + chat plumbing for a LittleLives-style portfolio report.
+1. ~~**Term progress report PDF**~~ — ✅ shipped (per-child PDF; teacher/admin + parent).
 2. **Growth chart** — the data is already collected and we already compute the class average; a per-child
    trend chart completes the feature.
 3. **School calendar / events** with bulletins and "add to calendar" links.
 4. **Light admissions pipeline** — enquiry → admin list → convert to student.
-5. **True realtime chat** (Laravel Echo/Pusher) — polling is in place for now.
+5. ~~**True realtime chat**~~ — ✅ shipped on **Laravel Reverb**; still open: a general/centre thread.
 
 ---
 

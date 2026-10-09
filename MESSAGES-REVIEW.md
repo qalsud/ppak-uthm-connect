@@ -60,7 +60,7 @@ Effort: 🟢 small · 🟡 medium · 🔴 larger.
 
 ## Top 10, ranked
 
-1. **Real-time delivery** (F1) — or polling until Pusher is configured.
+1. ~~**Real-time delivery** (F1)~~ — ✅ shipped on **Laravel Reverb** (10 Oct 2026).
 2. **Deep-link notifications to the thread** (F3) + **fix stickiness** so parents aren't ignored (F4).
 3. **Paginate messages** (F2).
 4. **Multiline composer** (U4) + **mobile composer visibility** (U5).

@@ -125,8 +125,22 @@ available"*). For a demo that's fine. To keep them, either:
 - **No queue worker** — notifications are sent synchronously.
 - **No mailer** — the bell always works; **email** (approve/reject, messages, medication given, fee
   reminders) only sends once `MAIL_MAILER` points at a real SMTP/API provider.
-- **No Stripe/Pusher keys** — payments show a graceful "unavailable" notice and the bell works
-  without realtime (chat polls).
+- **No Stripe keys** — payments show a graceful "unavailable" notice.
+- **No Reverb process** — chat and the bell fall back to **polling** (everything still works). For
+  live updates see **Realtime (Reverb) — optional** below.
+
+### Realtime (Reverb) — optional
+
+The app ships with **Laravel Reverb** (self-hosted WebSockets — no vendor, no subscription). It needs
+one extra long-running process and a reachable WebSocket endpoint:
+
+- Run a **second service** from the same repo with start command
+  **`php artisan reverb:start --host=0.0.0.0 --port=$PORT`** and give it a public domain.
+- On the **web** service set `BROADCAST_CONNECTION=reverb`, the `REVERB_APP_ID/KEY/SECRET` (from
+  `php artisan install:broadcasting` / your `.env`), and `REVERB_HOST/PORT/SCHEME` pointing at the
+  Reverb service (`wss`, port 443, in production). Rebuild so the `VITE_REVERB_*` values are baked in.
+
+Without it, the demo is fully functional — chat and the bell simply refresh on a poll instead of live.
 
 ---
 

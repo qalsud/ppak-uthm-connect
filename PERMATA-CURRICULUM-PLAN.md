@@ -137,7 +137,7 @@ Make the curriculum admin-editable and switch the progress form to the real doma
 ### Phase P5 — PERMATA portfolio / term report (PDF)
 - Per-child **PDF** grouped by the 6 domains + 4 asas + growth, with evidence (progress photos),
   downloadable and **posted to the parent chat**.
-- This is the Tier-2 "term progress report PDF" from `LITTLELIVES-COMPARISON.md`, now curriculum-aligned.
+- This is the Tier-2 "term progress report PDF" from `LITTLELIVES-COMPARISON.md` (✅ shipped 10 Oct 2026), now curriculum-aligned.
 - Reuses **dompdf**, the private image pipeline and `ConversationService`.
 
 ### Phase P6 — PERMATA Q self-assessment (later)
