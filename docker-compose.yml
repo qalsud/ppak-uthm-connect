@@ -1,4 +1,92 @@
+# Local "as-deployed" stack: app + realtime (Reverb) + scheduler + MySQL/Redis.
+#
+#   docker compose up --build
+#
+#   app        → http://localhost:8000   (same image as the Railway deploy)
+#   reverb     → ws://localhost:8080     (live chat + bell)
+#   phpMyAdmin → http://localhost:8081
+#
+# Laragon can keep serving day-to-day dev; this is for a reproducible,
+# production-shaped run. Host ports are offset so they never clash with
+# Laragon/XAMPP (Apache 80/443, MySQL 3306, Redis 6379).
+
+x-app-env: &app-env
+  APP_NAME: "PPAK UTHM Connect"
+  APP_ENV: local
+  APP_DEBUG: "true"
+  APP_URL: http://localhost:8000
+  APP_KEY: "base64:bWXO1k7irC7PDqo+28bw09TVg+ttlHcdrbokfsB0ndQ="
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: "3306"
+  DB_DATABASE: ppak_uthm
+  DB_USERNAME: ppak_uthm
+  DB_PASSWORD: ppak_secret
+  SESSION_DRIVER: database
+  CACHE_STORE: database
+  QUEUE_CONNECTION: database
+  BROADCAST_CONNECTION: reverb
+  REVERB_APP_ID: ppak-local
+  REVERB_APP_KEY: ppak-local-key
+  REVERB_APP_SECRET: ppak-local-secret
+  REVERB_HOST: reverb
+  REVERB_PORT: "8080"
+  REVERB_SCHEME: http
+  MAIL_MAILER: log
+  MEDIA_DISK: attendance
+  DEMO_SEED: "true"
+
+x-build: &build
+  context: .
+  args:
+    VITE_REVERB_APP_KEY: ppak-local-key
+    VITE_REVERB_HOST: localhost
+    VITE_REVERB_PORT: "8080"
+    VITE_REVERB_SCHEME: http
+
 services:
+  app:
+    build: *build
+    image: ppak-uthm-connect:local
+    container_name: ppak_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+    environment: *app-env
+    volumes:
+      - storage_app:/var/www/html/storage/app
+
+  # Realtime WebSockets (Laravel Reverb) — same image, different process.
+  reverb:
+    image: ppak-uthm-connect:local
+    container_name: ppak_reverb
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "8080:8080"
+    entrypoint: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    environment:
+      <<: *app-env
+      REVERB_HOST: localhost
+      # Reverb only needs its app keys — no DB. A file cache keeps it from
+      # touching the `cache` table (which may not exist until the app migrates).
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+
+  # Runs `schedule:work` (fee reminders, photo pruning).
+  scheduler:
+    image: ppak-uthm-connect:local
+    container_name: ppak_scheduler
+    restart: unless-stopped
+    depends_on:
+      - app
+    entrypoint: ["php", "artisan", "schedule:work"]
+    environment: *app-env
+
   mysql:
     image: mysql:8.4
     container_name: ppak_mysql
@@ -8,15 +96,25 @@ services:
       MYSQL_USER: ppak_uthm
       MYSQL_PASSWORD: ppak_secret
       MYSQL_ROOT_PASSWORD: root_secret
+    # Dev-only tuning: Docker Desktop's volume makes InnoDB fsyncs very slow,
+    # which turns first-boot migrations into a 15-minute crawl. These relax
+    # durability (fine for a local demo) to make it bearable.
+    command: >-
+      --skip-log-bin
+      --innodb-flush-log-at-trx-commit=2
+      --innodb-doublewrite=0
     ports:
-      - "3306:3306"
+      - "3307:3306"          # 3307 on the host — 3306 is taken by XAMPP/Laragon
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_secret"]
-      interval: 10s
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_secret"]
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      # First boot initialises the data dir (can take ~1-2 min); don't count
+      # those failures against the retries.
+      start_period: 90s
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -30,17 +128,18 @@ services:
       PMA_USER: root
       PMA_PASSWORD: root_secret
     ports:
-      - "8080:80"
+      - "8081:80"            # 8080 is Reverb
 
   redis:
     image: redis:7-alpine
     container_name: ppak_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"          # 6379 may be taken on the host
     volumes:
       - redis_data:/data
 
 volumes:
   mysql_data:
   redis_data:
+  storage_app:

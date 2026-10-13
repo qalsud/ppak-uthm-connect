@@ -1,11 +1,21 @@
 # ---------- Stage 1: build the frontend ----------
 FROM node:20-alpine AS assets
 
+# Baked into the JS bundle at build time. For the local Docker stack the browser
+# reaches Reverb on the host (localhost:8080); override for a deployed host.
+ARG VITE_REVERB_APP_KEY=ppak-local-key
+ARG VITE_REVERB_HOST=localhost
+ARG VITE_REVERB_PORT=8080
+ARG VITE_REVERB_SCHEME=http
+
 WORKDIR /app
 COPY package*.json .npmrc* ./
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 COPY . .
-RUN npm run build
+# .env is dockerignored, so write the VITE_* values Vite needs before building.
+RUN printf 'VITE_REVERB_APP_KEY=%s\nVITE_REVERB_HOST=%s\nVITE_REVERB_PORT=%s\nVITE_REVERB_SCHEME=%s\nVITE_APP_NAME="PPAK UTHM Connect"\n' \
+        "$VITE_REVERB_APP_KEY" "$VITE_REVERB_HOST" "$VITE_REVERB_PORT" "$VITE_REVERB_SCHEME" > .env \
+    && npm run build
 
 # ---------- Stage 2: PHP + Apache runtime ----------
 FROM php:8.3-apache

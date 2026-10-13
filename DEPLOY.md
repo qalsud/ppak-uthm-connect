@@ -14,6 +14,22 @@ Laravel. Three realistic options, fastest first:
 
 A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option B works as-is.
 
+## Local Docker stack (optional, production-shaped)
+
+`docker compose up --build` runs the whole app from the **same `Dockerfile`** Railway uses — handy
+for a reproducible run or to sanity-check the deployed image:
+
+| Service | URL / host port |
+|---|---|
+| app (Apache) | http://localhost:8000 |
+| reverb (WebSockets) | ws://localhost:8080 |
+| phpMyAdmin | http://localhost:8081 |
+| MySQL | host `3307` |
+| Redis | host `6380` |
+
+Host ports are offset so they never clash with Laragon/XAMPP (80/443/3306/6379). It seeds the demo on
+first boot (`DEMO_SEED=true`). Laragon stays fine for day-to-day dev.
+
 > ⚠️ **Schema changes don't migrate themselves.** The Pest suite runs on **SQLite `:memory:`** and
 > rebuilds the schema on every run, so it stays green even when the **MySQL dev DB** is missing a
 > new table/column. After creating or pulling a migration, run **`php artisan migrate`** locally

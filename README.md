@@ -99,6 +99,17 @@ npm run build                     # or: npm run dev
 Then serve it. With **Laragon** the project is reachable at **http://ppak-uthm-connect.test**;
 otherwise `php artisan serve` → http://localhost:8000.
 
+### Or: the whole stack in Docker
+
+```bash
+docker compose up --build
+```
+
+Brings up the app (`http://localhost:8000` — the same image as the Railway deploy), **Reverb**
+(`ws://localhost:8080`, live chat + bell), the scheduler, MySQL (host `:3307`), Redis (host `:6380`)
+and phpMyAdmin (`http://localhost:8081`). Host ports are offset so they don't clash with Laragon,
+and it seeds the demo on first boot.
+
 > `php artisan storage:link` is **not required** — attendance/progress photos live on a private disk
 > and are streamed through an authorised route.
 
