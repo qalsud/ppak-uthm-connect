@@ -33,7 +33,7 @@
 
 **Next three to pay down first**
 
-1. **CODE‑01** — split the oversized controllers/components (`AttendanceController`, `Students.tsx`, `Child.tsx`, `chat-inbox.tsx`).
+1. **CODE‑01** — split the remaining oversized component (`chat-inbox.tsx`, 735 lines) into thread/list/composer parts.
 2. **TEST‑01** — add Larastan/PHPStan + ESLint as CI gates.
 3. **SEC‑11** — once a payment provider is chosen, lock the completion flow.
 
@@ -67,7 +67,7 @@
 | **PROC‑01** | Failed and inactive login attempts are logged with email + IP (external error tracking still an open decision) | `AuthenticationTest` |
 | **CODE‑04** | Removed dead `Memo::AUDIENCES` / `audienceLabel()`; unused-dependency cleanup remains P3 | full suite |
 | **TEST‑01** | Added Larastan/PHPStan (level 5, 208-error baseline) + ESLint flat config; CI runs both | `composer analyse`, `npm run lint` |
-| **CODE‑01 (partial)** | Extracted `CheckoutService` from `AttendanceController` (382 → 257 lines) | `CheckoutPhotoTest` |
+| **CODE‑01 (partial)** | Extracted `CheckoutService` (AttendanceController 382→257), `StudentFormDialog` (Students.tsx 861→519) and `ChildProgressCard` (Child.tsx 607→502) | `CheckoutPhotoTest`, build/typecheck |
 
 Suite after the fix pass: **276 tests / 1918 assertions** (15 new regression tests).
 **All P0/P1 findings are resolved; the first two P2 batches, static analysis and the controller split are fixed.**
