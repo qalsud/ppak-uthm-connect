@@ -20,6 +20,7 @@ import {
 import { useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import { initials } from '@/lib/utils';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps, Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -36,14 +37,6 @@ type Row = {
     closed: boolean;
 };
 
-
-const initials = (name: string) =>
-    name
-        .split(' ')
-        .map((p) => p[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
 
 export default function AdminConversations() {
     const { t } = useI18n();

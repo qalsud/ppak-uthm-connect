@@ -66,7 +66,7 @@ export default function Activities({
         <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader
                 title={t('daily_activities')}
-                description="Record today's classroom activities"
+                description={t('record_todays_activities')}
             />
 
             <Card className="mb-4 rounded-2xl border-0 shadow-sm">
@@ -138,10 +138,10 @@ export default function Activities({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Treatment / {t('notes')}</Label>
+                        <Label>{t('treatment_notes')}</Label>
                         <Textarea
                             rows={2}
-                            aria-label={`Treatment / ${t('notes')}`}
+                            aria-label={t('treatment_notes')}
                             value={form.data.treatment_notes}
                             onChange={(e) => form.setData('treatment_notes', e.target.value)}
                         />

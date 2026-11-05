@@ -41,7 +41,7 @@ export default function TeacherMessages() {
 
     return (
         <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
-            <PageHeader title={t('messages')} description="Chat with parents" />
+            <PageHeader title={t('messages')} description={t('chat_with_parents')} />
             <ChatInbox
                 conversations={props.conversations}
                 open={props.open}

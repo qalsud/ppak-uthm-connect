@@ -17,7 +17,7 @@ export default function ParentMemos({ memos }: { memos: Memo[] }) {
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
-            <PageHeader title={t('memos')} description="Announcements from PPAK UTHM" />
+            <PageHeader title={t('memos')} description={t('announcements_ppak')} />
             <MemoList memos={memos} emptyLabel={t('no_data')} />
         </AppShell>
     );

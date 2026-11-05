@@ -17,7 +17,7 @@ export default function TeacherMemos({ memos }: { memos: Memo[] }) {
 
     return (
         <AppShell nav={teacherNav} bottomNav={teacherBottomNav} title={t('teacher')}>
-            <PageHeader title={t('memos')} description="Announcements from the admin" />
+            <PageHeader title={t('memos')} description={t('announcements_admin')} />
             <MemoList memos={memos} emptyLabel={t('no_data')} />
         </AppShell>
     );

@@ -31,6 +31,7 @@ import {
 import { formatDate } from '@/lib/date';
 import { useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
+import { formatMoney } from '@/lib/utils';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -118,8 +119,8 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
             <PageHeader title={t('transactions')} description={t('transactions_desc')} />
 
             <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <StatCard label={t('collected')} value={`RM ${signals.collected.toFixed(2)}`} icon={CreditCard} />
-                <StatCard label={t('refunded_total')} value={`RM ${signals.refunded.toFixed(2)}`} icon={RotateCcw} />
+                <StatCard label={t('collected')} value={formatMoney(signals.collected)} icon={CreditCard} />
+                <StatCard label={t('refunded_total')} value={formatMoney(signals.refunded)} icon={RotateCcw} />
                 <StatCard label={t('paid')} value={signals.paid_count} icon={CreditCard} />
             </div>
 
@@ -177,7 +178,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                                             {payment.paid_at ? ` · ${formatDate(payment.paid_at)}` : ''}
                                         </p>
                                         <p className="mt-1 text-sm font-semibold">
-                                            RM {Number(payment.amount).toFixed(2)}
+                                            {formatMoney(payment.amount)}
                                         </p>
                                     </div>
                                     <StatusBadge
@@ -210,7 +211,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                                                 {payment.student?.name ?? '—'}
                                             </TableCell>
                                             <TableCell>{payment.user?.name ?? '—'}</TableCell>
-                                            <TableCell>RM {Number(payment.amount).toFixed(2)}</TableCell>
+                                            <TableCell>{formatMoney(payment.amount)}</TableCell>
                                             <TableCell>
                                                 <StatusBadge
                                                     status={variant(payment.status)}
@@ -263,7 +264,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                             </div>
                             <div>
                                 <p className="text-[11px] text-muted-foreground">{t('amount')}</p>
-                                <p className="font-medium">RM {Number(target.amount).toFixed(2)}</p>
+                                <p className="font-medium">{formatMoney(target.amount)}</p>
                             </div>
                             <div>
                                 <p className="text-[11px] text-muted-foreground">{t('status')}</p>
@@ -287,7 +288,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                                             key={c.id}
                                             className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium"
                                         >
-                                            {c.month} · RM {c.amount.toFixed(2)}
+                                            {c.month} · {formatMoney(c.amount)}
                                         </span>
                                     ))
                                 ) : (

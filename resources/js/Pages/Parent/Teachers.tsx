@@ -5,6 +5,7 @@ import PageHeader from '@/Components/page-header';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Card, CardContent } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
+import { initials } from '@/lib/utils';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import AppShell from '@/Layouts/app-shell';
 
@@ -15,19 +16,16 @@ type Teacher = {
     phone: string | null;
 };
 
-const initials = (name: string) =>
-    name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
-
 export default function ParentTeachers({ teachers }: { teachers: Teacher[] }) {
     const { t } = useI18n();
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
-            <PageHeader title={t('teachers')} description="Contact your child's teachers" />
+            <PageHeader title={t('teachers')} description={t('contact_teachers')} />
 
             {teachers.length === 0 ? (
                 <Card className="rounded-2xl border-0 shadow-sm">
-                    <EmptyState icon={Users} title="No teachers available yet" />
+                    <EmptyState icon={Users} title={t('no_teachers')} />
                 </Card>
             ) : (
                 <div className="space-y-3">

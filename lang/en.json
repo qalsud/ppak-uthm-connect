@@ -750,5 +750,20 @@
     "welcome": "Welcome",
     "menu": "Menu",
     "year": "Year",
-    "daily_updates_desc": "Morning updates received from parents"
+    "daily_updates_desc": "Morning updates received from parents",
+    "activity_logged": "Activity logged",
+    "update_received": "Update received",
+    "no_update": "No update",
+    "record_todays_activities": "Record today's classroom activities",
+    "announcements_admin": "Announcements from the admin",
+    "chat_with_parents": "Chat with parents",
+    "contact_teachers": "Contact your child's teachers",
+    "no_teachers": "No teachers available yet",
+    "latest_activity_progress": "Latest activity and learning progress",
+    "chat_with_teachers": "Chat with your child's teachers",
+    "announcements_ppak": "Announcements from PPAK UTHM",
+    "redirecting": "Redirecting…",
+    "pay": "Pay",
+    "due_tap_to_pay": "due — tap to pay",
+    "treatment_notes": "Treatment / notes"
 }

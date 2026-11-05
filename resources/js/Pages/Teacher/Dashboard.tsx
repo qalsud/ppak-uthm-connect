@@ -222,11 +222,11 @@ export default function TeacherDashboard() {
                                 <div className="flex flex-wrap gap-2">
                                     <StatusBadge
                                         status={s.activity_logged ? 'paid' : 'unpaid'}
-                                        label={s.activity_logged ? 'Activity logged' : 'Activity pending'}
+                                        label={s.activity_logged ? t('activity_logged') : t('activity_pending')}
                                     />
                                     <StatusBadge
                                         status={s.update_received ? 'active' : 'neutral'}
-                                        label={s.update_received ? 'Update received' : 'No update'}
+                                        label={s.update_received ? t('update_received') : t('no_update')}
                                     />
                                 </div>
                                 <div className="mt-3">

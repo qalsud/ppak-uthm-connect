@@ -32,6 +32,7 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { useServerSearch } from '@/lib/hooks';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import { formatMoney } from '@/lib/utils';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -164,12 +165,12 @@ export default function Payments({ records, months, classes, students, fee, summ
             <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <StatCard
                     label={`${t('collected')} · ${summary.current_month}`}
-                    value={`RM ${summary.collected_month.toFixed(2)}`}
+                    value={formatMoney(summary.collected_month)}
                     icon={Receipt}
                 />
                 <StatCard
                     label={t('outstanding_total')}
-                    value={`RM ${summary.outstanding.toFixed(2)}`}
+                    value={formatMoney(summary.outstanding)}
                     icon={Receipt}
                 />
                 <StatCard
@@ -255,7 +256,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                 {classLabel(record.student.class)} · {record.month}
                                             </p>
                                             <p className="text-sm font-semibold">
-                                                RM {Number(record.amount).toFixed(2)}
+                                                {formatMoney(record.amount)}
                                                 {Number(record.overtime_hours) > 0
                                                     ? ` · ${Number(record.overtime_hours)}h OT`
                                                     : ''}
@@ -354,7 +355,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                             </TableCell>
                                             <TableCell>{Number(record.overtime_hours)}h</TableCell>
                                             <TableCell className="whitespace-nowrap">
-                                                RM {Number(record.amount).toFixed(2)}
+                                                {formatMoney(record.amount)}
                                             </TableCell>
                                             <TableCell>
                                                 <StatusBadge

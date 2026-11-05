@@ -20,6 +20,7 @@ import {
 import { Input } from '@/Components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import type { NavItem } from '@/lib/navigation';
+import { initials } from '@/lib/utils';
 import type { PageProps } from '@/types';
 
 type Props = {
@@ -73,12 +74,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
         });
     }, [activeHref, nav]);
 
-    const initials = (user?.name ?? 'U')
-        .split(' ')
-        .map((part) => part[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
+    const userInitials = initials(user?.name);
 
     const handleLogout = () => router.post(route('logout'));
 
@@ -223,7 +219,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         <Button variant="ghost" className="gap-2 pl-1.5 pr-3">
                                             <Avatar className="size-8">
                                                 <AvatarFallback className="bg-accent text-xs font-semibold text-accent-foreground">
-                                                    {initials}
+                                                    {userInitials}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <span className="hidden text-sm font-medium sm:block">

@@ -10,6 +10,7 @@ import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
+import { formatMoney } from '@/lib/utils';
 import AppShell from '@/Layouts/app-shell';
 
 type FeeRecord = {
@@ -122,10 +123,10 @@ export default function ParentFinancials({
                                     >
                                         <CreditCard className="mr-2 size-4" />
                                         {paying === child.id
-                                            ? 'Redirecting…'
+                                            ? t('redirecting')
                                             : ids.length > 0
-                                              ? `${t('pay_selected')} · RM ${total.toFixed(2)}`
-                                              : `${t('pay_all')} · RM ${child.totals.unpaid.toFixed(2)}`}
+                                              ? `${t('pay_selected')} · ${formatMoney(total)}`
+                                              : `${t('pay_all')} · ${formatMoney(child.totals.unpaid)}`}
                                     </Button>
                                 )}
 

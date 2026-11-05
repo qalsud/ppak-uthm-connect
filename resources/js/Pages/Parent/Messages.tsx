@@ -30,7 +30,7 @@ export default function ParentMessages() {
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
-            <PageHeader title={t('messages')} description="Chat with your child's teachers" />
+            <PageHeader title={t('messages')} description={t('chat_with_teachers')} />
             <ChatInbox
                 conversations={props.conversations}
                 open={props.open}

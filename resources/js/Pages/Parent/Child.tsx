@@ -18,6 +18,7 @@ import { formatDate, localDate, shiftDate } from '@/lib/date';
 import { listLabel, useLists } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
 import type { PhotoInfo } from '@/lib/photo';
+import { formatMoney } from '@/lib/utils';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
@@ -177,14 +178,16 @@ export default function ParentChild() {
                         </div>
                         <StatusBadge
                             status={child.unpaid > 0 ? 'unpaid' : 'paid'}
-                            label={child.unpaid > 0 ? 'Unpaid' : 'Paid up'}
+                            label={child.unpaid > 0 ? t('unpaid') : t('paid')}
                         />
                     </div>
 
                     {child.unpaid > 0 && (
                         <Button onClick={checkout} disabled={paying} className="h-11 w-full rounded-xl font-semibold">
                             <CreditCard className="mr-2 size-4" />
-                            {paying ? 'Redirecting…' : `Pay RM ${child.unpaid.toFixed(2)}`}
+                            {paying
+                                ? t('redirecting')
+                                : `${t('pay')} ${formatMoney(child.unpaid)}`}
                         </Button>
                     )}
 

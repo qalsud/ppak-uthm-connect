@@ -751,5 +751,20 @@
     "welcome": "Selamat datang",
     "menu": "Menu",
     "year": "Tahun",
-    "daily_updates_desc": "Kemas kini pagi yang diterima daripada ibu bapa"
+    "daily_updates_desc": "Kemas kini pagi yang diterima daripada ibu bapa",
+    "activity_logged": "Aktiviti direkodkan",
+    "update_received": "Kemas kini diterima",
+    "no_update": "Tiada kemas kini",
+    "record_todays_activities": "Rekod aktiviti bilik darjah hari ini",
+    "announcements_admin": "Pengumuman daripada pentadbir",
+    "chat_with_parents": "Sembang dengan ibu bapa",
+    "contact_teachers": "Hubungi guru anak anda",
+    "no_teachers": "Tiada guru tersedia lagi",
+    "latest_activity_progress": "Aktiviti dan kemajuan pembelajaran terkini",
+    "chat_with_teachers": "Sembang dengan guru anak anda",
+    "announcements_ppak": "Pengumuman daripada PPAK UTHM",
+    "redirecting": "Mengalihkan…",
+    "pay": "Bayar",
+    "due_tap_to_pay": "tertunggak — ketik untuk bayar",
+    "treatment_notes": "Rawatan / nota"
 }

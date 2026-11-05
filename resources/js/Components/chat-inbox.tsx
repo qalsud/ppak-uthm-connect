@@ -25,6 +25,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { formatDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import type { PhotoInfo } from '@/lib/photo';
+import { initials } from '@/lib/utils';
 
 export type ChatConversation = {
     id: number;
@@ -81,16 +82,6 @@ type Props = {
     /** Single-thread view (admin): hide the empty conversation list column. */
     hideList?: boolean;
 };
-
-const initials = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((p) => p[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
 
 const todayIso = () => {
     const d = new Date();

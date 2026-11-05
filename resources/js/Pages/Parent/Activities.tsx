@@ -60,7 +60,7 @@ export default function ParentActivities({
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
             <PageHeader
                 title={t('activities')}
-                description="Latest activity and learning progress"
+                description={t('latest_activity_progress')}
             />
 
             <div className="space-y-4">

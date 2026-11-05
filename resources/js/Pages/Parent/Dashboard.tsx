@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { parentBottomNav, parentNav } from '@/lib/navigation';
+import { formatMoney } from '@/lib/utils';
 import type { PageProps } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
@@ -72,10 +73,10 @@ export default function ParentDashboard() {
                         <AlertTriangle className="size-5 shrink-0 text-amber-700" />
                         <div className="flex-1">
                             <p className="text-sm font-semibold text-amber-800">
-                                Outstanding balance
+                                {t('outstanding')}
                             </p>
                             <p className="text-xs text-amber-700">
-                                RM {unpaidTotal.toFixed(2)} due — tap to pay
+                                {formatMoney(unpaidTotal)} {t('due_tap_to_pay')}
                             </p>
                         </div>
                         <ChevronRight className="size-5 text-amber-700" />
