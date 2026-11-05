@@ -58,8 +58,8 @@ register is clear**.
   queue-worker deployment guidance, added baseline security headers, an image pixel cap, active-locale
   only translations, two N+1 fixes, memo file cleanup, CI dependency/route audits, shared account
   validation, chunked/idempotent fee reminders and failed-login logging. Added **Larastan/PHPStan +
-  ESLint** as CI gates, extracted `CheckoutService`, and split `StudentFormDialog` +
-  `ChildProgressCard` out of the two largest pages.
+  ESLint** as CI gates, extracted `CheckoutService`, and split `StudentFormDialog`,
+  `ChildProgressCard` and the chat inbox (list/thread/composer/stream/picker) out of the largest files.
   **15 regression tests** added; all P0/P1 items, the first two P2 batches and static analysis are resolved.
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
