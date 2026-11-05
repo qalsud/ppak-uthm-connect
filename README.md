@@ -97,7 +97,11 @@ npm run build                     # or: npm run dev
 ```
 
 Then serve it. With **Laragon** the project is reachable at **http://ppak-uthm-connect.test**;
-otherwise `php artisan serve` → http://localhost:8000.
+otherwise `php artisan serve --port=8001` → http://localhost:8001.
+
+**Windows shortcut:** double-click **`start-server.bat`** — it starts the app, Vite, the queue
+worker and Reverb (port **8082**), then opens http://127.0.0.1:8001 in your browser. Closing the
+four service windows stops everything.
 
 ### Or: the whole stack in Docker
 
@@ -105,8 +109,8 @@ otherwise `php artisan serve` → http://localhost:8000.
 docker compose up --build
 ```
 
-Brings up the app (`http://localhost:8000` — the same image as the Railway deploy), **Reverb**
-(`ws://localhost:8080`, live chat + bell), the scheduler, MySQL (host `:3307`), Redis (host `:6380`)
+Brings up the app (`http://localhost:8001` — the same image as the Railway deploy), **Reverb**
+(`ws://localhost:8082`, live chat + bell), the scheduler, MySQL (host `:3307`), Redis (host `:6380`)
 and phpMyAdmin (`http://localhost:8081`). Host ports are offset so they don't clash with Laragon,
 and it seeds the demo on first boot.
 
@@ -156,7 +160,7 @@ REVERB_APP_ID=
 REVERB_APP_KEY=
 REVERB_APP_SECRET=
 REVERB_HOST="localhost"
-REVERB_PORT=8080
+REVERB_PORT=8082
 REVERB_SCHEME=http
 
 # Attendance / progress photos

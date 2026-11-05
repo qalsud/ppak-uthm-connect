@@ -2,8 +2,8 @@
 #
 #   docker compose up --build
 #
-#   app        → http://localhost:8000   (same image as the Railway deploy)
-#   reverb     → ws://localhost:8080     (live chat + bell)
+#   app        → http://localhost:8001   (same image as the Railway deploy)
+#   reverb     → ws://localhost:8082     (live chat + bell)
 #   phpMyAdmin → http://localhost:8081
 #
 # Laragon can keep serving day-to-day dev; this is for a reproducible,
@@ -14,7 +14,7 @@ x-app-env: &app-env
   APP_NAME: "PPAK UTHM Connect"
   APP_ENV: local
   APP_DEBUG: "true"
-  APP_URL: http://localhost:8000
+  APP_URL: http://localhost:8001
   APP_KEY: "base64:bWXO1k7irC7PDqo+28bw09TVg+ttlHcdrbokfsB0ndQ="
   DB_CONNECTION: mysql
   DB_HOST: mysql
@@ -30,7 +30,7 @@ x-app-env: &app-env
   REVERB_APP_KEY: ppak-local-key
   REVERB_APP_SECRET: ppak-local-secret
   REVERB_HOST: reverb
-  REVERB_PORT: "8080"
+  REVERB_PORT: "8082"
   REVERB_SCHEME: http
   MAIL_MAILER: log
   MEDIA_DISK: attendance
@@ -41,7 +41,7 @@ x-build: &build
   args:
     VITE_REVERB_APP_KEY: ppak-local-key
     VITE_REVERB_HOST: localhost
-    VITE_REVERB_PORT: "8080"
+    VITE_REVERB_PORT: "8082"
     VITE_REVERB_SCHEME: http
 
 services:
@@ -54,7 +54,7 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8000:80"
+      - "8001:80"
     environment: *app-env
     volumes:
       - storage_app:/var/www/html/storage/app
@@ -67,8 +67,8 @@ services:
     depends_on:
       - app
     ports:
-      - "8080:8080"
-    entrypoint: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+      - "8082:8082"
+    entrypoint: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8082"]
     environment:
       <<: *app-env
       REVERB_HOST: localhost
@@ -128,7 +128,7 @@ services:
       PMA_USER: root
       PMA_PASSWORD: root_secret
     ports:
-      - "8081:80"            # 8080 is Reverb
+      - "8081:80"            # 8080 is used by another local project; Reverb is on 8082
 
   redis:
     image: redis:7-alpine

@@ -119,7 +119,7 @@ decision and documented.
 - **DB:** `ppak_uthm` / `ppak_uthm` / `ppak_secret`
 - ⚠️ **XAMPP's MySQL owns 127.0.0.1:3306** — that is what the app uses. Laragon's MySQL is shadowed.
 - Tests use **SQLite in-memory** (`phpunit.xml`), so `php artisan test` is DB-independent.
-- **Realtime:** run **`php artisan reverb:start`** (ws://localhost:8080) for live chat + bell; without
+- **Realtime:** run **`php artisan reverb:start --port=8082`** (ws://localhost:8082) for live chat + bell; without
   it they fall back to polling. `.env` already holds generated `REVERB_*` keys.
 
 ### Demo accounts & data (from `--seed`)
@@ -161,7 +161,7 @@ php artisan test                    # Pest suite
 npm run build                       # tsc typecheck + Vite build
 vendor/bin/pint app tests database  # code style
 php artisan check:routes            # frontend route names vs registered routes
-php artisan reverb:start            # realtime WebSockets for chat (ws://localhost:8080)
+php artisan reverb:start --port=8082  # realtime WebSockets for chat (ws://localhost:8082)
 php artisan migrate                 # apply pending migrations (dev MySQL!)
 php artisan migrate:fresh --seed    # reset local DB with the full demo dataset
 ```

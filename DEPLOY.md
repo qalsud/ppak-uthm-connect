@@ -21,8 +21,8 @@ for a reproducible run or to sanity-check the deployed image:
 
 | Service | URL / host port |
 |---|---|
-| app (Apache) | http://localhost:8000 |
-| reverb (WebSockets) | ws://localhost:8080 |
+| app (Apache) | http://localhost:8001 |
+| reverb (WebSockets) | ws://localhost:8082 |
 | phpMyAdmin | http://localhost:8081 |
 | MySQL | host `3307` |
 | Redis | host `6380` |
