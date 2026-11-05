@@ -13,6 +13,7 @@ use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\Csv;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -160,7 +161,7 @@ class StudentController extends Controller
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
 
-        $rows = $this->readCsv($request->file('file')->getRealPath());
+        $rows = Csv::read($request->file('file')->getRealPath());
         $imported = 0;
         $skipped = [];
 
@@ -174,7 +175,7 @@ class StudentController extends Controller
                 continue;
             }
 
-            $class = $this->normaliseClass($row['class'] ?? null);
+            $class = Lists::matchKey('class', $row['class'] ?? null);
 
             if ($class === null) {
                 $skipped[] = ['line' => $line, 'reason' => 'invalid_class'];
@@ -213,21 +214,16 @@ class StudentController extends Controller
     {
         $students = Student::query()->with('parent:id,name')->orderBy('name')->get();
 
-        return response()->streamDownload(function () use ($students) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Name', 'Age', 'Class', 'Parent']);
-
-            foreach ($students as $student) {
-                fputcsv($out, [
-                    $student->name,
-                    $student->age,
-                    $student->class_label,
-                    $student->parent?->name ?? '',
-                ]);
-            }
-
-            fclose($out);
-        }, 'students.csv', ['Content-Type' => 'text/csv']);
+        return Csv::download(
+            'students.csv',
+            ['Name', 'Age', 'Class', 'Parent'],
+            $students->map(fn (Student $student) => [
+                $student->name,
+                $student->age,
+                $student->class_label,
+                $student->parent?->name ?? '',
+            ]),
+        );
     }
 
     /**
@@ -350,75 +346,5 @@ class StudentController extends Controller
         $data['has_special_needs'] = (bool) ($data['has_special_needs'] ?? false);
 
         return $data;
-    }
-
-    /** @return array<int, array<string, string|null>> */
-    private function readCsv(string $path): array
-    {
-        $handle = fopen($path, 'r');
-
-        if ($handle === false) {
-            return [];
-        }
-
-        $header = fgetcsv($handle);
-
-        if ($header === false) {
-            fclose($handle);
-
-            return [];
-        }
-
-        $header = array_map(
-            fn ($h) => strtolower(trim((string) $h)),
-            $header
-        );
-
-        $rows = [];
-
-        while (($values = fgetcsv($handle)) !== false) {
-            if (count(array_filter($values, fn ($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            $padded = array_pad(array_slice($values, 0, count($header)), count($header), null);
-            $rows[] = array_combine($header, $padded);
-        }
-
-        fclose($handle);
-
-        return $rows;
-    }
-
-    /**
-     * Map a CSV class value onto a real list key. Matches the key, the label,
-     * or a label containing the value (so "5 Tahun" and "5tahun" both work) —
-     * but against the LIVE list, so an admin-added class imports correctly.
-     */
-    private function normaliseClass(?string $value): ?string
-    {
-        $value = strtolower(trim((string) $value));
-
-        if ($value === '') {
-            return null;
-        }
-
-        $options = Lists::options('class');
-
-        // Exact key or exact label.
-        foreach ($options as $key => $label) {
-            if ($value === strtolower($key) || $value === strtolower($label)) {
-                return $key;
-            }
-        }
-
-        // Partial label match (e.g. "5 tahun" -> "5 Tahun").
-        foreach ($options as $key => $label) {
-            if (str_contains(strtolower($label), $value) || str_contains($value, strtolower($label))) {
-                return $key;
-            }
-        }
-
-        return null;
     }
 }

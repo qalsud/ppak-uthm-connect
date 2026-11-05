@@ -9,6 +9,8 @@ use App\Models\ActivityLog;
 use App\Models\Centre;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\AccountQuery;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,28 +27,12 @@ class TeacherController extends Controller
         $centre = $request->query('centre');
         $centreId = is_numeric($centre) ? (int) $centre : null;
 
-        $teachers = User::query()
-            ->where('role', UserRole::Teacher)
-            ->when(
-                in_array($status, AccountStatus::values(), true),
-                fn ($q) => $q->where('status', $status)
-            )
+        $teachers = AccountQuery::for(UserRole::Teacher, $status, $search)
             ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
             ->when($centreId, fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)))
-            ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            }))
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
-
-        $counts = User::query()
-            ->where('role', UserRole::Teacher)
-            ->when($centreId, fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)))
-            ->get(['status'])
-            ->groupBy('status')
-            ->map->count();
 
         $teachers->getCollection()->transform(function (User $teacher) {
             $teacher->setAttribute('centre_ids', $teacher->centres()->pluck('centres.id')->all());
@@ -56,10 +42,13 @@ class TeacherController extends Controller
 
         return Inertia::render('Admin/Teachers', [
             'teachers' => $teachers,
-            'counts' => [
-                'all' => (int) $counts->sum(),
-                ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
-            ],
+            'counts' => AccountQuery::counts(
+                UserRole::Teacher,
+                fn ($query) => $query->when(
+                    $centreId,
+                    fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)),
+                ),
+            ),
             'filters' => ['status' => $status ?? '', 'search' => $search, 'class' => $class ?? '', 'centre' => $centre ?? ''],
             'classes' => Student::classKeys(),
             'centres' => Centre::active()->orderBy('sort')->get(['id', 'name', 'short_name']),
@@ -134,7 +123,7 @@ class TeacherController extends Controller
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
 
-        $rows = $this->readCsv($request->file('file')->getRealPath());
+        $rows = Csv::read($request->file('file')->getRealPath());
         $imported = 0;
         $skipped = [];
 
@@ -227,56 +216,16 @@ class TeacherController extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->streamDownload(function () use ($teachers) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Name', 'IC', 'Phone', 'Email', 'Status']);
-
-            foreach ($teachers as $teacher) {
-                fputcsv($out, [
-                    $teacher->name,
-                    $teacher->ic_number ?? '',
-                    $teacher->phone ?? '',
-                    $teacher->email,
-                    $teacher->status->value,
-                ]);
-            }
-
-            fclose($out);
-        }, 'teachers.csv', ['Content-Type' => 'text/csv']);
-    }
-
-    /** @return array<int, array<string, string|null>> */
-    private function readCsv(string $path): array
-    {
-        $handle = fopen($path, 'r');
-
-        if ($handle === false) {
-            return [];
-        }
-
-        $header = fgetcsv($handle);
-
-        if ($header === false) {
-            fclose($handle);
-
-            return [];
-        }
-
-        $header = array_map(fn ($h) => strtolower(trim((string) $h)), $header);
-
-        $rows = [];
-
-        while (($values = fgetcsv($handle)) !== false) {
-            if (count(array_filter($values, fn ($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            $padded = array_pad(array_slice($values, 0, count($header)), count($header), null);
-            $rows[] = array_combine($header, $padded);
-        }
-
-        fclose($handle);
-
-        return $rows;
+        return Csv::download(
+            'teachers.csv',
+            ['Name', 'IC', 'Phone', 'Email', 'Status'],
+            $teachers->map(fn (User $teacher) => [
+                $teacher->name,
+                $teacher->ic_number ?? '',
+                $teacher->phone ?? '',
+                $teacher->email,
+                $teacher->status->value,
+            ]),
+        );
     }
 }

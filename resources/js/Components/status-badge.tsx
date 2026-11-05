@@ -1,6 +1,15 @@
 import { Badge } from '@/Components/ui/badge';
 
-type Variant = 'paid' | 'unpaid' | 'active' | 'pending' | 'rejected' | 'awaiting' | 'neutral';
+type Variant =
+    | 'paid'
+    | 'unpaid'
+    | 'active'
+    | 'pending'
+    | 'rejected'
+    | 'awaiting'
+    | 'withdrawn'
+    | 'graduated'
+    | 'neutral';
 
 const styles: Record<Variant, string> = {
     paid: 'bg-emerald-100 text-emerald-700',
@@ -9,6 +18,8 @@ const styles: Record<Variant, string> = {
     pending: 'bg-amber-100 text-amber-700',
     awaiting: 'bg-sky-100 text-sky-700',
     rejected: 'bg-rose-100 text-rose-700',
+    withdrawn: 'bg-slate-100 text-slate-600',
+    graduated: 'bg-indigo-100 text-indigo-700',
     neutral: 'bg-slate-100 text-slate-600',
 };
 

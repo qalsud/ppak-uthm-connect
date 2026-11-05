@@ -61,18 +61,30 @@ export default function GlobalSearch() {
     };
 
     return (
-        <div ref={boxRef} className="relative hidden md:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <div ref={boxRef} className="relative hidden md:block" role="search">
+            <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => groups.length > 0 && setOpen(true)}
+                onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
                 placeholder={t('search_placeholder')}
+                aria-label={t('search_placeholder')}
+                aria-expanded={open}
+                aria-controls="global-search-results"
+                autoComplete="off"
                 className="h-9 w-60 pl-9"
             />
 
             {open && query.trim().length >= 2 && (
-                <div className="absolute right-0 top-11 z-50 max-h-96 w-80 overflow-y-auto rounded-xl border bg-popover p-2 shadow-lg">
+                <div
+                    id="global-search-results"
+                    aria-live="polite"
+                    className="absolute right-0 top-11 z-50 max-h-96 w-80 overflow-y-auto rounded-xl border bg-popover p-2 shadow-lg"
+                >
                     {groups.length === 0 ? (
                         <p className="px-3 py-6 text-center text-xs text-muted-foreground">{t('no_results')}</p>
                     ) : (

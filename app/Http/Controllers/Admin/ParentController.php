@@ -7,6 +7,8 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Support\AccountQuery;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,34 +22,16 @@ class ParentController extends Controller
         $status = $request->query('status');
         $search = trim((string) $request->query('search', ''));
 
-        $parents = User::query()
-            ->where('role', UserRole::Parent)
-            ->when(
-                in_array($status, AccountStatus::values(), true),
-                fn ($q) => $q->where('status', $status)
-            )
-            ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            }))
+        $parents = AccountQuery::for(UserRole::Parent, $status, $search)
             ->withCount('students')
             ->with('students:id,parent_id,name,class')
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
 
-        $counts = User::query()
-            ->where('role', UserRole::Parent)
-            ->get(['status'])
-            ->groupBy('status')
-            ->map->count();
-
         return Inertia::render('Admin/Parents', [
             'parents' => $parents,
-            'counts' => [
-                'all' => User::query()->where('role', UserRole::Parent)->count(),
-                ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
-            ],
+            'counts' => AccountQuery::counts(UserRole::Parent),
             'filters' => ['status' => $status ?? '', 'search' => $search],
         ]);
     }
@@ -118,22 +102,17 @@ class ParentController extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->streamDownload(function () use ($parents) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Name', 'IC', 'Phone', 'Email', 'Status', 'Children']);
-
-            foreach ($parents as $parent) {
-                fputcsv($out, [
-                    $parent->name,
-                    $parent->ic_number ?? '',
-                    $parent->phone ?? '',
-                    $parent->email,
-                    $parent->status->value,
-                    $parent->students_count,
-                ]);
-            }
-
-            fclose($out);
-        }, 'parents.csv', ['Content-Type' => 'text/csv']);
+        return Csv::download(
+            'parents.csv',
+            ['Name', 'IC', 'Phone', 'Email', 'Status', 'Children'],
+            $parents->map(fn (User $parent) => [
+                $parent->name,
+                $parent->ic_number ?? '',
+                $parent->phone ?? '',
+                $parent->email,
+                $parent->status->value,
+                $parent->students_count,
+            ]),
+        );
     }
 }

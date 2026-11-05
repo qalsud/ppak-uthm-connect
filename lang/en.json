@@ -734,5 +734,13 @@
     "landing.centres": "Our centres",
     "landing.cta_title": "Already registered?",
     "landing.cta_body": "Log in to view your child's daily updates, attendance, progress and fees.",
-    "landing.address": "Pusat Pendidikan Awal Kanak-Kanak, Universiti Tun Hussein Onn Malaysia, 86400 Parit Raja, Batu Pahat, Johor."
+    "landing.address": "Pusat Pendidikan Awal Kanak-Kanak, Universiti Tun Hussein Onn Malaysia, 86400 Parit Raja, Batu Pahat, Johor.",
+    "skip_to_content": "Skip to content",
+    "main_navigation": "Main navigation",
+    "mark_all_read": "Mark all read",
+    "no_notifications": "No notifications",
+    "select": "Select",
+    "view": "View",
+    "restore_selected": "Restore selected",
+    "restore_selected_desc": "The selected records will be restored and visible again."
 }

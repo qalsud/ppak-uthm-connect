@@ -82,6 +82,12 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
     return (
         <div className="min-h-screen bg-background">
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+            >
+                {t('skip_to_content')}
+            </a>
             <div className="flex min-h-screen">
                 {nav.length > 0 && (
                     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
@@ -97,7 +103,10 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                         </div>
 
                         {/* Navigation */}
-                        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+                        <nav
+                            aria-label={t('main_navigation')}
+                            className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+                        >
                             {nav.map((item, index) =>
                                 item.children ? (
                                     <div key={item.label}>
@@ -192,7 +201,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         className="relative"
                                     >
                                         <Link href={messagesHref} aria-label={t('messages')}>
-                                            <MessageSquare className="size-5" />
+                                            <MessageSquare className="size-5" aria-hidden="true" />
                                             {unreadMessages > 0 && (
                                                 <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                                                     {unreadMessages > 9 ? '9+' : unreadMessages}
@@ -256,6 +265,8 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                     </header>
 
                     <main
+                        id="main-content"
+                        tabIndex={-1}
                         className={`flex-1 px-4 py-6 sm:px-6 lg:px-8 ${
                             bottomNav.length > 0 ? 'pb-28 lg:pb-6' : ''
                         }`}
@@ -267,7 +278,10 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
             {/* Mobile bottom tab bar — floating pill */}
             {bottomNav.length > 0 && (
-                <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] lg:hidden">
+                <nav
+                    aria-label={t('main_navigation')}
+                    className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] lg:hidden"
+                >
                     <div className="mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/60 bg-card/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur">
                         {bottomNav.map((item) => {
                             const Icon = item.icon;

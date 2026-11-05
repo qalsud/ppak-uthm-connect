@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\Messaging\ConversationService;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -145,21 +146,16 @@ class ConversationController extends Controller
             ->orderBy('id')
             ->get();
 
-        return response()->streamDownload(function () use ($messages) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Date', 'Student', 'Sender', 'Type', 'Message']);
-
-            foreach ($messages as $message) {
-                fputcsv($out, [
-                    $message->created_at?->format('Y-m-d H:i'),
-                    $message->conversation?->student?->name ?? '',
-                    $message->sender?->name ?? '',
-                    $message->type,
-                    $message->trashed() ? '[deleted]' : $message->body,
-                ]);
-            }
-
-            fclose($out);
-        }, 'conversations.csv', ['Content-Type' => 'text/csv']);
+        return Csv::download(
+            'conversations.csv',
+            ['Date', 'Student', 'Sender', 'Type', 'Message'],
+            $messages->map(fn (Message $message) => [
+                $message->created_at?->format('Y-m-d H:i'),
+                $message->conversation?->student?->name ?? '',
+                $message->sender?->name ?? '',
+                $message->type,
+                $message->trashed() ? '[deleted]' : $message->body,
+            ]),
+        );
     }
 }

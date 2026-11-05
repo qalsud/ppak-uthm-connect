@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Support\AccountQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -25,13 +26,7 @@ class AdministratorController extends Controller
         $status = $request->query('status');
         $search = trim((string) $request->query('search', ''));
 
-        $admins = User::query()
-            ->where('role', UserRole::Admin)
-            ->when(in_array($status, AccountStatus::values(), true), fn ($q) => $q->where('status', $status))
-            ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            }))
+        $admins = AccountQuery::for(UserRole::Admin, $status, $search)
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString()
@@ -43,18 +38,9 @@ class AdministratorController extends Controller
                 'created_at' => $user->created_at?->format('d M Y'),
             ]);
 
-        $counts = User::query()
-            ->where('role', UserRole::Admin)
-            ->get(['status'])
-            ->groupBy('status')
-            ->map->count();
-
         return Inertia::render('Admin/Administrators', [
             'admins' => $admins,
-            'counts' => [
-                'all' => User::query()->where('role', UserRole::Admin)->count(),
-                ...AccountStatus::valuesMap(fn ($s) => $counts->get($s, 0)),
-            ],
+            'counts' => AccountQuery::counts(UserRole::Admin),
             'activeAdmins' => User::activeAdminCount(),
             'filters' => ['status' => $status ?? '', 'search' => $search],
         ]);

@@ -1,15 +1,20 @@
 import { router, useForm, Link } from '@inertiajs/react';
 import { Archive, Download, Eye, GraduationCap, Pencil, Plus, RotateCcw, Trash2, Upload } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import BulkActionBar from '@/Components/bulk-action-bar';
+import CentreFilter from '@/Components/centre-filter';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
+import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
+import StatusBadge from '@/Components/status-badge';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -34,6 +39,7 @@ import {
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { useList } from '@/lib/lists';
+import { useRowSelection, useServerSearch } from '@/lib/hooks';
 import { localDate } from '@/lib/date';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps, Paginator } from '@/types';
@@ -88,12 +94,15 @@ export default function Students({
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
     const classOptions = useList('class');
+    const genderOptions = useList('gender');
+    const nationalityOptions = useList('nationality');
+    const bloodTypeOptions = useList('blood_type');
+    const immunisationOptions = useList('immunisation_status');
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Student | null>(null);
-    const [search, setSearch] = useState(filters.search);
     const [importing, setImporting] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
-    const firstRender = useRef(true);
+    const [bulkOpen, setBulkOpen] = useState(false);
 
     const form = useForm({
         name: '',
@@ -123,32 +132,13 @@ export default function Students({
     });
 
     const rows = students.data;
-
-    const [selected, setSelected] = useState<number[]>([]);
-    const [bulkOpen, setBulkOpen] = useState(false);
-
-    useEffect(() => {
-        setSelected([]);
-    }, [students.current_page, filters.search, filters.class, filters.status, filters.centre]);
-
-    const toggle = (id: number) =>
-        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
-    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
-
-    const runBulk = () =>
-        router.post(
-            route('admin.students.bulk'),
-            { action: filters.status === 'active' ? 'withdraw' : 'delete', ids: selected },
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setBulkOpen(false);
-                    setSelected([]);
-                },
-            },
-        );
+    const { selected, toggle, toggleAll, allSelected, clear } = useRowSelection(rows, [
+        students.current_page,
+        filters.search,
+        filters.class,
+        filters.status,
+        filters.centre,
+    ]);
 
     const visit = (params: Partial<{ search: string; class: string; status: string; centre: string }>) =>
         router.get(
@@ -160,6 +150,21 @@ export default function Students({
                 centre: params.centre ?? filters.centre,
             },
             { preserveState: true, preserveScroll: true, replace: true },
+        );
+
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
+
+    const runBulk = () =>
+        router.post(
+            route('admin.students.bulk'),
+            { action: filters.status === 'active' ? 'withdraw' : 'restore', ids: selected },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setBulkOpen(false);
+                    clear();
+                },
+            },
         );
 
     const setStudentStatus = (student: Student, status: 'active' | 'withdrawn' | 'graduated') =>
@@ -176,24 +181,6 @@ export default function Students({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Debounced server-side search.
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
 
     const openCreate = () => {
         setEditing(null);
@@ -320,30 +307,18 @@ export default function Students({
                     placeholder={t('search_students')}
                     filters={
                         <div className="flex flex-wrap items-center gap-2">
-                            {centres.length > 0 && (
-                                <Select
-                                    value={filters.centre || 'all'}
-                                    onValueChange={(v) => visit({ centre: v === 'all' ? '' : v })}
-                                >
-                                    <SelectTrigger className="h-7 w-auto gap-1 border-0 px-0 text-xs shadow-none focus:ring-0">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">{t('all_centres')}</SelectItem>
-                                        {centres.map((c) => (
-                                            <SelectItem key={c.id} value={String(c.id)}>
-                                                {c.short_name ?? c.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
+                            <CentreFilter
+                                centres={centres}
+                                value={filters.centre}
+                                onChange={(value) => visit({ centre: value })}
+                            />
                             <div className="flex rounded-lg p-0.5">
                                 {classFilters.map((f) => (
                                     <button
                                         key={f.value}
                                         type="button"
                                         onClick={() => visit({ class: f.value })}
+                                        aria-pressed={filters.class === f.value}
                                         className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                                             filters.class === f.value
                                                 ? 'bg-brand-navy text-white'
@@ -362,10 +337,7 @@ export default function Students({
                 </div>
 
                 {selected.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
-                        <span className="text-xs font-medium">
-                            {selected.length} {t('selected')}
-                        </span>
+                    <BulkActionBar count={selected.length} onClear={clear}>
                         <Button
                             size="sm"
                             variant="destructive"
@@ -375,14 +347,13 @@ export default function Students({
                             {filters.status === 'active' ? (
                                 <Archive className="size-4" />
                             ) : (
-                                <Trash2 className="size-4" />
+                                <RotateCcw className="size-4" />
                             )}
-                            {filters.status === 'active' ? t('archive_selected') : t('delete_selected')}
+                            {filters.status === 'active'
+                                ? t('archive_selected')
+                                : t('restore_selected')}
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
-                            {t('clear_selection')}
-                        </Button>
-                    </div>
+                    </BulkActionBar>
                 )}
 
                 {rows.length === 0 ? (
@@ -396,73 +367,73 @@ export default function Students({
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
                             {rows.map((student) => (
-                                <div key={student.id} className="rounded-xl border p-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    className="size-4 shrink-0 accent-primary"
-                                                    checked={selected.includes(student.id)}
-                                                    onChange={() => toggle(student.id)}
-                                                />
-                                                <span className="truncate font-medium">{student.name}</span>
-                                            </label>
-                                            <p className="text-xs text-muted-foreground">
-                                                {student.centre ? student.centre.name + " · " : ""}{classLabel(student.class)}
-                                                {student.age ? ` · ${student.age} ${t('age').toLowerCase()}` : ''}
-                                            </p>
+                                <MobileRecordCard
+                                    key={student.id}
+                                    select={{
+                                        checked: selected.includes(student.id),
+                                        onChange: () => toggle(student.id),
+                                        label: `${t('select')} ${student.name}`,
+                                    }}
+                                    title={student.name}
+                                    subtitle={`${student.centre ? `${student.centre.name} · ` : ''}${classLabel(student.class)}${
+                                        student.age ? ` · ${student.age} ${t('age').toLowerCase()}` : ''
+                                    }`}
+                                    meta={
+                                        <>
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {student.parent?.name ?? t('unassigned')}
                                             </p>
                                             {student.status !== 'active' && (
-                                                <span className="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                                                    {t(student.status)}
-                                                </span>
+                                                <div className="mt-1">
+                                                    <StatusBadge
+                                                        status={student.status}
+                                                        label={t(student.status)}
+                                                    />
+                                                </div>
                                             )}
-                                        </div>
-                                        <div className="flex shrink-0">
-                                            <Link href={route('admin.students.show', { student: student.id })}>
-                                                <Button size="sm" variant="ghost">
+                                        </>
+                                    }
+                                    actions={
+                                        <>
+                                            <IconButton asChild label={t('view')}>
+                                                <Link
+                                                    href={route('admin.students.show', {
+                                                        student: student.id,
+                                                    })}
+                                                >
                                                     <Eye className="size-4" />
-                                                </Button>
-                                            </Link>
-                                            <Button size="sm" variant="ghost" onClick={() => openEdit(student)}>
+                                                </Link>
+                                            </IconButton>
+                                            <IconButton label={t('edit')} onClick={() => openEdit(student)}>
                                                 <Pencil className="size-4" />
-                                            </Button>
+                                            </IconButton>
                                             {student.status === 'active' ? (
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    title={t('archive')}
+                                                <IconButton
+                                                    label={t('archive')}
                                                     onClick={() => setStudentStatus(student, 'withdrawn')}
                                                 >
                                                     <Archive className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                             ) : (
                                                 <>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        title={t('restore')}
+                                                    <IconButton
+                                                        label={t('restore')}
                                                         onClick={() => setStudentStatus(student, 'active')}
                                                     >
                                                         <RotateCcw className="size-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="text-destructive"
-                                                        title={t('delete_permanently')}
+                                                    </IconButton>
+                                                    <IconButton
+                                                        destructive
+                                                        label={t('delete_permanently')}
                                                         onClick={() => setDeleteTarget(student)}
                                                     >
                                                         <Trash2 className="size-4" />
-                                                    </Button>
+                                                    </IconButton>
                                                 </>
                                             )}
-                                        </div>
-                                    </div>
-                                </div>
+                                        </>
+                                    }
+                                />
                             ))}
                         </div>
 
@@ -495,13 +466,17 @@ export default function Students({
                                                     className="size-4 accent-primary"
                                                     checked={selected.includes(student.id)}
                                                     onChange={() => toggle(student.id)}
+                                                    aria-label={`${t('select')} ${student.name}`}
                                                 />
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {student.name}
                                                 {student.status !== 'active' && (
-                                                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                                                        {t(student.status)}
+                                                    <span className="ml-2 inline-block align-middle">
+                                                        <StatusBadge
+                                                            status={student.status}
+                                                            label={t(student.status)}
+                                                        />
                                                     </span>
                                                 )}
                                             </TableCell>
@@ -526,48 +501,45 @@ export default function Students({
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Link href={route('admin.students.show', { student: student.id })}>
-                                                    <Button size="sm" variant="ghost" className="mr-1">
+                                                <IconButton asChild label={t('view')} className="mr-1">
+                                                    <Link
+                                                        href={route('admin.students.show', {
+                                                            student: student.id,
+                                                        })}
+                                                    >
                                                         <Eye className="size-4" />
-                                                    </Button>
-                                                </Link>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
+                                                    </Link>
+                                                </IconButton>
+                                                <IconButton
+                                                    label={t('edit')}
                                                     className="mr-1"
                                                     onClick={() => openEdit(student)}
                                                 >
                                                     <Pencil className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                                 {student.status === 'active' ? (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        title={t('archive')}
+                                                    <IconButton
+                                                        label={t('archive')}
                                                         onClick={() => setStudentStatus(student, 'withdrawn')}
                                                     >
                                                         <Archive className="size-4" />
-                                                    </Button>
+                                                    </IconButton>
                                                 ) : (
                                                     <>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
+                                                        <IconButton
+                                                            label={t('restore')}
                                                             className="mr-1"
-                                                            title={t('restore')}
                                                             onClick={() => setStudentStatus(student, 'active')}
                                                         >
                                                             <RotateCcw className="size-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="text-destructive"
-                                                            title={t('delete_permanently')}
+                                                        </IconButton>
+                                                        <IconButton
+                                                            destructive
+                                                            label={t('delete_permanently')}
                                                             onClick={() => setDeleteTarget(student)}
                                                         >
                                                             <Trash2 className="size-4" />
-                                                        </Button>
+                                                        </IconButton>
                                                     </>
                                                 )}
                                             </TableCell>
@@ -610,7 +582,7 @@ export default function Students({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {useList('class').map((c) => (
+                                {classOptions.map((c) => (
                                     <SelectItem key={c.value} value={c.value}>
                                         {c.label}
                                     </SelectItem>
@@ -686,7 +658,7 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {useList('gender').map((g) => (
+                                {genderOptions.map((g) => (
                                     <SelectItem key={g.value} value={g.value}>
                                         {g.label}
                                     </SelectItem>
@@ -705,7 +677,7 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {useList('nationality').map((n) => (
+                                {nationalityOptions.map((n) => (
                                     <SelectItem key={n.value} value={n.value}>
                                         {n.label}
                                     </SelectItem>
@@ -784,7 +756,7 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {useList('blood_type').map((b) => (
+                                {bloodTypeOptions.map((b) => (
                                     <SelectItem key={b.value} value={b.value}>
                                         {b.label}
                                     </SelectItem>
@@ -803,7 +775,7 @@ export default function Students({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="none">—</SelectItem>
-                                {useList('immunisation_status').map((s) => (
+                                {immunisationOptions.map((s) => (
                                     <SelectItem key={s.value} value={s.value}>
                                         {s.label}
                                     </SelectItem>
@@ -892,10 +864,15 @@ export default function Students({
                 open={bulkOpen}
                 onOpenChange={setBulkOpen}
                 title={`${
-                    filters.status === 'active' ? t('archive_selected') : t('delete_selected')
+                    filters.status === 'active' ? t('archive_selected') : t('restore_selected')
                 } (${selected.length})?`}
-                description={t('cannot_be_undone')}
-                confirmLabel={filters.status === 'active' ? t('archive') : t('delete')}
+                description={
+                    filters.status === 'active'
+                        ? t('cannot_be_undone')
+                        : t('restore_selected_desc')
+                }
+                destructive={filters.status === 'active'}
+                confirmLabel={filters.status === 'active' ? t('archive') : t('restore')}
                 onConfirm={runBulk}
             />
         </AppShell>

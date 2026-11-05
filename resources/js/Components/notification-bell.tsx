@@ -11,6 +11,8 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
+import { formatDateTime } from '@/lib/date';
+import { useI18n } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Item = {
@@ -25,6 +27,7 @@ type Item = {
  * its own and becomes live/instant when Pusher keys are configured server-side.
  */
 export default function NotificationBell() {
+    const { t } = useI18n();
     const userId = usePage<PageProps>().props.auth.user.id;
     const [items, setItems] = useState<Item[]>([]);
     const [count, setCount] = useState(0);
@@ -65,10 +68,13 @@ export default function NotificationBell() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="size-5" />
+                <Button variant="ghost" size="icon" className="relative" aria-label={t('notifications')}>
+                    <Bell className="size-5" aria-hidden="true" />
                     {count > 0 && (
-                        <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                        <span
+                            aria-hidden="true"
+                            className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
+                        >
                             {count > 9 ? '9+' : count}
                         </span>
                     )}
@@ -76,7 +82,7 @@ export default function NotificationBell() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
                 <div className="flex items-center justify-between px-3 py-2">
-                    <p className="text-sm font-semibold">Notifications</p>
+                    <p className="text-sm font-semibold">{t('notifications')}</p>
                     {count > 0 && (
                         <Button
                             variant="ghost"
@@ -87,15 +93,15 @@ export default function NotificationBell() {
                                 setCount(0);
                             }}
                         >
-                            <CheckCheck className="size-3" />
-                            Mark all read
+                            <CheckCheck className="size-3" aria-hidden="true" />
+                            {t('mark_all_read')}
                         </Button>
                     )}
                 </div>
                 <Separator />
                 {items.length === 0 ? (
                     <p className="px-3 py-6 text-center text-xs text-muted-foreground">
-                        No notifications
+                        {t('no_notifications')}
                     </p>
                 ) : (
                     <div className="max-h-80 overflow-y-auto">
@@ -116,7 +122,7 @@ export default function NotificationBell() {
                                         {item.data.body}
                                     </span>
                                     <span className="block text-[11px] text-muted-foreground/70">
-                                        {new Date(item.created_at).toLocaleString()}
+                                        {formatDateTime(item.created_at)}
                                     </span>
                                 </span>
                             </DropdownMenuItem>

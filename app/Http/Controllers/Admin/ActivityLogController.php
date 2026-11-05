@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -50,23 +51,18 @@ class ActivityLogController extends Controller
     {
         $logs = $this->query($request)->orderByDesc('id')->limit(20000)->get();
 
-        return response()->streamDownload(function () use ($logs) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Time', 'User', 'Action', 'Label', 'Description', 'IP']);
-
-            foreach ($logs as $log) {
-                fputcsv($out, [
-                    $log->created_at?->format('Y-m-d H:i'),
-                    $log->user?->name ?? '',
-                    $log->action,
-                    $log->label(),
-                    $log->description ?? '',
-                    $log->ip ?? '',
-                ]);
-            }
-
-            fclose($out);
-        }, 'activity-log.csv', ['Content-Type' => 'text/csv']);
+        return Csv::download(
+            'activity-log.csv',
+            ['Time', 'User', 'Action', 'Label', 'Description', 'IP'],
+            $logs->map(fn (ActivityLog $log) => [
+                $log->created_at?->format('Y-m-d H:i'),
+                $log->user?->name ?? '',
+                $log->action,
+                $log->label(),
+                $log->description ?? '',
+                $log->ip ?? '',
+            ]),
+        );
     }
 
     /** The filtered log query — shared by the index and the CSV export. */

@@ -211,6 +211,36 @@ class Lists
     }
 
     /**
+     * Match a free-text value (e.g. a CSV cell) onto a real list key. Tries an
+     * exact key, then an exact label, then a partial label match — so "5 Tahun"
+     * and "5tahun" both import correctly. Returns null when nothing matches.
+     */
+    public static function matchKey(string $group, ?string $value): ?string
+    {
+        $value = strtolower(trim((string) $value));
+
+        if ($value === '') {
+            return null;
+        }
+
+        $options = static::options($group);
+
+        foreach ($options as $key => $label) {
+            if ($value === strtolower((string) $key) || $value === strtolower($label)) {
+                return (string) $key;
+            }
+        }
+
+        foreach ($options as $key => $label) {
+            if (str_contains(strtolower($label), $value) || str_contains($value, strtolower($label))) {
+                return (string) $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Active rows from the database (cached briefly — these change rarely and
      * are read on most page loads).
      *

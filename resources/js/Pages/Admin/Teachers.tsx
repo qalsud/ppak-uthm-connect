@@ -1,16 +1,21 @@
 import { router, useForm } from '@inertiajs/react';
 import { AlertTriangle, Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import BulkActionBar from '@/Components/bulk-action-bar';
+import CentreFilter from '@/Components/centre-filter';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import ImportReport from '@/Components/import-report';
 import ListToolbar from '@/Components/list-toolbar';
+import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
+import StatusFilter from '@/Components/status-filter';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -33,6 +38,7 @@ import {
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
+import { useRowSelection, useServerSearch } from '@/lib/hooks';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -75,10 +81,9 @@ export default function Teachers({
     };
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Teacher | null>(null);
-    const [search, setSearch] = useState(filters.search);
     const [importing, setImporting] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<Teacher | null>(null);
-    const firstRender = useRef(true);
+    const [bulkOpen, setBulkOpen] = useState(false);
 
     const form = useForm({
         name: '',
@@ -92,32 +97,12 @@ export default function Teachers({
     });
 
     const rows = teachers.data;
-
-    const [selected, setSelected] = useState<number[]>([]);
-    const [bulkOpen, setBulkOpen] = useState(false);
-
-    useEffect(() => {
-        setSelected([]);
-    }, [teachers.current_page, filters.search, filters.status, filters.centre]);
-
-    const toggle = (id: number) =>
-        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
-    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
-
-    const runBulk = () =>
-        router.post(
-            route('admin.teachers.bulk'),
-            { action: 'delete', ids: selected },
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setBulkOpen(false);
-                    setSelected([]);
-                },
-            },
-        );
+    const { selected, toggle, toggleAll, allSelected, clear } = useRowSelection(rows, [
+        teachers.current_page,
+        filters.search,
+        filters.status,
+        filters.centre,
+    ]);
 
     const visit = (params: Partial<{ search: string; status: string; centre: string }>) =>
         router.get(
@@ -130,22 +115,20 @@ export default function Teachers({
             { preserveState: true, preserveScroll: true, replace: true },
         );
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
 
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const runBulk = () =>
+        router.post(
+            route('admin.teachers.bulk'),
+            { action: 'delete', ids: selected },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setBulkOpen(false);
+                    clear();
+                },
+            },
+        );
 
     const openCreate = () => {
         setEditing(null);
@@ -219,37 +202,16 @@ export default function Teachers({
                     placeholder={t('search_teachers')}
                     filters={
                         <div className="flex flex-wrap items-center gap-2">
-                            <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
-                                <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('all')} ({counts.all ?? 0})</SelectItem>
-                                    {STATUSES.map((s) => (
-                                        <SelectItem key={s} value={s}>
-                                            {t(s)} ({counts[s] ?? 0})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {centres.length > 0 && (
-                                <Select
-                                    value={filters.centre || 'all'}
-                                    onValueChange={(v) => visit({ centre: v === 'all' ? '' : v })}
-                                >
-                                    <SelectTrigger className="h-8 border-0 px-0 text-muted-foreground shadow-none focus:ring-0">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">{t('all_centres')}</SelectItem>
-                                        {centres.map((c) => (
-                                            <SelectItem key={c.id} value={String(c.id)}>
-                                                {c.short_name ?? c.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
+                            <StatusFilter
+                                value={filters.status}
+                                counts={counts}
+                                onChange={(value) => visit({ status: value })}
+                            />
+                            <CentreFilter
+                                centres={centres}
+                                value={filters.centre}
+                                onChange={(value) => visit({ centre: value })}
+                            />
                         </div>
                     }
                 />
@@ -258,10 +220,7 @@ export default function Teachers({
                 </div>
 
                 {selected.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
-                        <span className="text-xs font-medium">
-                            {selected.length} {t('selected')}
-                        </span>
+                    <BulkActionBar count={selected.length} onClear={clear}>
                         <Button
                             size="sm"
                             variant="destructive"
@@ -271,10 +230,7 @@ export default function Teachers({
                             <Trash2 className="size-4" />
                             {t('delete_selected')}
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
-                            {t('clear_selection')}
-                        </Button>
-                    </div>
+                    </BulkActionBar>
                 )}
 
                 {rows.length === 0 ? (
@@ -288,21 +244,17 @@ export default function Teachers({
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
                             {rows.map((teacher) => (
-                                <div key={teacher.id} className="rounded-xl border p-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    className="size-4 shrink-0 accent-primary"
-                                                    checked={selected.includes(teacher.id)}
-                                                    onChange={() => toggle(teacher.id)}
-                                                />
-                                                <span className="truncate font-medium">{teacher.name}</span>
-                                            </label>
-                                            <p className="truncate text-xs text-muted-foreground">
-                                                {teacher.email}
-                                            </p>
+                                <MobileRecordCard
+                                    key={teacher.id}
+                                    select={{
+                                        checked: selected.includes(teacher.id),
+                                        onChange: () => toggle(teacher.id),
+                                        label: `${t('select')} ${teacher.name}`,
+                                    }}
+                                    title={teacher.name}
+                                    subtitle={teacher.email}
+                                    meta={
+                                        <>
                                             <p className="text-xs text-muted-foreground">
                                                 {teacher.class ? classLabel(teacher.class) : t('all_classes')}
                                             </p>
@@ -315,7 +267,7 @@ export default function Teachers({
                                                     </span>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1 font-medium text-amber-600">
-                                                        <AlertTriangle className="size-3" />
+                                                        <AlertTriangle className="size-3" aria-hidden="true" />
                                                         {t('unrestricted_all_centres')}
                                                     </span>
                                                 )}
@@ -323,22 +275,23 @@ export default function Teachers({
                                             <div className="mt-1.5">
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
                                             </div>
-                                        </div>
-                                        <div className="flex shrink-0">
-                                            <Button size="sm" variant="ghost" onClick={() => openEdit(teacher)}>
+                                        </>
+                                    }
+                                    actions={
+                                        <>
+                                            <IconButton label={t('edit')} onClick={() => openEdit(teacher)}>
                                                 <Pencil className="size-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-destructive"
+                                            </IconButton>
+                                            <IconButton
+                                                destructive
+                                                label={t('delete')}
                                                 onClick={() => setDeleteTarget(teacher)}
                                             >
                                                 <Trash2 className="size-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
+                                            </IconButton>
+                                        </>
+                                    }
+                                />
                             ))}
                         </div>
 
@@ -374,6 +327,7 @@ export default function Teachers({
                                                     className="size-4 accent-primary"
                                                     checked={selected.includes(teacher.id)}
                                                     onChange={() => toggle(teacher.id)}
+                                                    aria-label={`${t('select')} ${teacher.name}`}
                                                 />
                                             </TableCell>
                                             <TableCell className="font-medium">{teacher.name}</TableCell>
@@ -410,22 +364,20 @@ export default function Teachers({
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
+                                                <IconButton
+                                                    label={t('edit')}
                                                     className="mr-1"
                                                     onClick={() => openEdit(teacher)}
                                                 >
                                                     <Pencil className="size-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-destructive"
+                                                </IconButton>
+                                                <IconButton
+                                                    destructive
+                                                    label={t('delete')}
                                                     onClick={() => setDeleteTarget(teacher)}
                                                 >
                                                     <Trash2 className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))}

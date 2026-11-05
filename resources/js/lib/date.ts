@@ -58,6 +58,26 @@ export function formatDate(value?: string | null): string {
     return `${DAY_NAMES[dt.getDay()]}, ${d} ${MONTH_NAMES[m - 1]} ${y}`;
 }
 
+/**
+ * Format an ISO timestamp (e.g. an Eloquent `created_at`) as
+ * `27 Sep 2026, 14:05`. Unparseable values are returned untouched.
+ */
+export function formatDateTime(value?: string | null): string {
+    if (!value) {
+        return '—';
+    }
+
+    const dt = new Date(value);
+
+    if (Number.isNaN(dt.getTime())) {
+        return value;
+    }
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${dt.getDate()} ${MONTH_NAMES[dt.getMonth()]} ${dt.getFullYear()}, ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+
 /** Format `YYYY-MM-DD` as e.g. `Sunday, 27 September 2026`. */
 export function formatFullDate(value?: string | null): string {
     if (!value) {

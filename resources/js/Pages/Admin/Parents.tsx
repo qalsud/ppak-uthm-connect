@@ -1,14 +1,17 @@
 import { router, useForm } from '@inertiajs/react';
 import { Download, Pencil, Plus, Trash2, UserRound } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import ListToolbar from '@/Components/list-toolbar';
+import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
+import StatusFilter from '@/Components/status-filter';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { FormField, FormGrid } from '@/Components/ui/form-field';
@@ -29,6 +32,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useServerSearch } from '@/lib/hooks';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
@@ -61,9 +65,7 @@ export default function Parents({
     const { t } = useI18n();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Parent | null>(null);
-    const [search, setSearch] = useState(filters.search);
     const [deleteTarget, setDeleteTarget] = useState<Parent | null>(null);
-    const firstRender = useRef(true);
 
     const form = useForm({
         name: '',
@@ -86,22 +88,7 @@ export default function Parents({
             { preserveState: true, preserveScroll: true, replace: true },
         );
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
 
     const openCreate = () => {
         setEditing(null);
@@ -166,19 +153,11 @@ export default function Parents({
                     onSearch={setSearch}
                     placeholder={t('search_users')}
                     filters={
-                        <Select value={filters.status || 'all'} onValueChange={(v) => visit({ status: v })}>
-                            <SelectTrigger className="h-8 border-0 px-0 shadow-none focus:ring-0">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t('all')} ({counts.all ?? 0})</SelectItem>
-                                {STATUSES.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                        {t(s)} ({counts[s] ?? 0})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <StatusFilter
+                            value={filters.status}
+                            counts={counts}
+                            onChange={(value) => visit({ status: value })}
+                        />
                     }
                 />
                 <div className="border-b px-4 py-2 text-xs text-muted-foreground">
@@ -196,13 +175,12 @@ export default function Parents({
                         {/* Mobile cards */}
                         <div className="space-y-2 p-3 lg:hidden">
                             {rows.map((parent) => (
-                                <div key={parent.id} className="rounded-xl border p-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="truncate font-medium">{parent.name}</p>
-                                            <p className="truncate text-xs text-muted-foreground">
-                                                {parent.email}
-                                            </p>
+                                <MobileRecordCard
+                                    key={parent.id}
+                                    title={parent.name}
+                                    subtitle={parent.email}
+                                    meta={
+                                        <>
                                             <div className="mt-1.5 flex flex-wrap items-center gap-2">
                                                 <StatusBadge status={parent.status} label={t(parent.status)} />
                                                 <span className="text-[11px] text-muted-foreground">
@@ -214,22 +192,23 @@ export default function Parents({
                                                     {parent.students.map((c) => c.name).join(', ')}
                                                 </p>
                                             )}
-                                        </div>
-                                        <div className="flex shrink-0">
-                                            <Button size="sm" variant="ghost" onClick={() => openEdit(parent)}>
+                                        </>
+                                    }
+                                    actions={
+                                        <>
+                                            <IconButton label={t('edit')} onClick={() => openEdit(parent)}>
                                                 <Pencil className="size-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-destructive"
+                                            </IconButton>
+                                            <IconButton
+                                                destructive
+                                                label={t('delete')}
                                                 onClick={() => setDeleteTarget(parent)}
                                             >
                                                 <Trash2 className="size-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
+                                            </IconButton>
+                                        </>
+                                    }
+                                />
                             ))}
                         </div>
 
@@ -265,22 +244,20 @@ export default function Parents({
                                                 <StatusBadge status={parent.status} label={t(parent.status)} />
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
+                                                <IconButton
+                                                    label={t('edit')}
                                                     className="mr-1"
                                                     onClick={() => openEdit(parent)}
                                                 >
                                                     <Pencil className="size-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-destructive"
+                                                </IconButton>
+                                                <IconButton
+                                                    destructive
+                                                    label={t('delete')}
                                                     onClick={() => setDeleteTarget(parent)}
                                                 >
                                                     <Trash2 className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))}

@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Input } from '@/Components/ui/input';
@@ -18,17 +18,22 @@ export default function ListToolbar({
     const { t } = useI18n();
 
     return (
-        <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
-            <div className="flex items-center gap-2 rounded-lg border border-input px-3 py-1.5 text-sm text-muted-foreground">
-                <SlidersHorizontal className="size-4" />
-                {filters ?? <span>{t('add_filter')}</span>}
-            </div>
+        <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3" role="search">
+            {filters && (
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    {filters}
+                </div>
+            )}
             <div className="relative min-w-56 flex-1">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
                 <Input
                     value={search}
                     onChange={(e) => onSearch(e.target.value)}
                     placeholder={placeholder}
+                    aria-label={placeholder ?? t('search_placeholder')}
                     className="pl-9"
                 />
             </div>
