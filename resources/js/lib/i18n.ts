@@ -3,7 +3,7 @@ import type { PageProps } from '@/types';
 
 type SharedProps = PageProps<{
     locale: 'en' | 'ms';
-    translations: Record<'en' | 'ms', Record<string, string>>;
+    translations: Record<string, Record<string, string>>;
 }>;
 
 /**

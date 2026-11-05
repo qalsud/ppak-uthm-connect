@@ -26,6 +26,23 @@ function createMemo($case, User $admin, array $attachments = [], array $override
     return Memo::query()->latest('id')->firstOrFail();
 }
 
+test('force-deleting a memo removes its stored photos', function () {
+    $admin = User::factory()->role(UserRole::Admin)->create();
+    $memo = createMemo($this, $admin, [UploadedFile::fake()->image('poster.jpg')]);
+
+    $attachment = $memo->attachments()->firstOrFail();
+    $path = $attachment->path;
+
+    Storage::disk('attendance')->assertExists($path);
+
+    $memo->forceDelete();
+
+    expect(Memo::withTrashed()->find($memo->id))->toBeNull()
+        ->and($memo->attachments()->count())->toBe(0);
+
+    Storage::disk('attendance')->assertMissing($path);
+});
+
 test('an admin can create a memo with a photo', function () {
     $admin = User::factory()->role(UserRole::Admin)->create();
 

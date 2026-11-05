@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
-use App\Models\Conversation;
 use App\Models\Memo;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,11 +18,14 @@ class DashboardController extends Controller
             ->students()
             ->active()
             ->with('centre:id,name')
+            ->withSum(
+                ['financialRecords as unpaid_total' => fn ($q) => $q->where('status', 'unpaid')],
+                'amount',
+            )
             ->get(['id', 'name', 'age', 'class', 'centre_id']);
 
         $children->each(function ($child) {
-            $unpaid = $child->financialRecords()->where('status', 'unpaid')->sum('amount');
-            $child->unpaid = (float) $unpaid;
+            $child->unpaid = (float) ($child->unpaid_total ?? 0);
         });
 
         $attendance = Attendance::todayFor($children->pluck('id'));
@@ -33,10 +36,11 @@ class DashboardController extends Controller
         $studentIds = $children->pluck('id');
 
         $unread = $studentIds->isNotEmpty()
-            ? Conversation::query()
-                ->whereIn('student_id', $studentIds)
-                ->get()
-                ->sum(fn ($c) => $c->messages()->where('sender_id', '!=', auth()->id())->whereNull('read_at')->count())
+            ? Message::query()
+                ->whereNull('read_at')
+                ->where('sender_id', '!=', auth()->id())
+                ->whereHas('conversation', fn ($q) => $q->whereIn('student_id', $studentIds))
+                ->count()
             : 0;
 
         $totalUnpaid = $children->sum('unpaid');

@@ -39,6 +39,12 @@ jobs:
       - name: Check code style
         run: vendor/bin/pint --test
 
+      - name: Audit PHP dependencies
+        run: composer audit
+
+      - name: Verify frontend route names
+        run: php artisan check:routes
+
       - name: Run tests
         run: php artisan test
 
@@ -56,6 +62,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
 
       - name: Build assets
         run: npm run build

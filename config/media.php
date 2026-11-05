@@ -21,6 +21,9 @@ return [
     // Longest side after downscaling.
     'max_dimension' => (int) env('MEDIA_MAX_DIMENSION', 1600),
 
+    // Reject enormous source images before GD allocates them (decompression bomb).
+    'max_pixels' => (int) env('MEDIA_MAX_PIXELS', 40000000),
+
     // Longest side of the generated thumbnail.
     'thumb_dimension' => (int) env('MEDIA_THUMB_DIMENSION', 320),
 

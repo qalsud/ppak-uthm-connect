@@ -27,6 +27,12 @@ class ImageStore
             throw new RuntimeException('The file is not a valid image.');
         }
 
+        // Guard against decompression bombs: a small upload can decode to a
+        // very large bitmap. Reject before loading the pixels into memory.
+        if (($info[0] * $info[1]) > (int) config('media.max_pixels')) {
+            throw new RuntimeException('The image dimensions are too large.');
+        }
+
         $mime = $info['mime'] ?? '';
 
         if (! in_array($mime, config('media.allowed_mimes'), true)) {

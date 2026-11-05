@@ -28,6 +28,7 @@ class TeacherController extends Controller
         $centreId = is_numeric($centre) ? (int) $centre : null;
 
         $teachers = AccountQuery::for(UserRole::Teacher, $status, $search)
+            ->with('centres:id')
             ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
             ->when($centreId, fn ($q) => $q->whereHas('centres', fn ($c) => $c->where('centres.id', $centreId)))
             ->orderBy('name')
@@ -35,7 +36,7 @@ class TeacherController extends Controller
             ->withQueryString();
 
         $teachers->getCollection()->transform(function (User $teacher) {
-            $teacher->setAttribute('centre_ids', $teacher->centres()->pluck('centres.id')->all());
+            $teacher->setAttribute('centre_ids', $teacher->centres->pluck('id')->all());
 
             return $teacher;
         });

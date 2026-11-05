@@ -2,9 +2,9 @@
 
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
-> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…06,
-> DAT‑01, OPS‑01 and CODE‑05 were fixed in the same session** (see *Resolved in this pass*); the
-> remaining P2/P3 items are still open.
+> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…10,
+> PERF‑01…03, DAT‑01/02, OPS‑01, TEST‑02 and CODE‑05 were fixed in the same session** (see
+> *Resolved in this pass*); CODE‑01/02, PERF‑04, SEC‑11, TEST‑01, PROC‑01 and the P3 items remain open.
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 
 ---
@@ -13,7 +13,7 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **269 passing / 1872 assertions** (34 feature files, no skipped tests) |
+| Tests | **274 passing / 1914 assertions** (37 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | PHP style | Pint **fails** on one file (`bootstrap/app.php`, line endings) |
 | Build | clean |
@@ -47,10 +47,19 @@
 | **SEC‑06** | Teacher dashboard scopes recent activities and update counts to visible students | `AuthorizationScopingTest` |
 | **DAT‑01** | `store()`/`generate()` reuse a trashed fee record (`withTrashed()` + restore) instead of violating the unique index | `PaymentsChatNotifyTest` |
 | **OPS‑01** | `DEPLOY.md` now states the queue worker is required for instant broadcast notifications; the launcher already starts it | docs |
+| **SEC‑08** | Added `SecurityHeaders` middleware (nosniff, SAMEORIGIN, Referrer‑Policy, Permissions‑Policy; HSTS on HTTPS) | `SecurityHeadersTest` |
+| **SEC‑09** | `ImageStore` rejects images above `media.max_pixels` before GD loads them | `ImageSafetyTest` |
+| **SEC‑10** | `.env.example` now ships `APP_DEBUG=false` / port 8001; session lifetime default reduced to 60 min | config |
+| **PERF‑01** | Teachers list eager-loads `centres` (removes one query per row) | existing teacher tests |
+| **PERF‑02** | Parent dashboard uses `withSum` + a single unread-message query (removes two N+1s) | `PortalTest` |
+| **PERF‑03** | Inertia shares only the active locale dictionary (~75 KB → ~37 KB) | `LocalizationTest` |
+| **DATA‑02** | Force-deleting a memo now deletes its stored photos and thumbnails | `MemoPhotosTest` |
+| **TEST‑02** | CI now runs `composer audit`, `npm audit --omit=dev`, and `check:routes` | `ci.yml` |
 | **CODE‑05** | `bootstrap/app.php` line endings fixed | `vendor/bin/pint --test` passes |
 
-Suite after the fix pass: **269 tests / 1872 assertions** (8 new regression tests).
-**All P0/P1 findings in this register are now resolved.**
+Suite after the fix pass: **274 tests / 1914 assertions** (13 new regression tests).
+**All P0/P1 findings are resolved; the P2 batch above is also fixed.**
+**Still open:** CODE‑01/02, PERF‑04, SEC‑11, TEST‑01, PROC‑01 and the P3 items.
 
 ---
 
@@ -271,7 +280,7 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 - **Secrets:** `.env` is ignored; no keys in source.
 - **Indexes:** every FK and the hot list columns are indexed; `attendance` and `progress_records`
   have the right unique keys.
-- **Quality gates:** 269 tests / 1872 assertions; `tsc` clean; build clean; Lighthouse 100 on all
+- **Quality gates:** 274 tests / 1914 assertions; `tsc` clean; build clean; Lighthouse 100 on all
   main portals; no skipped tests; no `dd`/`dump`/`console.log`; no `as any`.
 - **Slop:** CLEAN — comments explain *why*, names are domain-specific, no mock-everything tests.
 

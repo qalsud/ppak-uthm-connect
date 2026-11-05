@@ -43,12 +43,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'locale' => app()->getLocale(),
             'translations' => [
-                'ms' => json_decode(
-                    file_get_contents(lang_path('ms.json')),
-                    true
-                ),
-                'en' => json_decode(
-                    file_get_contents(lang_path('en.json')),
+                // Only the active locale: sharing both dictionaries doubles the
+                // initial Inertia payload (~75 KB) on every page visit.
+                app()->getLocale() => json_decode(
+                    file_get_contents(lang_path(app()->getLocale().'.json')),
                     true
                 ),
             ],

@@ -30,6 +30,15 @@ class Memo extends Model
     /** Expose the photos (authorised URLs) to the frontend. */
     protected $appends = ['photos'];
 
+    protected static function booted(): void
+    {
+        // Soft deletes keep attachments so the memo can be restored from Trash.
+        // A force delete is permanent, so remove the files (and their thumbnails).
+        static::forceDeleting(function (self $memo): void {
+            $memo->attachments()->get()->each->delete();
+        });
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
