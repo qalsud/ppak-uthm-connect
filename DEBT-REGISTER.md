@@ -259,8 +259,8 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 
 - **Scheduler** — `fees:send-reminders` and `media:prune-photos` are scheduled but the local
   launcher doesn’t start `schedule:work`. Production must run the scheduler.
-- **Demo credentials** — `accounts.txt` is untracked and contains the shared demo password; keep it
-  out of Git or mark it clearly as demo-only.
+- **Demo credentials** — `accounts.txt` is committed and contains the shared demo password; keep it
+  clearly labelled demo-only and never reuse those credentials for real accounts.
 - **`public/storage`** — not linked; currently unused because media is private. Fine unless the
   public disk is adopted later.
 - **PHP 8.2** — supported through 2026; plan the move to 8.3/8.4 before EOL.
