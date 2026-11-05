@@ -32,7 +32,7 @@ first in a new session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **274 passing** (`php artisan test`) |
+| Tests | **276 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **106** frontend route names verified |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
@@ -41,6 +41,10 @@ first in a new session.***
 
 **All phases of `ADMIN-CONTROL-PLAN.md` are complete** (F · A · C · G · B · E · D) and the **issue
 register is clear**.
+
+> **Open decision — payment gateway.** Stripe is currently a **provisional adapter**; do not build
+> more gateway-specific UI/logic until a provider is chosen. The payment-completion race (`SEC‑11`)
+> is on hold for that reason.
 
 ---
 
@@ -51,8 +55,9 @@ register is clear**.
   cross-centre authorization gaps in photos, conversations, message search, global search, parent
   memos and the teacher dashboard, fixed the soft-deleted fee/month duplicate-key bug, corrected the
   queue-worker deployment guidance, added baseline security headers, an image pixel cap, active-locale
-  only translations, two N+1 fixes, memo file cleanup and CI dependency/route audits.
-  **13 regression tests** added; all P0/P1 items and the first P2 batch are resolved.
+  only translations, two N+1 fixes, memo file cleanup, CI dependency/route audits, shared account
+  validation, chunked/idempotent fee reminders and failed-login logging.
+  **15 regression tests** added; all P0/P1 items and the first two P2 batches are resolved.
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
   record card, filter tabs, accessible icon buttons). Extracted backend `Csv` + `AccountQuery`

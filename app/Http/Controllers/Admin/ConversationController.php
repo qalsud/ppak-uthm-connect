@@ -144,7 +144,7 @@ class ConversationController extends Controller
             ->withTrashed()
             ->with(['conversation.student:id,name', 'sender:id,name'])
             ->orderBy('id')
-            ->get();
+            ->lazyById(1000);
 
         return Csv::download(
             'conversations.csv',

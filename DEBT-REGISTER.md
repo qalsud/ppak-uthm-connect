@@ -3,9 +3,13 @@
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
 > **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…10,
-> PERF‑01…03, DAT‑01/02, OPS‑01, TEST‑02 and CODE‑05 were fixed in the same session** (see
-> *Resolved in this pass*); CODE‑01/02, PERF‑04, SEC‑11, TEST‑01, PROC‑01 and the P3 items remain open.
+> PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑02, CODE‑02/05 and the failed-login logging were fixed**
+> (see *Resolved in this pass*); CODE‑01, SEC‑11, TEST‑01 and the remaining P3 items are still open.
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
+>
+> **Payment gateway is undecided.** The Stripe integration is a **provisional adapter** — do not build
+> more gateway-specific UI or logic until a provider is chosen. **SEC‑11 (payment-completion race) is
+> intentionally on hold** for that reason.
 
 ---
 
@@ -13,24 +17,24 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **274 passing / 1914 assertions** (37 feature files, no skipped tests) |
+| Tests | **276 passing / 1918 assertions** (38 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
-| PHP style | Pint **fails** on one file (`bootstrap/app.php`, line endings) |
+| PHP style | Pint **passes** |
 | Build | clean |
 | `npm audit` | **0 vulnerabilities** |
-| `composer audit` | **8 advisories across 5 Symfony packages** (see DEP‑01) |
+| `composer audit` | **clean** |
 | Routes | **179** total; **138** role-guarded (96 admin · 22 parent · 20 teacher) + 18 auth-only |
 | DB | 37 tables, ~1.7 MB; indexes are mostly present |
 | Frontend audit | Lighthouse **100/100/100** on all main portals (from the previous pass) |
-| Queue | 1 failed job: `BroadcastNotificationCreated` (max attempts) |
+| Queue | 1 historical failed job (`BroadcastNotificationCreated`); fixed docs now require a worker for live broadcasts |
 | Coverage | **not measured** — no Xdebug/PCOV driver installed |
 | Slop verdict | **CLEAN** — no `dd/dump/console.log`, no `as any`, no skipped tests, no TODO/FIXME |
 
-**Top three to pay down first**
+**Next three to pay down first**
 
-1. **DEP‑01** — patch the Symfony security advisories (one `composer update`).
-2. **SEC‑01…06** — close the cross-centre authorization gaps (small, high impact).
-3. **DAT‑01 / OPS‑01** — fix the soft-delete fee bug and the queue/docs mismatch.
+1. **CODE‑01** — split the oversized controllers/components (`AttendanceController`, `Students.tsx`, `Child.tsx`, `chat-inbox.tsx`).
+2. **TEST‑01** — add Larastan/PHPStan + ESLint as CI gates.
+3. **SEC‑11** — once a payment provider is chosen, lock the completion flow.
 
 ---
 
@@ -56,10 +60,15 @@
 | **DATA‑02** | Force-deleting a memo now deletes its stored photos and thumbnails | `MemoPhotosTest` |
 | **TEST‑02** | CI now runs `composer audit`, `npm audit --omit=dev`, and `check:routes` | `ci.yml` |
 | **CODE‑05** | `bootstrap/app.php` line endings fixed | `vendor/bin/pint --test` passes |
+| **CODE‑02** | Extracted `AccountRules` for parent/teacher/administrator create/update validation | full suite |
+| **PERF‑04** | Fee reminders use `lazyById(500)` + a once-per-parent-per-day cache guard | `FeeReminderTest` |
+| **PERF‑05** | Conversation CSV export streams with `lazyById(1000)` instead of loading every message | manual/build |
+| **PROC‑01** | Failed and inactive login attempts are logged with email + IP (external error tracking still an open decision) | `AuthenticationTest` |
+| **CODE‑04** | Removed dead `Memo::AUDIENCES` / `audienceLabel()`; unused-dependency cleanup remains P3 | full suite |
 
-Suite after the fix pass: **274 tests / 1914 assertions** (13 new regression tests).
-**All P0/P1 findings are resolved; the P2 batch above is also fixed.**
-**Still open:** CODE‑01/02, PERF‑04, SEC‑11, TEST‑01, PROC‑01 and the P3 items.
+Suite after the fix pass: **276 tests / 1918 assertions** (15 new regression tests).
+**All P0/P1 findings are resolved; the first two P2 batches are also fixed.**
+**Still open:** CODE‑01, SEC‑11 (on hold for the gateway decision), TEST‑01 and the remaining P3 items.
 
 ---
 
@@ -280,7 +289,7 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 - **Secrets:** `.env` is ignored; no keys in source.
 - **Indexes:** every FK and the hot list columns are indexed; `attendance` and `progress_records`
   have the right unique keys.
-- **Quality gates:** 274 tests / 1914 assertions; `tsc` clean; build clean; Lighthouse 100 on all
+- **Quality gates:** 276 tests / 1918 assertions; `tsc` clean; build clean; Lighthouse 100 on all
   main portals; no skipped tests; no `dd`/`dump`/`console.log`; no `as any`.
 - **Slop:** CLEAN — comments explain *why*, names are domain-specific, no mock-everything tests.
 

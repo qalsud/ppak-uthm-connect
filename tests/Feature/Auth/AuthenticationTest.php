@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -29,6 +30,22 @@ test('users can not authenticate with invalid password', function () {
     ]);
 
     $this->assertGuest();
+});
+
+test('failed login attempts are logged with the identifier and IP', function () {
+    Log::spy();
+
+    $user = User::factory()->create();
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
+
+    Log::shouldHaveReceived('warning')
+        ->withArgs(fn (string $message, array $context) => $message === 'Failed login attempt'
+            && $context['email'] === $user->email
+            && $context['ip'] !== null);
 });
 
 test('users can logout', function () {

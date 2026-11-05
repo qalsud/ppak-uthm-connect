@@ -8,9 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Support\AccountQuery;
+use App\Support\AccountRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -48,11 +48,7 @@ class AdministratorController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
+        $data = $request->validate(AccountRules::write(withContact: false));
 
         $admin = User::create([
             'name' => $data['name'],
@@ -73,10 +69,8 @@ class AdministratorController extends Controller
         abort_if($user->role !== UserRole::Admin, 422);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'status' => ['required', Rule::enum(AccountStatus::class)],
-            'password' => 'nullable|string|min:8',
+            ...AccountRules::write($user, requirePassword: false, withContact: false),
+            'status' => AccountRules::status(),
         ]);
 
         // Deactivating the last active admin would lock everyone out.

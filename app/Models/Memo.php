@@ -12,9 +12,6 @@ class Memo extends Model
 {
     use SoftDeletes;
 
-    /** all | parents | teachers | class */
-    public const AUDIENCES = ['all', 'parents', 'teachers', 'class'];
-
     /** Most photos a single memo may carry. */
     public const MAX_PHOTOS = 3;
 
@@ -112,15 +109,5 @@ class Memo extends Model
         $centreId = ActiveCentre::id();
 
         return $centreId ? $query->where('centre_id', $centreId) : $query;
-    }
-
-    public function audienceLabel(): string
-    {
-        return match ($this->audience) {
-            'parents' => 'Parents',
-            'teachers' => 'Teachers',
-            'class' => Student::classLabelStatic((string) $this->class),
-            default => 'Everyone',
-        };
     }
 }

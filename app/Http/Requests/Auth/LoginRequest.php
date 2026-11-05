@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -46,6 +47,11 @@ class LoginRequest extends FormRequest
         $user = User::where('email', $this->input('email'))->first();
 
         if ($user && ! $user->isActive()) {
+            Log::warning('Inactive account login attempt', [
+                'email' => $this->input('email'),
+                'ip' => $this->ip(),
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.inactive'),
             ]);
@@ -53,6 +59,11 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+
+            Log::warning('Failed login attempt', [
+                'email' => $this->input('email'),
+                'ip' => $this->ip(),
+            ]);
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),

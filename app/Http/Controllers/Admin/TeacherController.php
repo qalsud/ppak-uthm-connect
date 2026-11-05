@@ -10,6 +10,7 @@ use App\Models\Centre;
 use App\Models\Student;
 use App\Models\User;
 use App\Support\AccountQuery;
+use App\Support\AccountRules;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,11 +60,7 @@ class TeacherController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'ic_number' => 'nullable|string|max:20',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|string|min:8',
+            ...AccountRules::write(),
             'class' => ['nullable', Rule::in(Student::classKeys())],
             'centre_ids' => ['nullable', 'array'],
             'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
@@ -92,12 +89,8 @@ class TeacherController extends Controller
         abort_if($user->role !== UserRole::Teacher, 422);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'ic_number' => 'nullable|string|max:20',
-            'phone' => 'nullable|string|max:20',
-            'status' => ['required', Rule::enum(AccountStatus::class)],
-            'password' => 'nullable|string|min:8',
+            ...AccountRules::write($user, requirePassword: false),
+            'status' => AccountRules::status(),
             'class' => ['nullable', Rule::in(Student::classKeys())],
             'centre_ids' => ['nullable', 'array'],
             'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
