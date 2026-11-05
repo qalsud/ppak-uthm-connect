@@ -17,7 +17,9 @@ export function useServerSearch(
     const callback = useRef(onSearch);
 
     // Keep the latest callback without re-running the debounce effect.
-    callback.current = onSearch;
+    useEffect(() => {
+        callback.current = onSearch;
+    }, [onSearch]);
 
     useEffect(() => {
         if (firstRender.current) {

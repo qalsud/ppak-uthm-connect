@@ -156,6 +156,8 @@ export default function ChatInbox({
         setFiles([]);
         lastIdRef.current = open?.messages.at(-1)?.id ?? 0;
         requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'auto' }));
+        // Only reset when the thread changes, not on every incoming message.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open?.id]);
 
     useEffect(() => {
@@ -190,6 +192,8 @@ export default function ChatInbox({
         }, 20000);
 
         return () => clearInterval(id);
+        // The poll reads `open.id`; re-running on the whole object would restart it.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open?.id, readOnly, connection]);
 
     // Message search (debounced).

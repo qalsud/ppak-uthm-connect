@@ -41,6 +41,7 @@ const typeTint = (type: Absence['type']) =>
 /** Upcoming absences for a child, plus a big friendly "report an absence" card. */
 export default function AbsencePanel({ child }: { child: { id: number; name: string; absences: Absence[] } }) {
     const { t } = useI18n();
+    const absenceTypeOptions = useList('absence_type');
     const [open, setOpen] = useState(false);
     const attachRef = useRef<HTMLInputElement>(null);
     const [attachFor, setAttachFor] = useState<number | null>(null);
@@ -241,7 +242,7 @@ export default function AbsencePanel({ child }: { child: { id: number; name: str
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {useList('absence_type').map((a) => (
+                                {absenceTypeOptions.map((a) => (
                                     <SelectItem key={a.value} value={a.value}>
                                         {a.label}
                                     </SelectItem>

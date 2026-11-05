@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { Building2, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 

@@ -43,7 +43,7 @@ import { useList } from '@/lib/lists';
 import { useRowSelection, useServerSearch } from '@/lib/hooks';
 import { localDate } from '@/lib/date';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
-import type { PageProps, Paginator } from '@/types';
+import type { Paginator } from '@/types';
 import AppShell from '@/Layouts/app-shell';
 
 type Student = {

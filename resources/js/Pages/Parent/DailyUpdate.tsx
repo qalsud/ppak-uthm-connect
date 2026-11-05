@@ -2,7 +2,6 @@ import { router, useForm, usePage } from '@inertiajs/react';
 import { CalendarCheck } from 'lucide-react';
 
 import PageHeader from '@/Components/page-header';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
@@ -31,6 +30,46 @@ type Page = PageProps<{
     existing: Existing | null;
 }>;
 
+type SegmentedOption = { value: string; label: string; tone: string };
+
+function Segmented({
+    label,
+    value,
+    options,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    options: SegmentedOption[];
+    onChange: (value: string) => void;
+}) {
+    return (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <div className="grid grid-cols-2 gap-2">
+                {options.map((o) => {
+                    const active = value === o.value;
+
+                    return (
+                        <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => onChange(o.value)}
+                            className={`h-12 rounded-xl border text-sm font-semibold transition ${
+                                active
+                                    ? `${o.tone} border-transparent`
+                                    : 'border-input bg-card text-muted-foreground'
+                            }`}
+                        >
+                            {o.label}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 export default function ParentDailyUpdate() {
     const { t } = useI18n();
     const { props } = usePage<Page>();
@@ -50,40 +89,6 @@ export default function ParentDailyUpdate() {
         router.get('/parent/daily-update', { student_id: id }, { preserveState: true });
 
     const submit = () => form.post(route('parent.daily-update.store'));
-
-    const Segmented = ({
-        label,
-        name,
-        options,
-    }: {
-        label: string;
-        name: 'sleep_status' | 'bath_status';
-        options: { value: string; label: string; tone: string }[];
-    }) => (
-        <div className="space-y-2">
-            <Label>{label}</Label>
-            <div className="grid grid-cols-2 gap-2">
-                {options.map((o) => {
-                    const active = form.data[name] === o.value;
-
-                    return (
-                        <button
-                            key={o.value}
-                            type="button"
-                            onClick={() => form.setData(name, o.value)}
-                            className={`h-12 rounded-xl border text-sm font-semibold transition ${
-                                active
-                                    ? `${o.tone} border-transparent`
-                                    : 'border-input bg-card text-muted-foreground'
-                            }`}
-                        >
-                            {o.label}
-                        </button>
-                    );
-                })}
-            </div>
-        </div>
-    );
 
     return (
         <AppShell nav={parentNav} bottomNav={parentBottomNav} title={t('parent')}>
@@ -165,7 +170,8 @@ export default function ParentDailyUpdate() {
 
                         <Segmented
                             label={t('sleeping_status')}
-                            name="sleep_status"
+                            value={form.data.sleep_status}
+                            onChange={(value) => form.setData('sleep_status', value)}
                             options={[
                                 { value: 'Good', label: '😴 Good', tone: 'bg-emerald-100 text-emerald-700' },
                                 { value: 'Poor', label: '😟 Poor', tone: 'bg-rose-100 text-rose-700' },
@@ -174,7 +180,8 @@ export default function ParentDailyUpdate() {
 
                         <Segmented
                             label={t('bath_status_label')}
-                            name="bath_status"
+                            value={form.data.bath_status}
+                            onChange={(value) => form.setData('bath_status', value)}
                             options={[
                                 { value: 'Done', label: '🛁 Done', tone: 'bg-emerald-100 text-emerald-700' },
                                 { value: 'Not Done', label: '🚫 Not done', tone: 'bg-amber-100 text-amber-700' },

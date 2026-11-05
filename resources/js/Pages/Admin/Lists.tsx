@@ -81,14 +81,6 @@ function OptionRow({ option, group }: { option: Option; group: string }) {
         );
     };
 
-    const remove = () => {
-        if (option.id === null) {
-            return;
-        }
-
-        router.delete(route('admin.lists.destroy', { option: option.id }), { preserveScroll: true });
-    };
-
     return (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2">
             <Input

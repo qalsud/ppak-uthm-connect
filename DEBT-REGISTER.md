@@ -3,8 +3,8 @@
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
 > **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…10,
-> PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑02, CODE‑02/05 and the failed-login logging were fixed**
-> (see *Resolved in this pass*); CODE‑01, SEC‑11, TEST‑01 and the remaining P3 items are still open.
+> PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑01/02, CODE‑02/05 and the failed-login logging were fixed**
+> (see *Resolved in this pass*); CODE‑01 (frontend splits), SEC‑11 and the remaining P3 items are open.
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 >
 > **Payment gateway is undecided.** The Stripe integration is a **provisional adapter** — do not build
@@ -19,6 +19,7 @@
 |---|---|
 | Tests | **276 passing / 1918 assertions** (38 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
+| Static analysis | **Larastan/PHPStan** (level 5, baseline) + **ESLint** — both pass |
 | PHP style | Pint **passes** |
 | Build | clean |
 | `npm audit` | **0 vulnerabilities** |
@@ -65,10 +66,15 @@
 | **PERF‑05** | Conversation CSV export streams with `lazyById(1000)` instead of loading every message | manual/build |
 | **PROC‑01** | Failed and inactive login attempts are logged with email + IP (external error tracking still an open decision) | `AuthenticationTest` |
 | **CODE‑04** | Removed dead `Memo::AUDIENCES` / `audienceLabel()`; unused-dependency cleanup remains P3 | full suite |
+| **TEST‑01** | Added Larastan/PHPStan (level 5, 208-error baseline) + ESLint flat config; CI runs both | `composer analyse`, `npm run lint` |
+| **CODE‑01 (partial)** | Extracted `CheckoutService` from `AttendanceController` (382 → 257 lines) | `CheckoutPhotoTest` |
 
 Suite after the fix pass: **276 tests / 1918 assertions** (15 new regression tests).
-**All P0/P1 findings are resolved; the first two P2 batches are also fixed.**
-**Still open:** CODE‑01, SEC‑11 (on hold for the gateway decision), TEST‑01 and the remaining P3 items.
+**All P0/P1 findings are resolved; the first two P2 batches, static analysis and the controller split are fixed.**
+**Still open:** CODE‑01 (frontend page/component splits), SEC‑11 (on hold for the gateway decision) and the remaining P3 items.
+
+> The PHPStan baseline is a **ratchet**: it freezes 208 existing findings so new code cannot add more.
+> Pay it down whenever a file is touched; don't regenerate it to hide new errors.
 
 ---
 

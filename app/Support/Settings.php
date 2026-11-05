@@ -67,19 +67,19 @@ class Settings
     public static function get(string $key, mixed $default = null): mixed
     {
         $fallback = $default ?? static::default($key);
-        $raw = static::raw();
+        $raw = self::raw();
 
         if (! array_key_exists($key, $raw) || $raw[$key] === null || $raw[$key] === '') {
             return $fallback;
         }
 
-        return static::cast($key, (string) $raw[$key], $fallback);
+        return self::cast($key, (string) $raw[$key], $fallback);
     }
 
     /** Store a value, clearing the cache. */
     public static function put(string $key, mixed $value): void
     {
-        Setting::updateOrCreate(['key' => $key], ['value' => static::serialize($value)]);
+        Setting::updateOrCreate(['key' => $key], ['value' => self::serialize($value)]);
 
         static::forget();
     }

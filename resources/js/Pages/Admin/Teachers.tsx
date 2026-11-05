@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { AlertTriangle, Download, Pencil, Plus, Trash2, Upload, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import BulkActionBar from '@/Components/bulk-action-bar';
 import CentreFilter from '@/Components/centre-filter';

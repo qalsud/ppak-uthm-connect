@@ -139,6 +139,9 @@ and it seeds the demo on first boot.
 ```bash
 php artisan test      # Pest - 276 tests / 1918 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
+composer analyse      # Larastan/PHPStan (baseline ratchet)
+npm run lint          # ESLint (React hooks + TypeScript)
+npm run typecheck     # tsc --noEmit
 npm run build         # tsc typecheck + Vite production build
 ```
 

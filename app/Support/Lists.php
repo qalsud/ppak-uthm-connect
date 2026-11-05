@@ -162,7 +162,7 @@ class Lists
     /** All options for a group, as [key => label]. */
     public static function options(string $group): array
     {
-        $rows = static::rows($group);
+        $rows = self::rows($group);
 
         if ($rows->isEmpty()) {
             return static::DEFAULTS[$group] ?? [];

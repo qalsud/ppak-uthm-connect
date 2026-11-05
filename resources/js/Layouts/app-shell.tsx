@@ -17,7 +17,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { Input } from '@/Components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import type { NavItem } from '@/lib/navigation';
 import { initials } from '@/lib/utils';

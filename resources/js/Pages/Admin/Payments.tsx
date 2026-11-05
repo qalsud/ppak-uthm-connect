@@ -11,7 +11,7 @@ import Pagination from '@/Components/pagination';
 import StatCard from '@/Components/stat-card';
 import StatusBadge from '@/Components/status-badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card } from '@/Components/ui/card';
 import { FormField } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
 import {

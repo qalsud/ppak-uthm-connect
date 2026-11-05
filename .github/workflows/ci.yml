@@ -39,6 +39,9 @@ jobs:
       - name: Check code style
         run: vendor/bin/pint --test
 
+      - name: Static analysis (Larastan)
+        run: composer analyse
+
       - name: Audit PHP dependencies
         run: composer audit
 
@@ -62,6 +65,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Lint JavaScript/TypeScript
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Audit production dependencies
         run: npm audit --omit=dev

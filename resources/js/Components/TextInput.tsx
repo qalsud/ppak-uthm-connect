@@ -6,7 +6,8 @@ export default forwardRef<HTMLInputElement, Props>(function TextInput(
     { type = 'text', className = '', isFocused = false, ...props },
     ref,
 ) {
-    const input = (ref as React.RefObject<HTMLInputElement>) ?? useRef<HTMLInputElement>(null);
+    const ownRef = useRef<HTMLInputElement>(null);
+    const input = (ref as React.RefObject<HTMLInputElement>) ?? ownRef;
 
     useEffect(() => {
         if (isFocused) {

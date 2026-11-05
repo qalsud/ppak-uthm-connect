@@ -50,8 +50,6 @@ export type Contacts = {
     collectors: CollectorRow[];
 };
 
-const RELATIONSHIPS = ['mother', 'father', 'guardian', 'other'];
-
 /** Toggle-style pill used for plan flags. */
 function Toggle({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {
     return (
@@ -76,6 +74,7 @@ export default function ChildContactsManager({
     contacts: Contacts;
 }) {
     const { t } = useI18n();
+    const relationshipOptions = useList('guardian_relationship');
     const [adding, setAdding] = useState<'guardian' | 'contact' | 'collector' | null>(null);
     const photoRef = useRef<HTMLInputElement>(null);
     const [photoFor, setPhotoFor] = useState<number | null>(null);
@@ -239,7 +238,7 @@ export default function ChildContactsManager({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {useList('guardian_relationship').map((r) => (
+                                            {relationshipOptions.map((r) => (
                                                 <SelectItem key={r.value} value={r.value}>
                                                     {r.label}
                                                 </SelectItem>
@@ -500,7 +499,7 @@ export default function ChildContactsManager({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="none">—</SelectItem>
-                                            {useList('guardian_relationship').map((r) => (
+                                            {relationshipOptions.map((r) => (
                                                 <SelectItem key={r.value} value={r.value}>
                                                     {r.label}
                                                 </SelectItem>

@@ -30,15 +30,6 @@ export default function TeacherMessages() {
         router.post(actionRoute(shell.isAdmin, 'messages.open', { student: studentId }));
     };
 
-    const submit = (body: string) => {
-        if (!props.open) return;
-        router.post(
-            actionRoute(shell.isAdmin, 'messages.store', { conversation: props.open.id }),
-            { body },
-            { preserveScroll: true },
-        );
-    };
-
     return (
         <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
             <PageHeader title={t('messages')} description={t('chat_with_parents')} />

@@ -35,6 +35,7 @@ first in a new session.***
 | Tests | **276 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **106** frontend route names verified |
+| Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
 | Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
 | Working tree | clean |
@@ -56,8 +57,9 @@ register is clear**.
   memos and the teacher dashboard, fixed the soft-deleted fee/month duplicate-key bug, corrected the
   queue-worker deployment guidance, added baseline security headers, an image pixel cap, active-locale
   only translations, two N+1 fixes, memo file cleanup, CI dependency/route audits, shared account
-  validation, chunked/idempotent fee reminders and failed-login logging.
-  **15 regression tests** added; all P0/P1 items and the first two P2 batches are resolved.
+  validation, chunked/idempotent fee reminders and failed-login logging. Added **Larastan/PHPStan +
+  ESLint** as CI gates and extracted `CheckoutService` from `AttendanceController`.
+  **15 regression tests** added; all P0/P1 items, the first two P2 batches and static analysis are resolved.
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
   record card, filter tabs, accessible icon buttons). Extracted backend `Csv` + `AccountQuery`

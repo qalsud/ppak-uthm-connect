@@ -43,19 +43,15 @@ type Memo = {
     photos: PhotoInfo[];
 };
 
-type CentreOption = { id: number; name: string; short_name: string | null };
-
 const MAX_PHOTOS = 3;
 
 
 export default function Memos({
     memos,
     classes,
-    centres,
 }: {
     memos: Memo[];
     classes: string[];
-    centres: CentreOption[];
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();

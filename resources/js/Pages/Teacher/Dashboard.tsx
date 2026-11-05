@@ -3,11 +3,9 @@ import {
     BellRing,
     BookOpen,
     CalendarCheck,
-    CheckCircle2,
     FileText,
     Plus,
     Search,
-    XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
