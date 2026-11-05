@@ -34,7 +34,7 @@ first in a new session.***
 | Last commit | `git log -1` |
 | Tests | **276 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
-| Route guard | `php artisan check:routes` — **106** frontend route names verified |
+| Route guard | `php artisan check:routes` - **103** frontend route names verified |
 | Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
 | Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
