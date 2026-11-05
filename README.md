@@ -221,6 +221,7 @@ lang/en.json · lang/ms.json        bilingual keys
 | [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md) | Photo upload design (watermark, retention, chat delivery) |
 | [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md) | Feature comparison vs LittleLives + gap roadmap |
 | [`FUNCTIONAL-REVIEW.md`](FUNCTIONAL-REVIEW.md) | Module-by-module functionality review + prioritized improvements |
+| [`DEBT-REGISTER.md`](DEBT-REGISTER.md) | Technical debt register — Tier-1 sweep (6 Nov 2026), prioritised P0–P3 |
 | [`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md) | Messages module sweep (functionality · UX · UI) |
 | [`DEPLOY.md`](DEPLOY.md) | Deploying a demo (tunnel, Railway/Render, serverless) + demo script |
 

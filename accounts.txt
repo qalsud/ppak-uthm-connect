@@ -1,0 +1,33 @@
+PPAK UTHM CONNECT — DEMO ACCOUNTS
+==================================
+Local app: http://127.0.0.1:8001
+Password for every account below: password123
+
+PRIMARY LOGINS
+--------------
+Admin    admin@ppakuthm.com       password123
+Teacher  teacher@ppakuthm.com     password123
+Parent   parent@ppakuthm.com      password123
+
+EXTRA SEEDED TEACHERS
+---------------------
+Farha Nur binti Ismail         farha@example.com     password123
+Ahmad Zaki bin Osman           zaki@example.com      password123
+Siti Hajar binti Mohamad Asbar hajar@example.com     password123
+
+EXTRA SEEDED PARENTS
+--------------------
+Noraini binti Yusof            noraini@example.com   password123
+Mohd Syafiq bin Rahman         syafiq@example.com    password123
+Abdul Rahim bin Ismail         rahim@example.com     password123
+Zaleha binti Ahmad             zaleha@example.com    password123
+
+PENDING ACCOUNT (cannot log in until approved)
+----------------------------------------------
+pending@ppakuthm.com             password123
+
+Notes
+-----
+- These accounts come from `php artisan migrate:fresh --seed`.
+- The pending parent can be approved from Admin -> Registrations.
+- This file is for local development/demo only.

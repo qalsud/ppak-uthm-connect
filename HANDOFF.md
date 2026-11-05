@@ -20,8 +20,9 @@ first in a new session.***
 1. **`README.md`** — the feature map
 2. **`ADMIN-CONTROL-PLAN.md`** — the phased plan (all phases done) + issue register
 3. **`FUNCTIONAL-REVIEW.md`** — module-by-module gaps
-4. **`LITTLELIVES-COMPARISON.md`** — feature comparison / roadmap
-5. **`DEPLOY.md`** — deploying the demo
+4. **`DEBT-REGISTER.md`** — prioritised technical-debt ledger (P0 dependency CVEs + P1 auth gaps first)
+5. **`LITTLELIVES-COMPARISON.md`** — feature comparison / roadmap
+6. **`DEPLOY.md`** — deploying the demo
 
 ---
 
@@ -98,11 +99,13 @@ register is clear**.
 0. **PERMATA curriculum integration** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md)
    is **on hold (KIV)** pending **stakeholder input** (see §7 of that file). Researched and drafted,
    not built; resume when the stakeholder questions are answered.
-1. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
+1. **Pay down the Tier-1 debt register** — [`DEBT-REGISTER.md`](DEBT-REGISTER.md).
+   Start with **DEP‑01** (Symfony CVEs) and **SEC‑01…06** (cross-centre authorization gaps).
+2. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
    runs and the scheduler (`schedule:run`) is active.
-2. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — growth chart, school
+3. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — growth chart, school
    calendar/events, light admissions pipeline. (Term progress-report PDF ✅ shipped 10 Oct 2026.)
-3. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped** on
+4. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped** on
    Laravel Reverb (10 Oct 2026); still open: the **general/centre thread** (needs new schema).
 
 ### Issue register — clear
