@@ -49,7 +49,7 @@ class SearchController extends Controller
         if ($user->isTeacher()) {
             $groups[] = $this->group(__('students'), Student::query()
                 ->active()
-                ->when($user->assignedClass(), fn ($q) => $q->where('class', $user->assignedClass()))
+                ->visibleTo($user)
                 ->where('name', 'like', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (Student $s) => [
@@ -74,6 +74,7 @@ class SearchController extends Controller
         $memoHref = $user->isAdmin() ? '/admin/memos' : ($user->isTeacher() ? '/teacher/memos' : '/parent/memos');
 
         $groups[] = $this->group(__('memos'), Memo::query()
+            ->visibleTo($user)
             ->where('title', 'like', $like)
             ->orderByDesc('created_at')->limit(5)->get()
             ->map(fn (Memo $m) => ['label' => $m->title, 'sub' => __('memo'), 'href' => $memoHref]));

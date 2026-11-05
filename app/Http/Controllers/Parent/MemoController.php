@@ -12,14 +12,9 @@ class MemoController extends Controller
 {
     public function index(Request $request): Response
     {
-        $classes = $request->user()->students()->pluck('class')->unique();
-
         $memos = Memo::query()
             ->with(['author:id,name', 'attachments'])
-            ->where(function ($query) use ($classes) {
-                $query->whereIn('audience', ['all', 'parents'])
-                    ->orWhere(fn ($q) => $q->where('audience', 'class')->whereIn('class', $classes));
-            })
+            ->visibleTo($request->user())
             ->orderBy('created_at', 'desc')
             ->get();
 

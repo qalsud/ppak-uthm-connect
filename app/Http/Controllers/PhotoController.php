@@ -10,6 +10,7 @@ use App\Models\MemoAttachment;
 use App\Models\MessageAttachment;
 use App\Models\ProgressPhoto;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -50,12 +51,7 @@ class PhotoController extends Controller
     /** Authorised collector's photo (staff only — used for verification). */
     public function collector(Request $request, AuthorisedCollector $collector): StreamedResponse
     {
-        $user = $request->user();
-
-        abort_unless(
-            $user !== null && ($user->isAdmin() || $user->isTeacher() || $collector->student?->parent_id === $user->id),
-            403
-        );
+        abort_unless($this->canViewStudent($request->user(), $collector->student), 403);
 
         $response = $collector->photoResponse();
 
@@ -67,12 +63,7 @@ class PhotoController extends Controller
     /** Child profile photo (admin/teacher, or the child's own parent). */
     public function student(Request $request, Student $student): StreamedResponse
     {
-        $user = $request->user();
-
-        $allowed = $user !== null
-            && ($user->isAdmin() || $user->isTeacher() || $student->parent_id === $user->id);
-
-        abort_unless($allowed, 403);
+        abort_unless($this->canViewStudent($request->user(), $student), 403);
         abort_unless($student->photo_path, 404);
 
         $disk = Storage::disk($student->photo_disk ?? config('media.disk'));
@@ -89,12 +80,7 @@ class PhotoController extends Controller
     /** Absence proof documents: images render inline, PDFs download. */
     public function absence(Request $request, AbsenceAttachment $attachment): StreamedResponse
     {
-        $user = $request->user();
-
-        $ownsChild = $attachment->student?->parent_id === $user?->id;
-        $allowed = $user !== null && ($user->isAdmin() || $user->isTeacher() || $ownsChild);
-
-        abort_unless($allowed, 403);
+        abort_unless($this->canViewStudent($request->user(), $attachment->student), 403);
 
         $path = $request->query('variant') === 'thumb' && $attachment->thumb_path
             ? $attachment->thumb_path
@@ -113,14 +99,31 @@ class PhotoController extends Controller
 
     private function serve(Request $request, AttendancePhoto|ProgressPhoto|MessageAttachment $photo): StreamedResponse
     {
-        $user = $request->user();
-
-        $ownsChild = $photo->student?->parent_id === $user?->id;
-        $allowed = $user !== null && ($user->isAdmin() || $user->isTeacher() || $ownsChild);
-
-        abort_unless($allowed, 403);
+        abort_unless($this->canViewStudent($request->user(), $photo->student), 403);
 
         return $this->streamStored($photo);
+    }
+
+    /**
+     * The single rule for child media: admins see everything, a parent sees
+     * their own child, and a teacher is limited to the centre + class they can
+     * manage. Using `canManage()` keeps photos consistent with the write routes.
+     */
+    private function canViewStudent(?User $user, ?Student $student): bool
+    {
+        if (! $user || ! $student) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($user->isParent()) {
+            return $student->parent_id === $user->id;
+        }
+
+        return $user->isTeacher() && $user->canManage($student);
     }
 
     /** Stream a stored image (or its thumbnail) from the private disk. */

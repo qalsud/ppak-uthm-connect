@@ -32,7 +32,7 @@ first in a new session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **261 passing** (`php artisan test`) |
+| Tests | **267 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **106** frontend route names verified |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |

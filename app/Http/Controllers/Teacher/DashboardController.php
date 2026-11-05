@@ -25,14 +25,18 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'class']);
 
+        $studentIds = $students->pluck('id');
+
         $todayActivities = DailyActivity::query()
             ->where('date', $today)
             ->where('teacher_id', auth()->id())
+            ->whereIn('student_id', $studentIds)
             ->pluck('student_id')
             ->flip();
 
         $todayUpdates = DailyUpdate::query()
             ->where('date', $today)
+            ->whereIn('student_id', $studentIds)
             ->pluck('student_id')
             ->flip();
 
@@ -49,8 +53,11 @@ class DashboardController extends Controller
         });
 
         $recentActivities = DailyActivity::query()
+            ->where('teacher_id', auth()->id())
+            ->whereIn('student_id', $studentIds)
             ->with('student:id,name,class')
             ->latest('date')
+            ->latest('id')
             ->limit(6)
             ->get()
             ->map(fn ($a) => [

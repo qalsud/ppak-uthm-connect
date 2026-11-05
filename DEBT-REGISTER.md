@@ -2,7 +2,8 @@
 
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
-> **Status:** audit only — no production data was inspected and no code was changed by this pass.
+> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…06
+> and CODE‑05 were fixed in the same session** (see *Resolved in this pass*); the rest remain open.
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 
 ---
@@ -11,7 +12,7 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **261 passing / 1795 assertions** (33 feature files, no skipped tests) |
+| Tests | **267 passing / 1859 assertions** (34 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | PHP style | Pint **fails** on one file (`bootstrap/app.php`, line endings) |
 | Build | clean |
@@ -29,6 +30,24 @@
 1. **DEP‑01** — patch the Symfony security advisories (one `composer update`).
 2. **SEC‑01…06** — close the cross-centre authorization gaps (small, high impact).
 3. **DAT‑01 / OPS‑01** — fix the soft-delete fee bug and the queue/docs mismatch.
+
+---
+
+## Resolved in this pass (6 Nov 2026)
+
+| ID | Fix | Verification |
+|---|---|---|
+| **DEP‑01** | Updated `laravel/framework` 12.69 → **12.71** and Symfony `7.4.18/19` → **7.4.22/23** | `composer audit`: no advisories |
+| **SEC‑01** | `PhotoController` now checks `canManage()` / parent ownership for every media route | `AuthorizationScopingTest` |
+| **SEC‑02** | Teacher inbox uses `Student::visibleTo()` (centre + class) | `AuthorizationScopingTest` |
+| **SEC‑03** | Message search uses `Student::visibleTo()` for non-admins | `AuthorizationScopingTest` |
+| **SEC‑04** | Global search scopes students with `visibleTo()` and memos with `Memo::visibleTo()` | `AuthorizationScopingTest` |
+| **SEC‑05** | Parent memo list + dashboard count use `Memo::visibleTo()` (fixes the OR/AND bug) | `AuthorizationScopingTest` |
+| **SEC‑06** | Teacher dashboard scopes recent activities and update counts to visible students | `AuthorizationScopingTest` |
+| **CODE‑05** | `bootstrap/app.php` line endings fixed | `vendor/bin/pint --test` passes |
+
+Suite after the fix pass: **267 tests / 1859 assertions** (6 new regression tests).
+**Still open from P1:** `DAT‑01` (soft-deleted fee + unique index) and `OPS‑01` (queue/docs mismatch).
 
 ---
 
@@ -249,7 +268,7 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 - **Secrets:** `.env` is ignored; no keys in source.
 - **Indexes:** every FK and the hot list columns are indexed; `attendance` and `progress_records`
   have the right unique keys.
-- **Quality gates:** 261 tests / 1795 assertions; `tsc` clean; build clean; Lighthouse 100 on all
+- **Quality gates:** 267 tests / 1859 assertions; `tsc` clean; build clean; Lighthouse 100 on all
   main portals; no skipped tests; no `dd`/`dump`/`console.log`; no `as any`.
 - **Slop:** CLEAN — comments explain *why*, names are domain-specific, no mock-everything tests.
 

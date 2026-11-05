@@ -36,8 +36,9 @@ class ConversationService
 
         if ($user->isParent()) {
             $query->whereIn('student_id', $user->students()->pluck('id'));
-        } elseif ($user->isTeacher() && $user->assignedClass()) {
-            $query->whereHas('student', fn ($s) => $s->where('class', $user->assignedClass()));
+        } elseif ($user->isTeacher()) {
+            // Centre + class. A class key alone is not unique across centres.
+            $query->whereHas('student', fn ($s) => $s->visibleTo($user));
         }
 
         return $query->orderByDesc('updated_at')->get()->map(fn (Conversation $c) => [

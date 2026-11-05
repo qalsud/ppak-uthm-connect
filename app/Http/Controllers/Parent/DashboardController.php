@@ -40,17 +40,7 @@ class DashboardController extends Controller
             : 0;
 
         $totalUnpaid = $children->sum('unpaid');
-        // Only memos this parent's children should see (audience + centre aware).
-        $childClasses = $children->pluck('class')->unique()->filter()->all();
-        $childCentres = $children->pluck('centre_id')->unique()->filter()->all();
-
-        $memoCount = Memo::query()
-            ->whereIn('audience', ['all', 'parents'])
-            ->orWhere(fn ($q) => $q->where('audience', 'class')->whereIn('class', $childClasses))
-            ->when($childCentres, fn ($q) => $q->where(fn ($w) => $w
-                ->whereIn('centre_id', $childCentres)
-                ->orWhereNull('centre_id')))
-            ->count();
+        $memoCount = Memo::query()->visibleTo($request->user())->count();
 
         return Inertia::render('Parent/Dashboard', [
             'children' => $children,

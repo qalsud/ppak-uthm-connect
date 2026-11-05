@@ -137,7 +137,7 @@ and it seeds the demo on first boot.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 261 tests / 1795 assertions
+php artisan test      # Pest - 267 tests / 1859 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -205,7 +205,7 @@ resources/js/Components/           chat-inbox, photo-upload/photo-thumb, rating-
 resources/views/pdf/               receipt templates
 config/media.php                   photo pipeline defaults (overridable at /admin/settings)
 database/seeders/DatabaseSeeder.php full demo dataset (centres, attendance, health, growth, fees, chat)
-tests/Feature/                     Pest feature suite (261 tests)
+tests/Feature/                     Pest feature suite (267 tests)
 lang/en.json · lang/ms.json        bilingual keys
 ```
 
@@ -227,8 +227,8 @@ lang/en.json · lang/ms.json        bilingual keys
 
 ## Continuing this work (handoff)
 
-**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **261 tests /
-1795 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
+**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **267 tests /
+1859 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
 **Every planned phase of [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) is complete**
 (F · A · C · G · B · E · D) and the **issue register is clear**. Sessions have since added phases
 **B** (settings + versioned per-centre fees, editable records, Stripe refunds), **E** (oversight
