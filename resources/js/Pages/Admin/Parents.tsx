@@ -11,7 +11,7 @@ import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
-import StatusFilter from '@/Components/status-filter';
+import StatusFilter, { ACCOUNT_STATUSES } from '@/Components/status-filter';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { FormField, FormGrid } from '@/Components/ui/form-field';
@@ -51,7 +51,7 @@ type Parent = {
     students: Child[];
 };
 
-const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
+const STATUSES = ACCOUNT_STATUSES;
 
 export default function Parents({
     parents,
@@ -243,7 +243,7 @@ export default function Parents({
                                             <TableCell>
                                                 <StatusBadge status={parent.status} label={t(parent.status)} />
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="whitespace-nowrap text-right">
                                                 <IconButton
                                                     label={t('edit')}
                                                     className="mr-1"

@@ -45,7 +45,7 @@ export default function Welcome({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="PPAK UTHM Connect" />
+            <Head title={t('welcome')} />
             <div className="min-h-screen bg-white">
                 {/* Nav */}
                 <header className="sticky top-0 z-40 bg-brand-navy">
@@ -89,7 +89,7 @@ export default function Welcome({ auth }: PageProps) {
                             <button
                                 onClick={() => setMenuOpen((v) => !v)}
                                 className="flex size-9 items-center justify-center rounded-lg text-white hover:bg-white/10 md:hidden"
-                                aria-label="Menu"
+                                aria-label={t('menu')}
                             >
                                 {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
                             </button>
@@ -133,7 +133,8 @@ export default function Welcome({ auth }: PageProps) {
                     )}
                 </header>
 
-                {/* Hero — a welcome, not a sales pitch */}
+                <main>
+                    {/* Hero — a welcome, not a sales pitch */}
                 <section className="relative overflow-hidden bg-brand-navy pb-14 pt-12 text-white sm:pb-20 sm:pt-16">
                     <div className="pointer-events-none absolute -right-24 top-0 size-80 rounded-full bg-brand-accent/20 blur-3xl" />
                     <div className="pointer-events-none absolute -left-24 bottom-0 size-80 rounded-full bg-indigo-500/20 blur-3xl" />
@@ -296,6 +297,8 @@ export default function Welcome({ auth }: PageProps) {
                         </div>
                     </section>
                 )}
+
+                </main>
 
                 {/* Footer */}
                 <footer className="border-t bg-white py-12 sm:py-14">

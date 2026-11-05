@@ -1,12 +1,16 @@
 # Session Handoff — PPAK UTHM Connect
 
-*Updated 10 Oct 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026. The
-**PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this first in a new
-session.***
+*Updated 5 Nov 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026; realtime,
+memo photos and the progress report shipped 10 Oct 2026; a UI/refactor + accessibility pass shipped
+5 Nov 2026. The **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this
+first in a new session.***
 
-> **Session wrap — 10 Oct 2026.** Shipped **true realtime chat (Laravel Reverb)**, **memo photos**
-> (+ an inline carousel), a **per-child progress-report PDF**, and a teacher nav tweak. Everything is
-> **committed and pushed** to `main`; the working tree is **clean**. The
+> **Session wrap — 5 Nov 2026.** UI/refactor pass: shared list primitives (`useServerSearch`,
+> `useRowSelection`, `StatusFilter`, `CentreFilter`, `BulkActionBar`, `MobileRecordCard`,
+> `FilterTabs`, `IconButton`), backend `Csv` + `AccountQuery` helpers, the `forActiveCentre` scope,
+> WCAG contrast fixes, and automatic accessible names for form controls. Lighthouse now reports
+> **100 accessibility / best-practices / SEO** on every main admin, teacher and parent screen.
+> Everything is **committed and pushed** to `main`; the working tree is **clean**. The
 > [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) remains KIV. Nothing blocks a fresh start.
 
 ---
@@ -29,7 +33,8 @@ session.***
 | Last commit | `git log -1` |
 | Tests | **261 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
-| Route guard | `php artisan check:routes` — **103** frontend route names verified |
+| Route guard | `php artisan check:routes` — **106** frontend route names verified |
+| Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
 | Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
 | Working tree | clean |
 
@@ -40,6 +45,14 @@ register is clear**.
 
 ## What this session shipped
 
+- **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
+  hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
+  record card, filter tabs, accessible icon buttons). Extracted backend `Csv` + `AccountQuery`
+  helpers and a `forActiveCentre` model scope; removed duplicate CSV import/export and account
+  filtering. Fixed a conditional `useList()` hook call in the student form and the student bulk
+  restore action. Added a skip link, table `scope`, bilingual notification strings, and automatic
+  accessible names for form controls. Darkened the brand primary/destructive tokens and small
+  status text for WCAG AA contrast. Lighthouse now scores **100/100/100** on all main portals.
 - **Progress-report PDF (10 Oct 2026).** A per-child report generated from existing progress records,
   over a selectable period (defaults to the last 90 days). Downloadable by the **teacher/admin**
   (scoped to their class) and by the **parent** for their own child. Shared `ProgressReport` service +

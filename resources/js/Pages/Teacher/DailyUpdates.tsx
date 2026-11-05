@@ -56,11 +56,11 @@ export default function DailyUpdates({
 
     return (
         <AppShell nav={shell.nav} bottomNav={shell.bottomNav} title={t(shell.title)}>
-            <PageHeader title={t('daily_updates')} description="Morning updates received from parents">
+            <PageHeader title={t('daily_updates')} description={t('daily_updates_desc')}>
                 {!assignedClass && (
                     <div className="w-48">
                         <Select value={selectedClass} onValueChange={changeClass}>
-                            <SelectTrigger>
+                            <SelectTrigger aria-label={t('class')}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

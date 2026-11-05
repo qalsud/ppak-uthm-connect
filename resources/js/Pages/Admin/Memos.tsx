@@ -5,6 +5,7 @@ import { useState } from 'react';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import MemoPhotos from '@/Components/memo-photos';
 import PageHeader from '@/Components/page-header';
 import PhotoPicker from '@/Components/photo-picker';
@@ -184,21 +185,16 @@ export default function Memos({
                                         </Badge>
                                     </div>
                                     <div className="flex shrink-0">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => openEdit(memo)}
-                                        >
+                                        <IconButton label={t('edit')} onClick={() => openEdit(memo)}>
                                             <Pencil className="size-4" />
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="text-destructive"
+                                        </IconButton>
+                                        <IconButton
+                                            destructive
+                                            label={t('delete')}
                                             onClick={() => setDeleteTarget(memo)}
                                         >
                                             <Trash2 className="size-4" />
-                                        </Button>
+                                        </IconButton>
                                     </div>
                                 </CardHeader>
                                 <CardContent>

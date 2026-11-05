@@ -139,7 +139,7 @@ export default function Progress({
         <div className="space-y-1.5">
             <Label>{opts.label}</Label>
             <Select value={String(form.data[opts.name])} onValueChange={(v) => form.setData(opts.name, v as never)}>
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-11" aria-label={opts.label}>
                     <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
@@ -169,7 +169,7 @@ export default function Progress({
                         {t('progress_record')}
                     </CardTitle>
                     {!ready && (
-                        <p className="flex items-center gap-1.5 text-xs text-amber-600">
+                        <p className="flex items-center gap-1.5 text-xs text-amber-700">
                             <Info className="size-3.5" />
                             {t('select_prompt')}
                         </p>
@@ -188,7 +188,7 @@ export default function Progress({
                                     value={form.data.student_id}
                                     onValueChange={(v) => form.setData('student_id', v)}
                                 >
-                                    <SelectTrigger className="h-11">
+                                    <SelectTrigger className="h-11" aria-label={t('student')}>
                                         <SelectValue placeholder={t('select_student')} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -209,6 +209,7 @@ export default function Progress({
                                     type="date"
                                     className="h-11"
                                     max={localDate()}
+                                    aria-label={t('date')}
                                     value={form.data.date}
                                     onChange={(e) => form.setData('date', e.target.value)}
                                 />
@@ -221,6 +222,7 @@ export default function Progress({
                                 <Input
                                     className="h-11"
                                     placeholder={t('sub_theme_hint')}
+                                    aria-label={t('sub_theme')}
                                     value={form.data.sub_theme}
                                     onChange={(e) => form.setData('sub_theme', e.target.value)}
                                 />
@@ -291,6 +293,7 @@ export default function Progress({
                         <Label>{t('notes')}</Label>
                         <Textarea
                             rows={2}
+                            aria-label={t('notes')}
                             value={form.data.notes}
                             onChange={(e) => form.setData('notes', e.target.value)}
                         />
@@ -332,7 +335,7 @@ export default function Progress({
                         value={filters.student || '__all'}
                         onValueChange={(v) => applyFilter('student', v)}
                     >
-                        <SelectTrigger className="w-52">
+                        <SelectTrigger className="w-52" aria-label={t('student')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -346,7 +349,7 @@ export default function Progress({
                     </Select>
                     {!assignedClass && (
                         <Select value={filters.class || '__all'} onValueChange={(v) => applyFilter('class', v)}>
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="w-40" aria-label={t('class')}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -372,6 +375,7 @@ export default function Progress({
                             <Input
                                 type="date"
                                 className="h-9"
+                                aria-label={t('from')}
                                 value={reportFrom}
                                 onChange={(e) => setReportFrom(e.target.value)}
                             />
@@ -381,6 +385,7 @@ export default function Progress({
                             <Input
                                 type="date"
                                 className="h-9"
+                                aria-label={t('to')}
                                 value={reportTo}
                                 onChange={(e) => setReportTo(e.target.value)}
                             />

@@ -130,7 +130,7 @@ export default function TeacherAttendance({
 
     const summary = [
         { label: t('at_school'), value: counts.school, cls: 'text-sky-600' },
-        { label: t('back_home'), value: counts.home, cls: 'text-emerald-600' },
+        { label: t('back_home'), value: counts.home, cls: 'text-emerald-700' },
         { label: t('absent'), value: counts.absent, cls: 'text-rose-600' },
         { label: t('not_arrived'), value: counts.none, cls: 'text-slate-500' },
     ];
@@ -142,7 +142,7 @@ export default function TeacherAttendance({
                     {!assignedClass && (
                         <div className="w-40">
                             <Select value={selectedClass} onValueChange={(v) => reload({ class: v })}>
-                                <SelectTrigger>
+                                <SelectTrigger aria-label={t('class')}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -175,6 +175,7 @@ export default function TeacherAttendance({
                             value={date}
                             max={futureDate(90)}
                             onChange={(e) => reload({ date: e.target.value })}
+                            aria-label={t('date')}
                             className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                         />
                         <Button

@@ -123,7 +123,7 @@ export default function AttendanceActions({
                     <div className="min-w-0">
                         {note && <p className="truncate text-[11px] text-muted-foreground">{note}</p>}
                         {photo_override && (
-                            <p className="text-[11px] text-amber-600">{t('photo_override')}</p>
+                            <p className="text-[11px] text-amber-700">{t('photo_override')}</p>
                         )}
                     </div>
                 </div>

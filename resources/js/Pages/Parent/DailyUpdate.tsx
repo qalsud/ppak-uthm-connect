@@ -131,11 +131,13 @@ export default function ParentDailyUpdate() {
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                                <Label>{t('date')}</Label>
+                                <Label htmlFor="update-date">{t('date')}</Label>
                                 <Input
+                                    id="update-date"
                                     type="date"
                                     className="h-11"
                                     max={localDate()}
+                                    aria-label={t('date')}
                                     value={form.data.date}
                                     onChange={(e) => form.setData('date', e.target.value)}
                                 />
@@ -144,10 +146,12 @@ export default function ParentDailyUpdate() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label>{t('arrival_time')}</Label>
+                                <Label htmlFor="update-arrival-time">{t('arrival_time')}</Label>
                                 <Input
+                                    id="update-arrival-time"
                                     type="time"
                                     className="h-11"
+                                    aria-label={t('arrival_time')}
                                     value={form.data.arrival_time}
                                     onChange={(e) => form.setData('arrival_time', e.target.value)}
                                 />

@@ -73,8 +73,6 @@ export default function GlobalSearch() {
                 onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
                 placeholder={t('search_placeholder')}
                 aria-label={t('search_placeholder')}
-                aria-expanded={open}
-                aria-controls="global-search-results"
                 autoComplete="off"
                 className="h-9 w-60 pl-9"
             />

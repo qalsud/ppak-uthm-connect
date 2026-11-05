@@ -8,7 +8,6 @@ use App\Models\FinancialRecord;
 use App\Models\Payment;
 use App\Services\Payments\PaymentCompletionService;
 use App\Services\Payments\StripeCheckoutService;
-use App\Support\ActiveCentre;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -24,15 +23,11 @@ class PaymentTransactionController extends Controller
     {
         $status = $request->query('status');
         $search = trim((string) $request->query('search', ''));
-        $centreId = ActiveCentre::id();
 
         // Payments belong to a centre through their child.
-        $inCentre = fn ($q) => $q->when(
-            $centreId,
-            fn ($qq) => $qq->whereHas('student', fn ($s) => $s->where('centre_id', $centreId)),
-        );
-
-        $payments = $inCentre(Payment::query()->with(['student:id,name,class', 'user:id,name,email']))
+        $payments = Payment::query()
+            ->with(['student:id,name,class', 'user:id,name,email'])
+            ->forActiveCentre()
             ->when(in_array($status, ['pending', 'paid', 'refunded', 'failed'], true), fn ($q) => $q->where('status', $status))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->whereHas('student', fn ($s) => $s->where('name', 'like', "%{$search}%"))
@@ -68,10 +63,10 @@ class PaymentTransactionController extends Controller
         return Inertia::render('Admin/Transactions', [
             'payments' => $payments,
             'signals' => [
-                'collected' => (float) $inCentre(Payment::query())->where('status', 'paid')->sum('amount'),
-                'refunded' => (float) $inCentre(Payment::query())->where('status', 'refunded')->sum('refunded_amount'),
-                'paid_count' => $inCentre(Payment::query())->where('status', 'paid')->count(),
-                'refunded_count' => $inCentre(Payment::query())->where('status', 'refunded')->count(),
+                'collected' => (float) Payment::query()->forActiveCentre()->where('status', 'paid')->sum('amount'),
+                'refunded' => (float) Payment::query()->forActiveCentre()->where('status', 'refunded')->sum('refunded_amount'),
+                'paid_count' => Payment::query()->forActiveCentre()->where('status', 'paid')->count(),
+                'refunded_count' => Payment::query()->forActiveCentre()->where('status', 'refunded')->count(),
             ],
             'stripeConfigured' => app(StripeCheckoutService::class)->isConfigured(),
             'filters' => ['status' => $status ?? '', 'search' => $search],

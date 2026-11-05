@@ -45,7 +45,7 @@ export default function PaymentSuccess({
                             className={`mb-2 size-12 ${paid ? 'text-emerald-500' : 'text-amber-500'}`}
                         />
                         <CardTitle className="text-xl">
-                            {paid ? 'Payment Successful' : 'Payment Under Review'}
+                            <h1>{paid ? t('payment_successful') : t('payment_under_review')}</h1>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
@@ -60,7 +60,7 @@ export default function PaymentSuccess({
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">{t('status')}</span>
                             <Badge variant={paid ? 'default' : 'secondary'} className={paid ? 'bg-emerald-600' : ''}>
-                                {payment.status}
+                                {paid ? t('paid') : t('pending')}
                             </Badge>
                         </div>
                         {payment.paid_at && (

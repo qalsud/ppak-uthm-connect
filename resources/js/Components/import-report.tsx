@@ -23,7 +23,7 @@ export default function ImportReport() {
         <div className="mb-4 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-emerald-600" />
+                    <CheckCircle2 className="size-4 text-emerald-700" />
                     <p className="text-sm font-semibold">
                         {t('import_report')} · {t('import_imported')}: {imported}
                     </p>
@@ -40,7 +40,7 @@ export default function ImportReport() {
 
             {skipped.length > 0 && (
                 <div className="mt-3 border-t pt-3">
-                    <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-amber-700">
                         <AlertTriangle className="size-3.5" />
                         {t('import_skipped')}: {skipped.length}
                     </p>

@@ -1,9 +1,10 @@
 import { router, useForm } from '@inertiajs/react';
 import { CreditCard, Eye, RotateCcw, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatCard from '@/Components/stat-card';
@@ -28,6 +29,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { formatDate } from '@/lib/date';
+import { useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
@@ -69,8 +71,6 @@ const variant = (status: Payment['status']) =>
 export default function Transactions({ payments, signals, stripeConfigured, filters }: Props) {
     const { t } = useI18n();
     const [target, setTarget] = useState<Payment | null>(null);
-    const [search, setSearch] = useState(filters.search);
-    const firstRender = useRef(true);
 
     const rows = payments.data;
 
@@ -86,22 +86,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
             { preserveState: true, preserveScroll: true, replace: true },
         );
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
 
     const openDetail = (payment: Payment) => {
         refundForm.reset();
@@ -141,7 +126,7 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
                     <Select value={filters.status || '__all'} onValueChange={(v) => visit({ status: v === '__all' ? '' : v })}>
-                        <SelectTrigger className="w-44">
+                        <SelectTrigger className="w-44" aria-label={t('status')}>
                             <SelectValue placeholder={t('status')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -154,11 +139,15 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                         </SelectContent>
                     </Select>
                     <div className="relative w-full min-w-56 sm:w-auto sm:flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t('search_students')}
+                            aria-label={t('search_students')}
                             className="pl-9"
                         />
                     </div>
@@ -228,10 +217,13 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
                                                     label={t(payment.status, payment.status)}
                                                 />
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button size="sm" variant="ghost" onClick={() => openDetail(payment)}>
+                                            <TableCell className="whitespace-nowrap text-right">
+                                                <IconButton
+                                                    label={t('view')}
+                                                    onClick={() => openDetail(payment)}
+                                                >
                                                     <Eye className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))}

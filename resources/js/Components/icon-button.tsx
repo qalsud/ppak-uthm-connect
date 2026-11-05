@@ -17,11 +17,11 @@ type Props = Omit<ComponentProps<typeof Button>, 'size' | 'variant'> & {
 export default function IconButton({ label, destructive, className, children, ...props }: Props) {
     return (
         <Button
-            size="sm"
+            size="icon"
             variant="ghost"
             aria-label={label}
             title={label}
-            className={cn(destructive && 'text-destructive', className)}
+            className={cn('size-8', destructive && 'text-destructive', className)}
             {...props}
         >
             {children}

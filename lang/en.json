@@ -742,5 +742,13 @@
     "select": "Select",
     "view": "View",
     "restore_selected": "Restore selected",
-    "restore_selected_desc": "The selected records will be restored and visible again."
+    "restore_selected_desc": "The selected records will be restored and visible again.",
+    "payment_successful": "Payment successful",
+    "payment_under_review": "Payment under review",
+    "support": "Support",
+    "new": "New",
+    "welcome": "Welcome",
+    "menu": "Menu",
+    "year": "Year",
+    "daily_updates_desc": "Morning updates received from parents"
 }

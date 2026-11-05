@@ -343,11 +343,15 @@ export default function ChatInbox({
 
                 {/* Search */}
                 <div className="relative border-b px-3 py-2">
-                    <Search className="pointer-events-none absolute left-5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder={t('search_messages')}
+                        aria-label={t('search_messages')}
                         className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm"
                     />
                     {results.length > 0 && (

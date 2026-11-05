@@ -193,14 +193,14 @@ export default function AdminStudent() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                        <span className="flex size-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
                             <CreditCard className="size-5" />
                         </span>
                         <div>
                             <p className="text-xs text-muted-foreground">{t('outstanding')}</p>
                             <p
                                 className={`text-sm font-semibold ${
-                                    student.unpaid > 0 ? 'text-amber-600' : 'text-emerald-600'
+                                    student.unpaid > 0 ? 'text-amber-700' : 'text-emerald-700'
                                 }`}
                             >
                                 RM {student.unpaid.toFixed(2)}
@@ -238,7 +238,7 @@ export default function AdminStudent() {
                                                 {t('departed_at')}: {row.departed_at ?? '—'}
                                             </p>
                                             {row.photo_override && (
-                                                <p className="text-[11px] text-amber-600">
+                                                <p className="text-[11px] text-amber-700">
                                                     {t('photo_override')}
                                                 </p>
                                             )}

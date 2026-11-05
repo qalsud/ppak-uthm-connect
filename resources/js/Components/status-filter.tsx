@@ -33,7 +33,7 @@ export default function StatusFilter({
             <SelectTrigger
                 aria-label={t('status')}
                 className={cn(
-                    'h-8 border-0 px-0 text-muted-foreground shadow-none focus:ring-0',
+                    'h-8 w-auto border-0 px-0 text-muted-foreground shadow-none focus:ring-0',
                     className,
                 )}
             >

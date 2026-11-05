@@ -743,5 +743,13 @@
     "select": "Pilih",
     "view": "Lihat",
     "restore_selected": "Pulihkan yang dipilih",
-    "restore_selected_desc": "Rekod yang dipilih akan dipulihkan dan dipaparkan semula."
+    "restore_selected_desc": "Rekod yang dipilih akan dipulihkan dan dipaparkan semula.",
+    "payment_successful": "Pembayaran berjaya",
+    "payment_under_review": "Pembayaran sedang disemak",
+    "support": "Sokongan",
+    "new": "Baharu",
+    "welcome": "Selamat datang",
+    "menu": "Menu",
+    "year": "Tahun",
+    "daily_updates_desc": "Kemas kini pagi yang diterima daripada ibu bapa"
 }

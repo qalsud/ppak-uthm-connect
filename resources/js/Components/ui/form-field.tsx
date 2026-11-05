@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Label } from '@/Components/ui/label';
+import { FieldLabelContext } from '@/lib/field-label';
 import { cn } from '@/lib/utils';
 
 /**
@@ -30,7 +31,7 @@ export function FormField({
     return (
         <div className={cn('space-y-1', className)}>
             {label && <Label htmlFor={htmlFor}>{label}</Label>}
-            {children}
+            <FieldLabelContext.Provider value={label}>{children}</FieldLabelContext.Provider>
             {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
             {error && <p className="text-xs text-destructive">{error}</p>}
         </div>

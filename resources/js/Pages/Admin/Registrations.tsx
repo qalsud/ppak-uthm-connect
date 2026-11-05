@@ -1,8 +1,10 @@
 import { router } from '@inertiajs/react';
 import { Check, Inbox, Search, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
+import BulkActionBar from '@/Components/bulk-action-bar';
 import EmptyState from '@/Components/empty-state';
+import FilterTabs from '@/Components/filter-tabs';
 import FormDialog from '@/Components/form-dialog';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
@@ -27,6 +29,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { formatDate } from '@/lib/date';
+import { useRowSelection, useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
@@ -45,8 +48,6 @@ type ManagedUser = {
 
 type Filters = { status: string; role: string; search: string };
 
-const STATUS_TABS = ['pending', 'active', 'rejected'] as const;
-
 export default function Registrations({
     users,
     counts,
@@ -57,31 +58,24 @@ export default function Registrations({
     filters: Filters;
 }) {
     const { t } = useI18n();
-    const [search, setSearch] = useState(filters.search);
-    const firstRender = useRef(true);
 
     const rows = users.data;
+    const { selected, toggle, toggleAll, allSelected, clear } = useRowSelection(rows, [
+        users.current_page,
+        filters.status,
+        filters.role,
+        filters.search,
+    ]);
 
-    const [selected, setSelected] = useState<number[]>([]);
     const [rejectTarget, setRejectTarget] = useState<ManagedUser | null>(null);
     const [rejectBulk, setRejectBulk] = useState(false);
     const [reason, setReason] = useState('');
-
-    useEffect(() => {
-        setSelected([]);
-    }, [users.current_page, filters.status, filters.role, filters.search]);
-
-    const toggle = (id: number) =>
-        setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(r.id));
-    const toggleAll = () => setSelected(allSelected ? [] : rows.map((r) => r.id));
 
     const runBulk = (action: 'approve' | 'reject') =>
         router.post(
             route('admin.users.bulk'),
             { action, ids: selected },
-            { preserveScroll: true, onFinish: () => setSelected([]) },
+            { preserveScroll: true, onFinish: () => clear() },
         );
 
     const visit = (next: Partial<Filters>) =>
@@ -91,23 +85,7 @@ export default function Registrations({
             { preserveState: true, preserveScroll: true, replace: true },
         );
 
-    // Debounced search → server.
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
 
     const act = (user: ManagedUser, action: 'approve' | 'reject') => {
         if (action === 'reject') {
@@ -141,7 +119,7 @@ export default function Registrations({
                     onFinish: () => {
                         setRejectTarget(null);
                         setRejectBulk(false);
-                        setSelected([]);
+                        clear();
                     },
                 },
             );
@@ -165,54 +143,21 @@ export default function Registrations({
             <PageHeader title={t('registrations')} description={t('approve_reject_desc')} />
 
             {/* Status tabs */}
-            <div className="mb-4 flex flex-wrap gap-2">
-                {STATUS_TABS.map((status) => (
-                    <button
-                        key={status}
-                        type="button"
-                        onClick={() => visit({ status })}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                            filters.status === status
-                                ? 'border-primary bg-primary text-primary-foreground'
-                                : 'bg-card text-muted-foreground hover:bg-muted'
-                        }`}
-                    >
-                        {t(status)}
-                        <span
-                            className={`rounded-full px-1.5 text-xs ${
-                                filters.status === status
-                                    ? 'bg-white/20'
-                                    : 'bg-muted text-muted-foreground'
-                            }`}
-                        >
-                            {counts[status] ?? 0}
-                        </span>
-                    </button>
-                ))}
-                <button
-                    type="button"
-                    onClick={() => visit({ status: 'all' })}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                        filters.status === 'all'
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'bg-card text-muted-foreground hover:bg-muted'
-                    }`}
-                >
-                    {t('all')}
-                    <span
-                        className={`rounded-full px-1.5 text-xs ${
-                            filters.status === 'all' ? 'bg-white/20' : 'bg-muted text-muted-foreground'
-                        }`}
-                    >
-                        {counts.all ?? 0}
-                    </span>
-                </button>
-            </div>
+            <FilterTabs
+                value={filters.status}
+                onChange={(status) => visit({ status })}
+                tabs={[
+                    { value: 'pending', label: t('pending'), count: counts.pending ?? 0 },
+                    { value: 'active', label: t('active'), count: counts.active ?? 0 },
+                    { value: 'rejected', label: t('rejected'), count: counts.rejected ?? 0 },
+                    { value: 'all', label: t('all'), count: counts.all ?? 0 },
+                ]}
+            />
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
                     <Select value={filters.role} onValueChange={(v) => visit({ role: v })}>
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger className="w-40" aria-label={t('role')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -222,21 +167,22 @@ export default function Registrations({
                         </SelectContent>
                     </Select>
                     <div className="relative min-w-56 flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t('search_users')}
+                            aria-label={t('search_users')}
                             className="pl-9"
                         />
                     </div>
                 </div>
 
                 {selected.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2">
-                        <span className="text-xs font-medium">
-                            {selected.length} {t('selected')}
-                        </span>
+                    <BulkActionBar count={selected.length} onClear={clear}>
                         <Button size="sm" className="gap-1.5" onClick={() => runBulk('approve')}>
                             <Check className="size-4" />
                             {t('approve_selected')}
@@ -250,10 +196,7 @@ export default function Registrations({
                             <X className="size-4" />
                             {t('reject_selected')}
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
-                            {t('clear_selection')}
-                        </Button>
-                    </div>
+                    </BulkActionBar>
                 )}
 
                 {rows.length === 0 ? (
@@ -276,6 +219,7 @@ export default function Registrations({
                                                     className="size-4 shrink-0 accent-primary"
                                                     checked={selected.includes(user.id)}
                                                     onChange={() => toggle(user.id)}
+                                                    aria-label={`${t('select')} ${user.name}`}
                                                 />
                                                 <span className="truncate font-medium">{user.name}</span>
                                             </label>
@@ -350,6 +294,7 @@ export default function Registrations({
                                                     className="size-4 accent-primary"
                                                     checked={selected.includes(user.id)}
                                                     onChange={() => toggle(user.id)}
+                                                    aria-label={`${t('select')} ${user.name}`}
                                                 />
                                             </TableCell>
                                             <TableCell className="font-medium">{user.name}</TableCell>

@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import { Calculator, History, Save, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import IconButton from '@/Components/icon-button';
 import PageHeader from '@/Components/page-header';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -89,7 +90,7 @@ export default function Fees({ feeSettings, centres, activeCentreId, current }: 
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <Label className="text-xs text-muted-foreground">{t('fee_rate_for')}</Label>
                 <Select value={scope} onValueChange={setScope}>
-                    <SelectTrigger className="w-56">
+                    <SelectTrigger className="w-56" aria-label={t('fee_rate_for')}>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -202,14 +203,13 @@ export default function Fees({ feeSettings, centres, activeCentreId, current }: 
                                     </p>
                                 </div>
                                 {fee.is_active && (
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="text-destructive"
+                                    <IconButton
+                                        destructive
+                                        label={t('deactivate')}
                                         onClick={() => deactivate(fee)}
                                     >
                                         <Trash2 className="size-4" />
-                                    </Button>
+                                    </IconButton>
                                 )}
                             </div>
                         ))

@@ -100,7 +100,7 @@ export default function ParentActivities({
                                                         />
                                                         <span className="flex-1 truncate">{label}</span>
                                                         <span
-                                                            className={`font-semibold ${yes ? 'text-emerald-600' : 'text-muted-foreground'}`}
+                                                            className={`font-semibold ${yes ? 'text-emerald-700' : 'text-muted-foreground'}`}
                                                         >
                                                             {yes ? 'Yes' : 'No'}
                                                         </span>

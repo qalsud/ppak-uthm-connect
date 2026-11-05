@@ -30,12 +30,7 @@ class PaymentController extends Controller
         $centreId = ActiveCentre::id();
 
         // Fee records belong to a centre through their child.
-        $inCentre = fn ($q) => $q->when(
-            $centreId,
-            fn ($qq) => $qq->whereHas('student', fn ($s) => $s->where('centre_id', $centreId)),
-        );
-
-        $query = $inCentre(FinancialRecord::query()->with('student:id,name,class'));
+        $query = FinancialRecord::query()->with('student:id,name,class')->forActiveCentre();
 
         if ($request->filled('month')) {
             $query->where('month', $request->string('month'));
@@ -73,14 +68,16 @@ class PaymentController extends Controller
             'students' => Student::query()->active()->forActiveCentre()->orderBy('name')->get(['id', 'name', 'class']),
             'fee' => FeeSetting::current($centreId),
             'summary' => [
-                'collected_month' => (float) $inCentre(FinancialRecord::query())
+                'collected_month' => (float) FinancialRecord::query()
+                    ->forActiveCentre()
                     ->where('status', 'paid')
                     ->where('month', $currentMonth)
                     ->sum('amount'),
-                'outstanding' => (float) $inCentre(FinancialRecord::query())
+                'outstanding' => (float) FinancialRecord::query()
+                    ->forActiveCentre()
                     ->where('status', 'unpaid')
                     ->sum('amount'),
-                'unpaid_count' => $inCentre(FinancialRecord::query())->where('status', 'unpaid')->count(),
+                'unpaid_count' => FinancialRecord::query()->forActiveCentre()->where('status', 'unpaid')->count(),
                 'current_month' => $currentMonth,
             ],
             'filters' => [

@@ -1,10 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
 import { AlertTriangle, CalendarPlus, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
 import EmptyState from '@/Components/empty-state';
 import FormDialog from '@/Components/form-dialog';
+import IconButton from '@/Components/icon-button';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatCard from '@/Components/stat-card';
@@ -29,6 +30,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { useI18n } from '@/lib/i18n';
+import { useServerSearch } from '@/lib/hooks';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { Paginator } from '@/types';
@@ -69,31 +71,16 @@ export default function Payments({ records, months, classes, students, fee, summ
     const [genOpen, setGenOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<PaymentRecord | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<PaymentRecord | null>(null);
-    const [search, setSearch] = useState(filters.search);
-    const firstRender = useRef(true);
 
     const rows = records.data;
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                router.get(
-                    '/admin/payments',
-                    { ...filters, search },
-                    { preserveState: true, preserveScroll: true, replace: true },
-                );
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(filters.search, (value) =>
+        router.get(
+            '/admin/payments',
+            { ...filters, search: value },
+            { preserveState: true, preserveScroll: true, replace: true },
+        ),
+    );
 
     const addForm = useForm({ student_id: '', month: '', overtime_hours: '0' });
     const genForm = useForm({ month: summary.current_month });
@@ -195,7 +182,7 @@ export default function Payments({ records, months, classes, students, fee, summ
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
                     <Select value={filters.month || '__all'} onValueChange={(v) => applyFilter('month', v)}>
-                        <SelectTrigger className="w-44">
+                        <SelectTrigger className="w-44" aria-label={t('month')}>
                             <SelectValue placeholder={t('month')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -208,7 +195,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                         </SelectContent>
                     </Select>
                     <Select value={filters.class || '__all'} onValueChange={(v) => applyFilter('class', v)}>
-                        <SelectTrigger className="w-44">
+                        <SelectTrigger className="w-44" aria-label={t('class')}>
                             <SelectValue placeholder={t('class')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -221,7 +208,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                         </SelectContent>
                     </Select>
                     <Select value={filters.status || '__all'} onValueChange={(v) => applyFilter('status', v)}>
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger className="w-40" aria-label={t('status')}>
                             <SelectValue placeholder={t('status')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -235,11 +222,15 @@ export default function Payments({ records, months, classes, students, fee, summ
                         {t('overtime_rate')}: RM {Number(fee.overtime_rate).toFixed(2)}/h
                     </span>
                     <div className="relative w-full min-w-56 sm:w-auto sm:flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t('search_students')}
+                            aria-label={t('search_students')}
                             className="pl-9"
                         />
                     </div>
@@ -291,14 +282,14 @@ export default function Payments({ records, months, classes, students, fee, summ
                                     </div>
                                     <div className="mt-3 flex gap-2">
                                         {record.status === 'paid' && (
-                                            <Button size="sm" variant="ghost" asChild title={t('view_receipt')}>
+                                            <IconButton asChild label={t('view_receipt')}>
                                                 <a
                                                     href={route('admin.payments.receipt', { record: record.id })}
                                                     className="gap-1"
                                                 >
                                                     <Receipt className="size-4" />
                                                 </a>
-                                            </Button>
+                                            </IconButton>
                                         )}
                                         <Button
                                             size="sm"
@@ -310,22 +301,16 @@ export default function Payments({ records, months, classes, students, fee, summ
                                         >
                                             {record.status === 'unpaid' ? t('mark_paid') : t('mark_unpaid')}
                                         </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => openEdit(record)}
-                                            title={t('edit')}
-                                        >
+                                        <IconButton label={t('edit')} onClick={() => openEdit(record)}>
                                             <Pencil className="size-4" />
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="text-destructive"
+                                        </IconButton>
+                                        <IconButton
+                                            destructive
+                                            label={t('delete')}
                                             onClick={() => setDeleteTarget(record)}
                                         >
                                             <Trash2 className="size-4" />
-                                        </Button>
+                                        </IconButton>
                                     </div>
                                 </div>
                             ))}
@@ -352,7 +337,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                 {record.student.name}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap">{classLabel(record.student.class)}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {record.month}
                                                 {record.due_on && (
                                                     <span
@@ -368,7 +353,9 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                 )}
                                             </TableCell>
                                             <TableCell>{Number(record.overtime_hours)}h</TableCell>
-                                            <TableCell>RM {Number(record.amount).toFixed(2)}</TableCell>
+                                            <TableCell className="whitespace-nowrap">
+                                                RM {Number(record.amount).toFixed(2)}
+                                            </TableCell>
                                             <TableCell>
                                                 <StatusBadge
                                                     status={record.status}
@@ -378,12 +365,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                             <TableCell className="whitespace-nowrap">{record.paid_on ?? '—'}</TableCell>
                                             <TableCell className="whitespace-nowrap text-right">
                                                 {record.status === 'paid' && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        asChild
-                                                        title={t('view_receipt')}
-                                                    >
+                                                    <IconButton asChild label={t('view_receipt')}>
                                                         <a
                                                             href={route('admin.payments.receipt', {
                                                                 record: record.id,
@@ -391,7 +373,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                         >
                                                             <Receipt className="size-4" />
                                                         </a>
-                                                    </Button>
+                                                    </IconButton>
                                                 )}
                                                 <Button
                                                     size="sm"
@@ -406,23 +388,20 @@ export default function Payments({ records, months, classes, students, fee, summ
                                                 >
                                                     {record.status === 'unpaid' ? t('mark_paid') : t('mark_unpaid')}
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
+                                                <IconButton
+                                                    label={t('edit')}
                                                     className="mr-1"
                                                     onClick={() => openEdit(record)}
-                                                    title={t('edit')}
                                                 >
                                                     <Pencil className="size-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-destructive"
+                                                </IconButton>
+                                                <IconButton
+                                                    destructive
+                                                    label={t('delete')}
                                                     onClick={() => setDeleteTarget(record)}
                                                 >
                                                     <Trash2 className="size-4" />
-                                                </Button>
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))}

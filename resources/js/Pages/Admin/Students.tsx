@@ -7,6 +7,7 @@ import CentreFilter from '@/Components/centre-filter';
 import ConfirmDialog from '@/Components/confirm-dialog';
 import CsvImportDialog from '@/Components/csv-import-dialog';
 import EmptyState from '@/Components/empty-state';
+import FilterTabs from '@/Components/filter-tabs';
 import FormDialog from '@/Components/form-dialog';
 import IconButton from '@/Components/icon-button';
 import ImportReport from '@/Components/import-report';
@@ -269,36 +270,16 @@ export default function Students({
             <ImportReport />
 
             {/* Status tabs */}
-            <div className="mb-4 flex flex-wrap gap-2">
-                {[
-                    { value: 'active', label: t('active') },
-                    { value: 'withdrawn', label: t('withdrawn') },
-                    { value: 'graduated', label: t('graduated') },
-                    { value: 'all', label: t('all') },
-                ].map((tab) => (
-                    <button
-                        key={tab.value}
-                        type="button"
-                        onClick={() => visit({ status: tab.value })}
-                        className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                            filters.status === tab.value
-                                ? 'border-primary bg-primary text-primary-foreground'
-                                : 'bg-card text-muted-foreground hover:bg-muted'
-                        }`}
-                    >
-                        {tab.label}
-                        <span
-                            className={`rounded-full px-1.5 text-xs ${
-                                filters.status === tab.value
-                                    ? 'bg-white/20'
-                                    : 'bg-muted text-muted-foreground'
-                            }`}
-                        >
-                            {counts[tab.value] ?? 0}
-                        </span>
-                    </button>
-                ))}
-            </div>
+            <FilterTabs
+                value={filters.status}
+                onChange={(value) => visit({ status: value })}
+                tabs={[
+                    { value: 'active', label: t('active'), count: counts.active ?? 0 },
+                    { value: 'withdrawn', label: t('withdrawn'), count: counts.withdrawn ?? 0 },
+                    { value: 'graduated', label: t('graduated'), count: counts.graduated ?? 0 },
+                    { value: 'all', label: t('all'), count: counts.all ?? 0 },
+                ]}
+            />
 
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <ListToolbar
@@ -500,7 +481,7 @@ export default function Students({
                                                     </span>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="whitespace-nowrap text-right">
                                                 <IconButton asChild label={t('view')} className="mr-1">
                                                     <Link
                                                         href={route('admin.students.show', {

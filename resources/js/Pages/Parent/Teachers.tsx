@@ -43,7 +43,7 @@ export default function ParentTeachers({ teachers }: { teachers: Teacher[] }) {
                                     <p className="truncate font-semibold">{teacher.name}</p>
                                     <a
                                         href={`mailto:${teacher.email}`}
-                                        className="flex items-center gap-1.5 truncate text-xs text-muted-foreground"
+                                        className="flex min-h-6 items-center gap-1.5 truncate py-1 text-xs text-muted-foreground"
                                     >
                                         <Mail className="size-3.5" />
                                         {teacher.email}
@@ -51,7 +51,7 @@ export default function ParentTeachers({ teachers }: { teachers: Teacher[] }) {
                                     {teacher.phone && (
                                         <a
                                             href={`tel:${teacher.phone}`}
-                                            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                                            className="flex min-h-6 items-center gap-1.5 py-1 text-xs text-muted-foreground"
                                         >
                                             <Phone className="size-3.5" />
                                             {teacher.phone}

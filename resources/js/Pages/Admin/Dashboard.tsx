@@ -1,4 +1,4 @@
-﻿import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowDownRight,
     ArrowUpRight,
@@ -120,8 +120,8 @@ export default function AdminDashboard() {
     const actions = [
         { label: t('add') + ' ' + t('student'), href: '/admin/students?create=1', icon: GraduationCap, tint: 'bg-sky-100 text-sky-600' },
         { label: t('registrations'), href: '/admin/registrations', icon: ClipboardList, tint: 'bg-violet-100 text-violet-600' },
-        { label: t('memos'), href: '/admin/memos', icon: FileText, tint: 'bg-amber-100 text-amber-600' },
-        { label: t('fee_settings'), href: '/admin/fees', icon: Settings, tint: 'bg-emerald-100 text-emerald-600' },
+        { label: t('memos'), href: '/admin/memos', icon: FileText, tint: 'bg-amber-100 text-amber-700' },
+        { label: t('fee_settings'), href: '/admin/fees', icon: Settings, tint: 'bg-emerald-100 text-emerald-700' },
     ];
 
     return (
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
                                     RM {tiles.unpaid_amount.toFixed(2)}
                                 </p>
                             </div>
-                            <Wallet className="size-7 text-amber-600" />
+                            <Wallet className="size-7 text-amber-700" />
                         </CardContent>
                     </Card>
                 </Link>
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
                                     router.get('/admin', { year: v }, { preserveState: true, preserveScroll: true })
                                 }
                             >
-                                <SelectTrigger className="h-8 w-24">
+                                <SelectTrigger className="h-8 w-24" aria-label={t('year')}>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

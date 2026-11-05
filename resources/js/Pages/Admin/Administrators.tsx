@@ -11,7 +11,7 @@ import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
-import StatusFilter from '@/Components/status-filter';
+import StatusFilter, { ACCOUNT_STATUSES } from '@/Components/status-filter';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
 import { FormField, FormGrid } from '@/Components/ui/form-field';
@@ -45,7 +45,7 @@ type Admin = {
     created_at: string;
 };
 
-const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
+const STATUSES = ACCOUNT_STATUSES;
 
 export default function Administrators({
     admins,
@@ -216,7 +216,7 @@ export default function Administrators({
                                             <TableCell className="text-xs text-muted-foreground">
                                                 {admin.created_at}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="whitespace-nowrap text-right">
                                                 <IconButton
                                                     label={t('edit')}
                                                     className="mr-1"

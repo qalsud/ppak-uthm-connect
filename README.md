@@ -133,7 +133,7 @@ and it seeds the demo on first boot.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 248 tests / 1756 assertions
+php artisan test      # Pest - 261 tests / 1795 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 npm run build         # tsc typecheck + Vite production build
 ```
@@ -201,7 +201,7 @@ resources/js/Components/           chat-inbox, photo-upload/photo-thumb, rating-
 resources/views/pdf/               receipt templates
 config/media.php                   photo pipeline defaults (overridable at /admin/settings)
 database/seeders/DatabaseSeeder.php full demo dataset (centres, attendance, health, growth, fees, chat)
-tests/Feature/                     Pest feature suite (248 tests)
+tests/Feature/                     Pest feature suite (261 tests)
 lang/en.json · lang/ms.json        bilingual keys
 ```
 
@@ -222,13 +222,15 @@ lang/en.json · lang/ms.json        bilingual keys
 
 ## Continuing this work (handoff)
 
-**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **248 tests /
-1756 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
+**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **261 tests /
+1795 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
 **Every planned phase of [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) is complete**
-(F · A · C · G · B · E · D) and the **issue register is clear**. This session added phases
+(F · A · C · G · B · E · D) and the **issue register is clear**. Sessions have since added phases
 **B** (settings + versioned per-centre fees, editable records, Stripe refunds), **E** (oversight
-views) and **D** (admin accounts), a full **UI/i18n sweep**, and an **enriched seeder** so a fresh
-`migrate:fresh --seed` produces a complete two-centre demo.
+views) and **D** (admin accounts), a full **UI/i18n sweep**, an **enriched seeder** so a fresh
+`migrate:fresh --seed` produces a complete two-centre demo, **realtime chat (Reverb)**, **memo
+photos**, a **progress-report PDF**, and a **UI/refactor pass** (shared list primitives, WCAG
+colour/contrast fixes, and Lighthouse 100 across all main portals).
 
 **Live demo:** stopped — the Cloudflare quick tunnel URL is no longer live. To bring it back, follow
 [`DEPLOY.md`](DEPLOY.md) (the URL changes on each restart, so regenerate the demo PDF too).

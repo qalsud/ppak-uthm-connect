@@ -1,4 +1,4 @@
-﻿import { Link, router, usePage } from '@inertiajs/react';
+﻿import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronDown, LifeBuoy, LogOut, MessageSquare } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
@@ -50,7 +50,11 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
     );
 
     const activeNav = allNav.find((item) => item.href === activeHref);
-    const heading = title ?? (activeNav ? t(activeNav.label) : t('dashboard'));
+    const activeLabel = activeNav ? t(activeNav.label) : null;
+    // Prefer the page name over the portal name, so the top bar says
+    // "Students" rather than "Admin" on every screen.
+    const heading = activeLabel ?? title ?? t('dashboard');
+    const pageTitle = activeLabel ?? heading;
 
     // Collapsible nav groups (e.g. admin → Teacher views). Auto-open the group
     // that contains the current page so the active link is always visible.
@@ -82,6 +86,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 
     return (
         <div className="min-h-screen bg-background">
+            <Head title={pageTitle} />
             <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
@@ -107,7 +112,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                             aria-label={t('main_navigation')}
                             className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
                         >
-                            {nav.map((item, index) =>
+                            {nav.map((item) =>
                                 item.children ? (
                                     <div key={item.label}>
                                         <button
@@ -150,7 +155,6 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         key={item.href}
                                         item={item}
                                         active={isActive(item.href)}
-                                        isNew={index === 0}
                                         badge={item.label === 'messages' ? unreadMessages : 0}
                                     />
                                 ),
@@ -164,9 +168,9 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                 className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-white"
                             >
                                 <LifeBuoy className="size-4 shrink-0" />
-                                Support
+                                {t('support')}
                             </a>
-                            <p className="truncate px-3 pt-1 text-[11px] text-sidebar-foreground/50">
+                            <p className="truncate px-3 pt-1 text-[11px] text-sidebar-foreground/70">
                                 {user?.email}
                             </p>
                         </div>
@@ -183,9 +187,9 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         <Logo chip className="size-8" />
                                     </Link>
                                 )}
-                                <h1 className="truncate text-lg font-semibold text-foreground">
+                                <p className="truncate text-lg font-semibold text-foreground">
                                     {heading}
-                                </h1>
+                                </p>
                             </div>
 
                             <div className="flex items-center gap-1.5">
@@ -211,7 +215,9 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                     </Button>
                                 )}
                                 <NotificationBell />
-                                {nav.length === 0 && <LanguageSwitcher />}
+                                <div className="hidden lg:block">
+                                    <LanguageSwitcher />
+                                </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" className="gap-2 pl-1.5 pr-3">
@@ -319,13 +325,11 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
 function SidebarLink({
     item,
     active,
-    isNew,
     badge = 0,
     compact = false,
 }: {
     item: NavItem;
     active: boolean;
-    isNew?: boolean;
     badge?: number;
     /** Nested link inside a collapsed group — smaller and indented. */
     compact?: boolean;
@@ -349,11 +353,6 @@ function SidebarLink({
             {badge > 0 && (
                 <span className="rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
                     {badge > 9 ? '9+' : badge}
-                </span>
-            )}
-            {isNew && !active && (
-                <span className="rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
-                    New
                 </span>
             )}
         </Link>

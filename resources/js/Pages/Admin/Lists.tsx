@@ -95,6 +95,7 @@ function OptionRow({ option, group }: { option: Option; group: string }) {
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 onBlur={save}
+                aria-label={t('label')}
                 className="h-9 flex-1 basis-40"
             />
             <Input
@@ -222,6 +223,7 @@ export default function AdminLists() {
                                         value={addForm.data.key}
                                         onChange={(e) => addForm.setData('key', e.target.value)}
                                         placeholder={t('value_placeholder')}
+                                        aria-label={t('value')}
                                         className="h-9 w-32 font-mono text-xs"
                                     />
                                 </div>
@@ -230,6 +232,7 @@ export default function AdminLists() {
                                     <Input
                                         value={addForm.data.label}
                                         onChange={(e) => addForm.setData('label', e.target.value)}
+                                        aria-label={t('label')}
                                         className="h-9"
                                     />
                                 </div>

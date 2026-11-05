@@ -1,6 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { Download, MessageSquare, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
@@ -18,6 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
 import { useClassLabel as useClassLabelHook } from '@/lib/lists';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
@@ -50,29 +50,14 @@ export default function AdminConversations() {
     const classLabel = useClassLabelHook();
     const { props } = usePage<PageProps<{ conversations: Paginator<Row>; filters: { search: string } }>>();
     const conversations = props.conversations;
-    const [search, setSearch] = useState(props.filters.search);
-    const firstRender = useRef(true);
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== props.filters.search) {
-                router.get('/admin/conversations', search ? { search } : {}, {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(props.filters.search, (value) =>
+        router.get(
+            '/admin/conversations',
+            value ? { search: value } : {},
+            { preserveState: true, preserveScroll: true, replace: true },
+        ),
+    );
 
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
@@ -88,11 +73,15 @@ export default function AdminConversations() {
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <div className="flex items-center gap-3 border-b px-4 py-3">
                     <div className="relative min-w-56 flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t('search_students')}
+                            aria-label={t('search_students')}
                             className="pl-9"
                         />
                     </div>

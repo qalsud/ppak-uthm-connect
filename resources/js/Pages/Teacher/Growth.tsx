@@ -85,7 +85,7 @@ export default function TeacherGrowth({
                 ) : (
                     <div className="w-40">
                         <Select value={selectedClass ?? undefined} onValueChange={(v) => reload({ class: v })}>
-                            <SelectTrigger>
+                            <SelectTrigger aria-label={t('class')}>
                                 <SelectValue placeholder={t('class')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -114,7 +114,7 @@ export default function TeacherGrowth({
                                 value={form.data.student_id}
                                 onValueChange={(v) => form.setData('student_id', v)}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger aria-label={t('child')}>
                                     <SelectValue placeholder={t('child')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -131,6 +131,7 @@ export default function TeacherGrowth({
                             <Input
                                 type="date"
                                 max={localDate()}
+                                aria-label={t('date')}
                                 value={form.data.date}
                                 onChange={(e) => form.setData('date', e.target.value)}
                             />
@@ -141,6 +142,7 @@ export default function TeacherGrowth({
                                 type="number"
                                 step="0.1"
                                 inputMode="decimal"
+                                aria-label={t('height_cm')}
                                 value={form.data.height_cm}
                                 onChange={(e) => form.setData('height_cm', e.target.value)}
                             />
@@ -151,6 +153,7 @@ export default function TeacherGrowth({
                                 type="number"
                                 step="0.1"
                                 inputMode="decimal"
+                                aria-label={t('weight_kg')}
                                 value={form.data.weight_kg}
                                 onChange={(e) => form.setData('weight_kg', e.target.value)}
                             />
@@ -158,6 +161,7 @@ export default function TeacherGrowth({
                         <div className="space-y-1">
                             <Label>{t('notes')}</Label>
                             <Input
+                                aria-label={t('notes')}
                                 value={form.data.notes}
                                 onChange={(e) => form.setData('notes', e.target.value)}
                             />

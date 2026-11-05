@@ -78,7 +78,7 @@ export default function Activities({
                                 value={form.data.student_id}
                                 onValueChange={(v) => form.setData('student_id', v)}
                             >
-                                <SelectTrigger className="h-11">
+                                <SelectTrigger className="h-11" aria-label={t('student')}>
                                     <SelectValue placeholder={t('select_student')} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -98,6 +98,7 @@ export default function Activities({
                             <Input
                                 type="date"
                                 className="h-11"
+                                aria-label={t('date')}
                                 value={form.data.date}
                                 max={today}
                                 onChange={(e) => form.setData('date', e.target.value)}
@@ -126,7 +127,7 @@ export default function Activities({
                                     <span className="text-[13px] font-medium">{label}</span>
                                     <span
                                         className={`text-[11px] font-semibold ${
-                                            yes ? 'text-emerald-600' : 'text-muted-foreground'
+                                            yes ? 'text-emerald-700' : 'text-muted-foreground'
                                         }`}
                                     >
                                         {yes ? '✓ Yes' : 'No'}
@@ -140,6 +141,7 @@ export default function Activities({
                         <Label>Treatment / {t('notes')}</Label>
                         <Textarea
                             rows={2}
+                            aria-label={`Treatment / ${t('notes')}`}
                             value={form.data.treatment_notes}
                             onChange={(e) => form.setData('treatment_notes', e.target.value)}
                         />

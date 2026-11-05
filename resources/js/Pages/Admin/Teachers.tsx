@@ -15,7 +15,7 @@ import MobileRecordCard from '@/Components/mobile-record-card';
 import PageHeader from '@/Components/page-header';
 import Pagination from '@/Components/pagination';
 import StatusBadge from '@/Components/status-badge';
-import StatusFilter from '@/Components/status-filter';
+import StatusFilter, { ACCOUNT_STATUSES } from '@/Components/status-filter';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -55,7 +55,7 @@ type Teacher = {
     centre_ids?: number[];
 };
 
-const STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
+const STATUSES = ACCOUNT_STATUSES;
 
 
 export default function Teachers({
@@ -266,7 +266,7 @@ export default function Teachers({
                                                             .join(' · ')}
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 font-medium text-amber-600">
+                                                    <span className="inline-flex items-center gap-1 font-medium text-amber-700">
                                                         <AlertTriangle className="size-3" aria-hidden="true" />
                                                         {t('unrestricted_all_centres')}
                                                     </span>
@@ -333,7 +333,7 @@ export default function Teachers({
                                             <TableCell className="font-medium">{teacher.name}</TableCell>
                                             <TableCell>{teacher.ic_number ?? '—'}</TableCell>
                                             <TableCell>{teacher.email}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {teacher.class ? (
                                                     classLabel(teacher.class)
                                                 ) : (
@@ -351,7 +351,7 @@ export default function Teachers({
                                                     </div>
                                                 ) : (
                                                     <span
-                                                        className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+                                                        className="inline-flex items-center gap-1 text-xs font-medium text-amber-700"
                                                         title={t('teacher_centres_hint')}
                                                     >
                                                         <AlertTriangle className="size-3.5" />
@@ -363,7 +363,7 @@ export default function Teachers({
                                             <TableCell>
                                                 <StatusBadge status={teacher.status} label={t(teacher.status)} />
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="whitespace-nowrap text-right">
                                                 <IconButton
                                                     label={t('edit')}
                                                     className="mr-1"
@@ -490,7 +490,7 @@ export default function Teachers({
                                 })}
                             </div>
                             {form.data.centre_ids.length === 0 && (
-                                <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+                                <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-700">
                                     <AlertTriangle className="size-3.5" />
                                     {t('unrestricted_warning')}
                                 </p>

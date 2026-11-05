@@ -53,8 +53,8 @@ export default function ParentDashboard() {
     const actions = [
         { label: t('daily_update'), href: '/parent/daily-update', icon: CalendarCheck, tint: 'bg-sky-100 text-sky-600' },
         { label: t('activities'), href: '/parent/activities', icon: BookOpen, tint: 'bg-violet-100 text-violet-600' },
-        { label: t('financials'), href: '/parent/financials', icon: Wallet, tint: 'bg-emerald-100 text-emerald-600' },
-        { label: t('messages'), href: '/parent/messages', icon: MessagesSquare, tint: 'bg-amber-100 text-amber-600' },
+        { label: t('financials'), href: '/parent/financials', icon: Wallet, tint: 'bg-emerald-100 text-emerald-700' },
+        { label: t('messages'), href: '/parent/messages', icon: MessagesSquare, tint: 'bg-amber-100 text-amber-700' },
     ];
 
     return (
@@ -69,7 +69,7 @@ export default function ParentDashboard() {
             {unpaidTotal > 0 && (
                 <Link href="/parent/financials">
                     <Card className="mb-5 flex items-center gap-3 rounded-2xl border-amber-200 bg-amber-50 p-4 shadow-none">
-                        <AlertTriangle className="size-5 shrink-0 text-amber-600" />
+                        <AlertTriangle className="size-5 shrink-0 text-amber-700" />
                         <div className="flex-1">
                             <p className="text-sm font-semibold text-amber-800">
                                 Outstanding balance
@@ -78,7 +78,7 @@ export default function ParentDashboard() {
                                 RM {unpaidTotal.toFixed(2)} due — tap to pay
                             </p>
                         </div>
-                        <ChevronRight className="size-5 text-amber-600" />
+                        <ChevronRight className="size-5 text-amber-700" />
                     </Card>
                 </Link>
             )}

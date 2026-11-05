@@ -106,7 +106,7 @@ export default function ParentFinancials({
                                         </p>
                                         <p
                                             className={`text-xl font-bold ${
-                                                child.totals.unpaid > 0 ? 'text-amber-600' : 'text-emerald-600'
+                                                child.totals.unpaid > 0 ? 'text-amber-700' : 'text-emerald-700'
                                             }`}
                                         >
                                             RM {child.totals.unpaid.toFixed(2)}

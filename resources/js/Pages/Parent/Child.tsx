@@ -169,7 +169,7 @@ export default function ParentChild() {
                             <div>
                                 <p className="text-xs text-muted-foreground">{t('outstanding')}</p>
                                 <p
-                                    className={`text-xl font-bold ${child.unpaid > 0 ? 'text-amber-600' : 'text-emerald-600'}`}
+                                    className={`text-xl font-bold ${child.unpaid > 0 ? 'text-amber-700' : 'text-emerald-700'}`}
                                 >
                                     RM {child.unpaid.toFixed(2)}
                                 </p>
@@ -491,7 +491,7 @@ export default function ParentChild() {
                                                         className={`size-1.5 rounded-full ${yes ? 'bg-emerald-500' : 'bg-muted-foreground/40'}`}
                                                     />
                                                     <span className="flex-1 truncate">{label}</span>
-                                                    <span className={yes ? 'text-emerald-600' : 'text-muted-foreground'}>
+                                                    <span className={yes ? 'text-emerald-700' : 'text-muted-foreground'}>
                                                         {yes ? t('yes') : t('no')}
                                                     </span>
                                                 </div>
@@ -524,19 +524,23 @@ export default function ParentChild() {
                 <CardContent>
                     <div className="mb-3 flex flex-wrap items-end gap-3 rounded-xl border bg-muted/20 p-3">
                         <div className="w-full space-y-1 md:w-40">
-                            <Label className="text-[11px]">{t('from')}</Label>
+                            <Label className="text-[11px]" htmlFor="report-from">{t('from')}</Label>
                             <Input
+                                id="report-from"
                                 type="date"
                                 className="h-9"
+                                aria-label={t('from')}
                                 value={reportFrom}
                                 onChange={(e) => setReportFrom(e.target.value)}
                             />
                         </div>
                         <div className="w-full space-y-1 md:w-40">
-                            <Label className="text-[11px]">{t('to')}</Label>
+                            <Label className="text-[11px]" htmlFor="report-to">{t('to')}</Label>
                             <Input
+                                id="report-to"
                                 type="date"
                                 className="h-9"
+                                aria-label={t('to')}
                                 value={reportTo}
                                 onChange={(e) => setReportTo(e.target.value)}
                             />

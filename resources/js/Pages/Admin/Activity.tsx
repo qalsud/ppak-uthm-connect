@@ -1,6 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
 import { Download, History, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
 import PageHeader from '@/Components/page-header';
@@ -24,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useServerSearch } from '@/lib/hooks';
 import { useI18n } from '@/lib/i18n';
 import { adminBottomNav, adminNav } from '@/lib/navigation';
 import type { PageProps } from '@/types';
@@ -65,9 +65,6 @@ export default function Activity() {
     const { props } = usePage<Page>();
     const { logs, users, actions, filters } = props;
 
-    const [search, setSearch] = useState(filters.search);
-    const firstRender = useRef(true);
-
     const visit = (params: Partial<Filters>) => {
         const next: Filters = {
             search: params.search ?? search,
@@ -86,22 +83,7 @@ export default function Activity() {
         });
     };
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-
-            return;
-        }
-
-        const id = setTimeout(() => {
-            if (search !== filters.search) {
-                visit({ search });
-            }
-        }, 350);
-
-        return () => clearTimeout(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    const [search, setSearch] = useServerSearch(filters.search, (value) => visit({ search: value }));
 
     const exportQuery = new URLSearchParams(
         Object.entries(filters).filter(([, value]) => value !== ''),
@@ -121,7 +103,7 @@ export default function Activity() {
             <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 border-b px-4 py-3">
                     <Select value={filters.user || '__all'} onValueChange={(v) => visit({ user: v === '__all' ? '' : v })}>
-                        <SelectTrigger className="w-44">
+                        <SelectTrigger className="w-44" aria-label={t('user')}>
                             <SelectValue placeholder={t('user')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -138,7 +120,7 @@ export default function Activity() {
                         value={filters.action || '__all'}
                         onValueChange={(v) => visit({ action: v === '__all' ? '' : v })}
                     >
-                        <SelectTrigger className="w-48">
+                        <SelectTrigger className="w-48" aria-label={t('action')}>
                             <SelectValue placeholder={t('action')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -167,11 +149,15 @@ export default function Activity() {
                     />
 
                     <div className="relative min-w-56 flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={t('search_activity')}
+                            aria-label={t('search_activity')}
                             className="pl-9"
                         />
                     </div>

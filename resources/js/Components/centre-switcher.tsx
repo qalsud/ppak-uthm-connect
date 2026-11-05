@@ -42,7 +42,7 @@ export default function CentreSwitcher({ compact = false }: { compact?: boolean 
     if (compact) {
         return (
             <Select value={current} onValueChange={change}>
-                <SelectTrigger className="h-9 w-full">
+                <SelectTrigger className="h-9 w-full" aria-label={t('centre')}>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -59,7 +59,7 @@ export default function CentreSwitcher({ compact = false }: { compact?: boolean 
 
     return (
         <Select value={current} onValueChange={change}>
-            <SelectTrigger className="h-9 gap-2 text-xs">
+            <SelectTrigger className="h-9 gap-2 text-xs" aria-label={t('centre')}>
                 <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
                 <SelectValue />
             </SelectTrigger>

@@ -22,22 +22,21 @@ class DashboardController extends Controller
     {
         // Respect the admin's centre switcher (null = all centres).
         $centreId = ActiveCentre::id();
-        $scoped = fn ($q) => $centreId
-            ? $q->whereHas('student', fn ($s) => $s->where('centre_id', $centreId))
-            : $q;
 
         $year = (int) $request->query('year', now()->year);
         $year = max(now()->year - 5, min(now()->year + 1, $year));
 
         $lastMonth = now()->subMonthNoOverflow();
 
-        $thisMonthIncome = (float) $scoped(FinancialRecord::query())
+        $thisMonthIncome = (float) FinancialRecord::query()
+            ->forActiveCentre()
             ->where('status', 'paid')
             ->whereYear('paid_on', now()->year)
             ->whereMonth('paid_on', now()->month)
             ->sum('amount');
 
-        $lastMonthIncome = (float) $scoped(FinancialRecord::query())
+        $lastMonthIncome = (float) FinancialRecord::query()
+            ->forActiveCentre()
             ->where('status', 'paid')
             ->whereYear('paid_on', $lastMonth->year)
             ->whereMonth('paid_on', $lastMonth->month)
@@ -68,7 +67,8 @@ class DashboardController extends Controller
         $months = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'];
 
-        $incomeByMonth = $scoped(FinancialRecord::query())
+        $incomeByMonth = FinancialRecord::query()
+            ->forActiveCentre()
             ->where('status', 'paid')
             ->whereYear('paid_on', $year)
             ->get()
@@ -97,7 +97,8 @@ class DashboardController extends Controller
             ->values()
             ->all();
 
-        $recentPayments = $scoped(FinancialRecord::query())
+        $recentPayments = FinancialRecord::query()
+            ->forActiveCentre()
             ->with('student:id,name,class')
             ->latest('created_at')
             ->limit(8)
@@ -112,7 +113,8 @@ class DashboardController extends Controller
             ]);
 
         // Actionable tiles: unpaid fees this month + children not yet checked in.
-        $unpaidThisMonth = $scoped(FinancialRecord::query())
+        $unpaidThisMonth = FinancialRecord::query()
+            ->forActiveCentre()
             ->where('status', 'unpaid')
             ->where('month', now()->format('F'))
             ->get();

@@ -5,6 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <meta
+            name="description"
+            content="PPAK UTHM Connect — the official portal for the Centre for Early Childhood Education, Universiti Tun Hussein Onn Malaysia. Attendance, daily updates, progress and fees for parents, teachers and administrators."
+        />
 
         <!-- Favicon -->
         <link rel="icon" href="/images/logo-ppak.png" type="image/png" />

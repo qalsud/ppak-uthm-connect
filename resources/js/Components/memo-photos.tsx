@@ -75,7 +75,7 @@ export default function MemoPhotos({ photos }: { photos: PhotoInfo[] }) {
                         onClick={() => goTo(index - 1)}
                         disabled={index === 0}
                         aria-label={t('previous')}
-                        className="absolute left-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-opacity disabled:pointer-events-none disabled:opacity-0"
+                        className="absolute left-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white transition-opacity disabled:pointer-events-none disabled:opacity-0"
                     >
                         <ChevronLeft className="size-4" />
                     </button>
@@ -84,26 +84,31 @@ export default function MemoPhotos({ photos }: { photos: PhotoInfo[] }) {
                         onClick={() => goTo(index + 1)}
                         disabled={index === photos.length - 1}
                         aria-label={t('next')}
-                        className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white transition-opacity disabled:pointer-events-none disabled:opacity-0"
+                        className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white transition-opacity disabled:pointer-events-none disabled:opacity-0"
                     >
                         <ChevronRight className="size-4" />
                     </button>
 
-                    <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+                    <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-0.5">
                         {photos.map((photo, i) => (
                             <button
                                 key={photo.id}
                                 type="button"
                                 onClick={() => goTo(i)}
                                 aria-label={`${t('photo')} ${i + 1}`}
-                                className={`size-1.5 rounded-full transition-colors ${
-                                    i === index ? 'bg-white' : 'bg-white/50'
-                                }`}
-                            />
+                                className="flex size-6 items-center justify-center rounded-full"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={`size-1.5 rounded-full transition-colors ${
+                                        i === index ? 'bg-white' : 'bg-white/60'
+                                    }`}
+                                />
+                            </button>
                         ))}
                     </div>
 
-                    <span className="absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-medium text-white">
+                    <span className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white">
                         {index + 1}/{photos.length}
                     </span>
                 </>

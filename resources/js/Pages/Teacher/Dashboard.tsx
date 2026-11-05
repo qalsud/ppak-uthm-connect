@@ -1,4 +1,4 @@
-﻿import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BellRing,
     BookOpen,
@@ -75,8 +75,8 @@ export default function TeacherDashboard() {
     const actions = [
         { label: t('record_new'), href: '/teacher/activities', icon: CalendarCheck, tint: 'bg-sky-100 text-sky-600' },
         { label: t('progress'), href: '/teacher/progress', icon: BookOpen, tint: 'bg-violet-100 text-violet-600' },
-        { label: t('daily_updates'), href: '/teacher/daily-updates', icon: BellRing, tint: 'bg-amber-100 text-amber-600' },
-        { label: t('memos'), href: '/teacher/memos', icon: FileText, tint: 'bg-emerald-100 text-emerald-600' },
+        { label: t('daily_updates'), href: '/teacher/daily-updates', icon: BellRing, tint: 'bg-amber-100 text-amber-700' },
+        { label: t('memos'), href: '/teacher/memos', icon: FileText, tint: 'bg-emerald-100 text-emerald-700' },
     ];
 
     const [classFilter, setClassFilter] = useState('all');
@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
                     </div>
 
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-9 w-44">
+                        <SelectTrigger className="h-9 w-44" aria-label={t('status')}>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -189,11 +189,15 @@ export default function TeacherDashboard() {
                     </Select>
 
                     <div className="relative min-w-40 flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
                         <Input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder={t('search_name')}
+                            aria-label={t('search_name')}
                             className="pl-9"
                         />
                     </div>
