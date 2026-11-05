@@ -97,12 +97,11 @@ class PaymentController extends Controller
             'overtime_hours' => 'required|numeric|min:0',
         ]);
 
-        $exists = FinancialRecord::query()
-            ->where('student_id', $data['student_id'])
-            ->where('month', $data['month'])
-            ->exists();
+        $existing = $this->forMonth((int) $data['student_id'], $data['month']);
 
-        if ($exists) {
+        // A live record is a duplicate; a trashed one is restored in place so the
+        // unique (student_id, month) index can never be violated by re-adding it.
+        if ($existing && ! $existing->trashed()) {
             return back()->with('error', __('approval.duplicate_payment'));
         }
 
@@ -112,14 +111,27 @@ class PaymentController extends Controller
         $fee = FeeSetting::current($student->centre_id);
         $overtimeAmount = $data['overtime_hours'] * $fee->overtime_rate;
 
-        $record = FinancialRecord::create([
-            'student_id' => $data['student_id'],
-            'month' => $data['month'],
+        $attributes = [
             'due_on' => $this->dueDateFor($data['month']),
             'overtime_hours' => $data['overtime_hours'],
             'amount' => $fee->monthly_fee + $overtimeAmount,
             'status' => 'unpaid',
-        ]);
+            'paid_on' => null,
+            'stripe_session_id' => null,
+            'ReceiptGenerated' => false,
+        ];
+
+        if ($existing) {
+            $existing->restore();
+            $existing->update($attributes);
+            $record = $existing->fresh();
+        } else {
+            $record = FinancialRecord::create([
+                'student_id' => $data['student_id'],
+                'month' => $data['month'],
+                ...$attributes,
+            ]);
+        }
 
         if ($student?->parent) {
             Notification::send($student->parent, new FeeRecordAddedNotification($record));
@@ -144,26 +156,36 @@ class PaymentController extends Controller
         $students = Student::query()->active()->with('parent')->get();
 
         foreach ($students as $student) {
-            $exists = FinancialRecord::query()
-                ->where('student_id', $student->id)
-                ->where('month', $data['month'])
-                ->exists();
+            $existing = $this->forMonth($student->id, $data['month']);
 
-            if ($exists) {
+            if ($existing && ! $existing->trashed()) {
                 continue;
             }
 
             // A centre may have its own rate; otherwise the global rate applies.
             $fee = FeeSetting::current($student->centre_id);
 
-            $record = FinancialRecord::create([
-                'student_id' => $student->id,
-                'month' => $data['month'],
+            $attributes = [
                 'due_on' => $this->dueDateFor($data['month']),
                 'overtime_hours' => 0,
                 'amount' => $fee->monthly_fee,
                 'status' => 'unpaid',
-            ]);
+                'paid_on' => null,
+                'stripe_session_id' => null,
+                'ReceiptGenerated' => false,
+            ];
+
+            if ($existing) {
+                $existing->restore();
+                $existing->update($attributes);
+                $record = $existing->fresh();
+            } else {
+                $record = FinancialRecord::create([
+                    'student_id' => $student->id,
+                    'month' => $data['month'],
+                    ...$attributes,
+                ]);
+            }
 
             if ($student->parent) {
                 Notification::send($student->parent, new FeeRecordAddedNotification($record));
@@ -229,6 +251,18 @@ class PaymentController extends Controller
         $record->delete();
 
         return back()->with('success', __('approval.deleted'));
+    }
+
+    /**
+     * The fee record for a student/month, including a soft-deleted one. Reusing
+     * the trashed row keeps the unique index valid while preserving Trash.
+     */
+    private function forMonth(int $studentId, string $month): ?FinancialRecord
+    {
+        return FinancialRecord::withTrashed()
+            ->where('student_id', $studentId)
+            ->where('month', $month)
+            ->first();
     }
 
     /**

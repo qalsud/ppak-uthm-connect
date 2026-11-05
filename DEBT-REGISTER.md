@@ -2,8 +2,9 @@
 
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
-> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…06
-> and CODE‑05 were fixed in the same session** (see *Resolved in this pass*); the rest remain open.
+> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…06,
+> DAT‑01, OPS‑01 and CODE‑05 were fixed in the same session** (see *Resolved in this pass*); the
+> remaining P2/P3 items are still open.
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 
 ---
@@ -12,7 +13,7 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **267 passing / 1859 assertions** (34 feature files, no skipped tests) |
+| Tests | **269 passing / 1872 assertions** (34 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | PHP style | Pint **fails** on one file (`bootstrap/app.php`, line endings) |
 | Build | clean |
@@ -44,10 +45,12 @@
 | **SEC‑04** | Global search scopes students with `visibleTo()` and memos with `Memo::visibleTo()` | `AuthorizationScopingTest` |
 | **SEC‑05** | Parent memo list + dashboard count use `Memo::visibleTo()` (fixes the OR/AND bug) | `AuthorizationScopingTest` |
 | **SEC‑06** | Teacher dashboard scopes recent activities and update counts to visible students | `AuthorizationScopingTest` |
+| **DAT‑01** | `store()`/`generate()` reuse a trashed fee record (`withTrashed()` + restore) instead of violating the unique index | `PaymentsChatNotifyTest` |
+| **OPS‑01** | `DEPLOY.md` now states the queue worker is required for instant broadcast notifications; the launcher already starts it | docs |
 | **CODE‑05** | `bootstrap/app.php` line endings fixed | `vendor/bin/pint --test` passes |
 
-Suite after the fix pass: **267 tests / 1859 assertions** (6 new regression tests).
-**Still open from P1:** `DAT‑01` (soft-deleted fee + unique index) and `OPS‑01` (queue/docs mismatch).
+Suite after the fix pass: **269 tests / 1872 assertions** (8 new regression tests).
+**All P0/P1 findings in this register are now resolved.**
 
 ---
 
@@ -268,7 +271,7 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 - **Secrets:** `.env` is ignored; no keys in source.
 - **Indexes:** every FK and the hot list columns are indexed; `attendance` and `progress_records`
   have the right unique keys.
-- **Quality gates:** 267 tests / 1859 assertions; `tsc` clean; build clean; Lighthouse 100 on all
+- **Quality gates:** 269 tests / 1872 assertions; `tsc` clean; build clean; Lighthouse 100 on all
   main portals; no skipped tests; no `dd`/`dump`/`console.log`; no `as any`.
 - **Slop:** CLEAN — comments explain *why*, names are domain-specific, no mock-everything tests.
 
@@ -287,6 +290,8 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 ---
 
 ## Recommended sequence
+
+> **Status (6 Nov 2026):** steps 1–3 and the OPS‑01 docs fix are **done**. Continue at step 4.
 
 1. **Patch dependencies** — DEP‑01 (`composer update` + tests + `composer audit`).
 2. **Close the auth gaps** — SEC‑01…06 + regression tests (photo/document access, teacher inbox,

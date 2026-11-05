@@ -138,7 +138,10 @@ available"*). For a demo that's fine. To keep them, either:
 - **No scheduler** — `media:prune-photos` (3-day retention) and `fees:send-reminders` simply don't run;
   nothing breaks. Fee reminders are the only shipped feature that depends on the scheduler (Railway's
   free plan has no cron; Hobby does).
-- **No queue worker** — notifications are sent synchronously.
+- **No queue worker for mail/database notifications** — those are sent synchronously. A worker **is**
+  needed for **instant broadcast notifications** (the bell): the underlying
+  `BroadcastNotificationCreated` event is queued. Without a worker those jobs accumulate and
+  eventually fail, while the bell still falls back to its 15-second poll.
 - **No mailer** — the bell always works; **email** (approve/reject, messages, medication given, fee
   reminders) only sends once `MAIL_MAILER` points at a real SMTP/API provider.
 - **No Stripe keys** — payments show a graceful "unavailable" notice.
@@ -215,6 +218,8 @@ A short demo script:
 - [ ] Open `/admin/settings` — operational rules and the **scheduler health** panel load
 - [ ] Optional: set `MAIL_MAILER` (email) and run the scheduler (`schedule:run`) so fee reminders +
       photo pruning fire (the settings page then shows them as recently run)
+- [ ] Optional: run `php artisan queue:work` for instant broadcast notifications; without it the bell
+      falls back to polling and queued broadcast jobs accumulate
 
 ## Security when the link is public
 

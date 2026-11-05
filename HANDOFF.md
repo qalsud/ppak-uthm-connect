@@ -32,7 +32,7 @@ first in a new session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **267 passing** (`php artisan test`) |
+| Tests | **269 passing** (`php artisan test`) |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` — **106** frontend route names verified |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
@@ -46,6 +46,11 @@ register is clear**.
 
 ## What this session shipped
 
+- **Tier-1 debt sweep + P0/P1 fixes (6 Nov 2026).** Added [`DEBT-REGISTER.md`](DEBT-REGISTER.md)
+  (30 findings, P0–P3). Fixed the Symfony advisories (Laravel 12.71 / Symfony 7.4.22–23), closed the
+  cross-centre authorization gaps in photos, conversations, message search, global search, parent
+  memos and the teacher dashboard, fixed the soft-deleted fee/month duplicate-key bug, and corrected
+  the queue-worker deployment guidance. **8 regression tests** added; all P0/P1 items resolved.
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
   record card, filter tabs, accessible icon buttons). Extracted backend `Csv` + `AccountQuery`

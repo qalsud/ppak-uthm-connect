@@ -144,6 +144,59 @@ test('memo posts and activity records create notifications for parents', functio
     expect($parent->notifications()->count())->toBeGreaterThanOrEqual(2);
 });
 
+test('re-adding a deleted fee month restores the record instead of failing', function () {
+    [$parent, $student] = paymentParent();
+    $admin = User::factory()->role(UserRole::Admin)->create();
+
+    $record = FinancialRecord::where('student_id', $student->id)
+        ->where('month', 'January')
+        ->firstOrFail();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.payments.destroy', $record))
+        ->assertRedirect();
+
+    expect(FinancialRecord::withTrashed()->find($record->id)->trashed())->toBeTrue();
+
+    $this->actingAs($admin)
+        ->post(route('admin.payments.store'), [
+            'student_id' => $student->id,
+            'month' => 'January',
+            'overtime_hours' => 2,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $restored = FinancialRecord::withTrashed()->findOrFail($record->id);
+
+    expect($restored->trashed())->toBeFalse()
+        ->and($restored->status)->toBe('unpaid')
+        ->and((float) $restored->overtime_hours)->toBe(2.0)
+        ->and((float) $restored->amount)->toBe(322.0);
+
+    expect(FinancialRecord::where('student_id', $student->id)->where('month', 'January')->count())->toBe(1);
+});
+
+test('generating a month restores a trashed fee instead of failing', function () {
+    [$parent, $student] = paymentParent();
+    $admin = User::factory()->role(UserRole::Admin)->create();
+
+    $record = FinancialRecord::where('student_id', $student->id)
+        ->where('month', 'January')
+        ->firstOrFail();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.payments.destroy', $record))
+        ->assertRedirect();
+
+    $this->actingAs($admin)
+        ->post(route('admin.payments.generate'), ['month' => 'January'])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect(FinancialRecord::withTrashed()->findOrFail($record->id)->trashed())->toBeFalse();
+});
+
 test('notifications endpoint returns unread count and list', function () {
     [$parent] = paymentParent();
 
