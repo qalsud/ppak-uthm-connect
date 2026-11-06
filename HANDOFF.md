@@ -60,6 +60,8 @@ register is clear**.
   validation, chunked/idempotent fee reminders and failed-login logging. Added **Larastan/PHPStan +
   ESLint** as CI gates, extracted `CheckoutService`, and split `StudentFormDialog`,
   `ChildProgressCard` and the chat inbox (list/thread/composer/stream/picker) out of the largest files.
+  P3 cleanup: redundant indexes dropped, unused `sanctum`/PWA dependencies removed, and the launcher
+  now also runs `schedule:work`.
   **15 regression tests** added; all P0/P1 items, the first two P2 batches and static analysis are resolved.
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
@@ -189,5 +191,5 @@ php artisan migrate:fresh --seed    # reset local DB with the full demo dataset
 ## Deferred / not planned
 
 - **Pusher / Ably** — Reverb is the shipped transport; switching is a `BROADCAST_CONNECTION` change.
-- **PWA / push** — intentionally disabled during development.
+- **PWA / push** — not installed yet (no service-worker dependency); a later phase.
 - Auth pages use Laravel Breeze defaults (now localised, styled with the app's design tokens).

@@ -48,10 +48,11 @@ if not errorlevel 1 (
     exit /b 0
 )
 
-echo Starting the app, Vite, queue worker and Reverb...
+echo Starting the app, Vite, queue worker, scheduler and Reverb...
 start "PPAK - App Server (8001)" cmd /k "php artisan serve --host=127.0.0.1 --port=8001"
 start "PPAK - Vite (5173)" cmd /k "npm run dev"
 start "PPAK - Queue Worker" cmd /k "php artisan queue:work --tries=1 --timeout=0"
+start "PPAK - Scheduler" cmd /k "php artisan schedule:work"
 
 netstat -ano | findstr ":8082" | findstr "LISTENING" >nul
 if errorlevel 1 (

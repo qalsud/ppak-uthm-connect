@@ -3,8 +3,9 @@
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
 > **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…10,
-> PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑01/02, CODE‑01/02/05 and the failed-login logging were fixed**
-> (see *Resolved in this pass*); SEC‑11 and the remaining P3 items are open.
+> PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑01/02, CODE‑01/02/03/04/05, INFRA‑02 and the failed-login
+> logging were fixed** (see *Resolved in this pass*); **SEC‑11 (gateway), INFRA‑01 (PHP 8.3),
+> DEP‑02 (major upgrades) and external error tracking remain open.**
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 >
 > **Payment gateway is undecided.** The Stripe integration is a **provisional adapter** — do not build
@@ -20,6 +21,7 @@
 | Tests | **276 passing / 1918 assertions** (38 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | Static analysis | **Larastan/PHPStan** (level 5, baseline) + **ESLint** — both pass |
+| Dependencies | `laravel/sanctum` and `vite-plugin-pwa` removed as unused |
 | PHP style | Pint **passes** |
 | Build | clean |
 | `npm audit` | **0 vulnerabilities** |
@@ -34,7 +36,7 @@
 **Next three to pay down first**
 
 1. **SEC‑11** — once a payment provider is chosen, lock the completion flow.
-2. **P3 cleanup** — redundant indexes, unused deps, scheduler in the launcher, PHP 8.3 upgrade.
+2. **INFRA‑01** — move local/CI/deploy to PHP 8.3+ before the 8.2 EOL.
 3. **DEP‑02** — plan the major upgrades (React 19, Inertia 3, Vite 8, TypeScript 7).
 
 ---
@@ -65,13 +67,16 @@
 | **PERF‑04** | Fee reminders use `lazyById(500)` + a once-per-parent-per-day cache guard | `FeeReminderTest` |
 | **PERF‑05** | Conversation CSV export streams with `lazyById(1000)` instead of loading every message | manual/build |
 | **PROC‑01** | Failed and inactive login attempts are logged with email + IP (external error tracking still an open decision) | `AuthenticationTest` |
-| **CODE‑04** | Removed dead `Memo::AUDIENCES` / `audienceLabel()`; unused-dependency cleanup remains P3 | full suite |
+| **CODE‑04** | Removed unused `laravel/sanctum` + `vite-plugin-pwa`; dead `Memo::AUDIENCES` / `audienceLabel()` removed | composer/npm + full suite |
+| **CODE‑03** | Dropped the redundant plain `(student_id, date)` indexes on `daily_activities` / `daily_updates` (unique index remains) | migration + `db:table` |
+| **INFRA‑02** | `start-server.bat` now also starts `schedule:work` (fee reminders + photo pruning) | script |
 | **TEST‑01** | Added Larastan/PHPStan (level 5, 208-error baseline) + ESLint flat config; CI runs both | `composer analyse`, `npm run lint` |
 | **CODE‑01** | Split `AttendanceController` (382→257 via `CheckoutService`), `Students.tsx` (861→519 via `StudentFormDialog`), `Child.tsx` (607→502 via `ChildProgressCard`) and `chat-inbox.tsx` (735→240 via list/thread/composer/stream/picker components) | tests, build/typecheck |
 
 Suite after the fix pass: **276 tests / 1918 assertions** (15 new regression tests).
 **All P0/P1 findings are resolved; the first two P2 batches, static analysis and the controller split are fixed.**
-**Still open:** SEC‑11 (on hold for the gateway decision) and the remaining P3 items.
+**Still open:** SEC‑11 (on hold for the gateway decision), INFRA‑01 (PHP 8.3), DEP‑02 (major
+dependency upgrades) and external error tracking (Sentry/Telescope — a product decision).
 
 > The PHPStan baseline is a **ratchet**: it freezes 208 existing findings so new code cannot add more.
 > Pay it down whenever a file is touched; don't regenerate it to hide new errors.

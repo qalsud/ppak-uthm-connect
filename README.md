@@ -100,8 +100,8 @@ Then serve it. With **Laragon** the project is reachable at **http://ppak-uthm-c
 otherwise `php artisan serve --port=8001` → http://localhost:8001.
 
 **Windows shortcut:** double-click **`start-server.bat`** — it starts the app, Vite, the queue
-worker and Reverb (port **8082**), then opens http://127.0.0.1:8001 in your browser. Closing the
-four service windows stops everything.
+worker, the scheduler and Reverb (port **8082**), then opens http://127.0.0.1:8001 in your browser.
+Closing the service windows stops everything.
 
 ### Or: the whole stack in Docker
 
@@ -275,7 +275,7 @@ runs (`schedule:run` → `media:prune-photos` + `fees:send-reminders`), plus bac
 ## Notes for contributors
 
 - `npm install` uses `legacy-peer-deps` (see `.npmrc`).
-- **PWA is disabled** during development (`vite.config.js`) — the service worker is re-enabled at
-  deploy time. If a browser shows a stale/blank page, hard-refresh or unregister the service worker.
+- **PWA is not installed yet** — no service worker is shipped (`vite.config.js`). Push/offline is a
+  later phase; if a browser still has an old worker from a previous build, unregister it once.
 - Photos are **private**: never expose them via `public/`; always serve through the authorised route.
 - Keep secrets in `.env` only.

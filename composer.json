@@ -11,7 +11,6 @@
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.0",
-        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "stripe/stripe-php": "^21.3",
         "tightenco/ziggy": "^2.0"
