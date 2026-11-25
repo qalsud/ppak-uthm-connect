@@ -2,7 +2,7 @@
 
 > **Status: historical audit (kept for reference).** Most P1/P2 items below were fixed in the
 > rebuild, and the attendance/progress modules have since been overhauled. For the current feature
-> set see [`README.md`](README.md); for the admin area see [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md); for
+> set see [`README.md`](../README.md); for the admin area see [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md); for
 > photos see [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md); for the competitive view see
 > [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md).
 >

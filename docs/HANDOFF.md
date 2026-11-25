@@ -17,7 +17,7 @@ first in a new session.***
 
 ## Read these, in this order
 
-1. **`README.md`** — the feature map
+1. **`../README.md`** — the feature map
 2. **`ADMIN-CONTROL-PLAN.md`** — the phased plan (all phases done) + issue register
 3. **`FUNCTIONAL-REVIEW.md`** — module-by-module gaps
 4. **`DEBT-REGISTER.md`** — prioritised technical-debt ledger (P0 dependency CVEs + P1 auth gaps first)

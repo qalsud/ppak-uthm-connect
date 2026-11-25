@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 title PPAK UTHM Connect - Server Launcher
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 echo ============================================================
 echo   PPAK UTHM Connect - local development server

@@ -84,7 +84,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 - PHP **8.2+** (8.3 recommended) with `gd`, `exif`, `fileinfo`, `pdo_mysql` (`pdo_pgsql` for Postgres)
 - Composer, Node 20+ / npm
 - MySQL 8 (Laragon's bundled MySQL, or Docker) — or Postgres 16 for Supabase hosting
-  (see [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md))
+  (see [`DEPLOY-SUPABASE.md`](docs/DEPLOY-SUPABASE.md))
 
 ## Quick start
 
@@ -100,7 +100,7 @@ npm run build                     # or: npm run dev
 Then serve it. With **Laragon** the project is reachable at **http://ppak-uthm-connect.test**;
 otherwise `php artisan serve --port=8001` → http://localhost:8001.
 
-**Windows shortcut:** double-click **`start-server.bat`** — it starts the app, Vite, the queue
+**Windows shortcut:** double-click **`scripts\start-server.bat`** — it starts the app, Vite, the queue
 worker, the scheduler and Reverb (port **8082**), then opens http://127.0.0.1:8001 in your browser.
 Closing the service windows stops everything.
 
@@ -212,29 +212,34 @@ config/media.php                   photo pipeline defaults (overridable at /admi
 database/seeders/DatabaseSeeder.php full demo dataset (centres, attendance, health, growth, fees, chat)
 tests/Feature/                     Pest feature suite (282 tests)
 lang/en.json · lang/ms.json        bilingual keys
+docs/                              project documentation (index: docs/README.md)
+scripts/start-server.bat           Windows local dev launcher
 ```
 
 ## Documentation
 
 | File | Contents |
 |---|---|
-| [`HANDOFF.md`](HANDOFF.md) | **Read first in a new session** — verified state, environment, next steps |
-| [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) | The phased admin plan (all phases done) + issue register |
-| [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md) | **On hold (KIV)** — PERMATA curriculum integration; awaiting stakeholder input |
-| [`PARENT-TEACHER-REVIEW.md`](PARENT-TEACHER-REVIEW.md) | Historical parent/teacher audit + progress overhaul |
-| [`ADMIN-REVIEW.md`](ADMIN-REVIEW.md) | Admin sweep: what was fixed, backlog progress |
-| [`CHECKOUT-PHOTOS-PLAN.md`](CHECKOUT-PHOTOS-PLAN.md) | Photo upload design (watermark, retention, chat delivery) |
-| [`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md) | Feature comparison vs LittleLives + gap roadmap |
-| [`FUNCTIONAL-REVIEW.md`](FUNCTIONAL-REVIEW.md) | Module-by-module functionality review + prioritized improvements |
-| [`DEBT-REGISTER.md`](DEBT-REGISTER.md) | Technical debt register — Tier-1 sweep (6 Nov 2026), prioritised P0–P3 |
-| [`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md) | Messages module sweep (functionality · UX · UI) |
-| [`DEPLOY.md`](DEPLOY.md) | Deploying a demo (tunnel, Railway/Render, serverless) + demo script |
+| [`docs/README.md`](docs/README.md) | **Documentation index** — all docs grouped by status |
+| [`HANDOFF.md`](docs/HANDOFF.md) | **Read first in a new session** — verified state, environment, next steps |
+| [`ADMIN-CONTROL-PLAN.md`](docs/ADMIN-CONTROL-PLAN.md) | The phased admin plan (all phases done) + issue register |
+| [`PERMATA-CURRICULUM-PLAN.md`](docs/PERMATA-CURRICULUM-PLAN.md) | **On hold (KIV)** — PERMATA curriculum integration; awaiting stakeholder input |
+| [`PARENT-TEACHER-REVIEW.md`](docs/PARENT-TEACHER-REVIEW.md) | Historical parent/teacher audit + progress overhaul |
+| [`ADMIN-REVIEW.md`](docs/ADMIN-REVIEW.md) | Admin sweep: what was fixed, backlog progress |
+| [`CHECKOUT-PHOTOS-PLAN.md`](docs/CHECKOUT-PHOTOS-PLAN.md) | Photo upload design (watermark, retention, chat delivery) |
+| [`LITTLELIVES-COMPARISON.md`](docs/LITTLELIVES-COMPARISON.md) | Feature comparison vs LittleLives + gap roadmap |
+| [`FUNCTIONAL-REVIEW.md`](docs/FUNCTIONAL-REVIEW.md) | Module-by-module functionality review + prioritized improvements |
+| [`DEBT-REGISTER.md`](docs/DEBT-REGISTER.md) | Technical debt register — Tier-1 sweep (6 Nov 2026), prioritised P0–P3 |
+| [`MESSAGES-REVIEW.md`](docs/MESSAGES-REVIEW.md) | Messages module sweep (functionality · UX · UI) |
+| [`DEPLOY.md`](docs/DEPLOY.md) | Deploying a demo (tunnel, Railway/Render, serverless) + demo script |
+| [`DEPLOY-SERVER.md`](docs/DEPLOY-SERVER.md) | Full stack on your own VPS (Caddy, or nginx + certbot) + HTTPS |
+| [`DEPLOY-SUPABASE.md`](docs/DEPLOY-SUPABASE.md) | Supabase Postgres + Storage for a temporary demo |
 
 ## Continuing this work (handoff)
 
 **Where we left off.** All work is committed and pushed to `main` (`git log -1`). **282 tests /
 1944 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
-**Every planned phase of [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) is complete**
+**Every planned phase of [`ADMIN-CONTROL-PLAN.md`](docs/ADMIN-CONTROL-PLAN.md) is complete**
 (F · A · C · G · B · E · D) and the **issue register is clear**. Sessions have since added phases
 **B** (settings + versioned per-centre fees, editable records, Stripe refunds), **E** (oversight
 views) and **D** (admin accounts), a full **UI/i18n sweep**, an **enriched seeder** so a fresh
@@ -242,19 +247,19 @@ views) and **D** (admin accounts), a full **UI/i18n sweep**, an **enriched seede
 photos**, a **progress-report PDF**, and a **UI/refactor pass** (shared list primitives, WCAG
 colour/contrast fixes, and Lighthouse 100 across all main portals).
 
-**Live demo:** stopped — the Cloudflare quick tunnel URL is no longer live. To bring it back, follow
-[`DEPLOY.md`](DEPLOY.md) (the URL changes on each restart, so regenerate the demo PDF too).
+**Live demo:** **https://ppakuthm.com** — own VPS, nginx + HTTPS + Postgres + Reverb. See
+[`DEPLOY-SERVER.md`](docs/DEPLOY-SERVER.md) for the runbook and operational commands.
 
-**Start a new session** in `C:\laragon\www\ppak-uthm-connect` and read **[`HANDOFF.md`](HANDOFF.md)**
+**Start a new session** in `C:\laragon\www\ppak-uthm-connect` and read **[`HANDOFF.md`](docs/HANDOFF.md)**
 first — verified state, environment notes, working agreements and next steps.
 
 **Good places to pick up:**
-- **PERMATA curriculum** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md) — **on hold (KIV)**
+- **PERMATA curriculum** — [`PERMATA-CURRICULUM-PLAN.md`](docs/PERMATA-CURRICULUM-PLAN.md) — **on hold (KIV)**
   pending stakeholder input; the plan and open questions are ready to pick up.
-- **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger), then `migrate --force` + the scheduler.
-- **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
+- **Hosting/deploy** — [`DEPLOY.md`](docs/DEPLOY.md) (Railway or Hostinger), then `migrate --force` + the scheduler.
+- **Tier 2** ([`LITTLELIVES-COMPARISON.md`](docs/LITTLELIVES-COMPARISON.md)) — term progress-report PDF,
   growth chart, school calendar/events, light admissions pipeline.
-- **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped**
+- **Realtime** ([`MESSAGES-REVIEW.md`](docs/MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped**
   (Laravel Reverb, 10 Oct 2026); still open: the **general/centre thread** (new schema).
 
 ---

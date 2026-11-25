@@ -1,0 +1,43 @@
+PPAK UTHM CONNECT - DEMO ACCOUNTS
+==================================
+
+Local app: http://127.0.0.1:8001
+
+LOCAL SEED PASSWORD
+-------------------
+After `php artisan migrate:fresh --seed` (or `migrate --seed`), every seeded
+account uses: password123
+
+PUBLIC / DEPLOYED DEMO
+----------------------
+Rotate the passwords before sharing a public URL. The deployed passwords are
+NOT stored in this repository.
+
+PRIMARY LOGINS
+--------------
+Admin    admin@ppakuthm.com
+Teacher  teacher@ppakuthm.com
+Parent   parent@ppakuthm.com
+
+EXTRA SEEDED TEACHERS
+---------------------
+Farha Nur binti Ismail         farha@example.com
+Ahmad Zaki bin Osman           zaki@example.com
+Siti Hajar binti Mohamad Asbar hajar@example.com
+
+EXTRA SEEDED PARENTS
+--------------------
+Noraini binti Yusof            noraini@example.com
+Mohd Syafiq bin Rahman         syafiq@example.com
+Abdul Rahim bin Ismail         rahim@example.com
+Zaleha binti Ahmad             zaleha@example.com
+
+PENDING ACCOUNT (cannot log in until approved)
+----------------------------------------------
+pending@ppakuthm.com
+
+Notes
+-----
+- These accounts come from `php artisan migrate:fresh --seed`.
+- The pending parent can be approved from Admin -> Registrations.
+- Local/demo only. Never commit real or production passwords.

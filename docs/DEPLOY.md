@@ -189,6 +189,10 @@ Without it, the demo is fully functional — chat and the bell simply refresh on
 | Parent | `parent@ppakuthm.com` | `password123` |
 | Pending parent | `pending@ppakuthm.com` | `password123` |
 
+> These are the **local seed** credentials. Before sharing any public URL, rotate them (see
+> [`DEPLOY-SERVER.md`](DEPLOY-SERVER.md)); the deployed passwords are not stored in this repo.
+> The email list lives in [`demo-accounts.txt`](demo-accounts.txt).
+
 > A fresh seed produces a **full two-centre demo**: 10 children split **7 Tadika Khalifah Junior /
 > 3 Taska Hikmah**, today's attendance (incl. an **elevated-temperature** check-in and one checkout),
 > medication, growth, an upcoming absence, **per-centre fee rates** (Taska RM 290 vs global RM 310)
@@ -251,5 +255,5 @@ sharing:
 
 ## Later: production on Hostinger
 
-The long-term plan in [`README.md`](README.md#roadmap) is a normal VPS deploy (Hostinger) with
+The long-term plan in [`README.md`](../README.md#roadmap) is a normal VPS deploy (Hostinger) with
 MySQL, the scheduler in cron (`schedule:run`), and backups — not serverless.

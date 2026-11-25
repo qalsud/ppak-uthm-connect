@@ -70,7 +70,7 @@
 | **PROC‑01** | Failed and inactive login attempts are logged with email + IP (external error tracking still an open decision) | `AuthenticationTest` |
 | **CODE‑04** | Removed unused `laravel/sanctum` + `vite-plugin-pwa`; dead `Memo::AUDIENCES` / `audienceLabel()` removed | composer/npm + full suite |
 | **CODE‑03** | Dropped the redundant plain `(student_id, date)` indexes on `daily_activities` / `daily_updates` (unique index remains) | migration + `db:table` |
-| **INFRA‑02** | `start-server.bat` now also starts `schedule:work` (fee reminders + photo pruning) | script |
+| **INFRA‑02** | `../scripts/start-server.bat` now also starts `schedule:work` (fee reminders + photo pruning) | script |
 | **TEST‑01** | Added Larastan/PHPStan (level 5, 208-error baseline) + ESLint flat config; CI runs both | `composer analyse`, `npm run lint` |
 | **CODE‑01** | Split `AttendanceController` (382→257 via `CheckoutService`), `Students.tsx` (861→519 via `StudentFormDialog`), `Child.tsx` (607→502 via `ChildProgressCard`) and `chat-inbox.tsx` (735→240 via list/thread/composer/stream/picker components) | tests, build/typecheck |
 | **SEC‑11** | Payment completion claims the row with a conditional `UPDATE … WHERE status != 'paid'` inside the transaction, so a webhook + success-page race sends notifications exactly once | `PaymentCompletionTest` |
@@ -140,7 +140,7 @@ Effort: **S** < 1 day · **M** 1–5 days · **L** > 1 week.
 | **CODE‑05** | Style | Pint fails on `bootstrap/app.php` (`line_ending`) | `bootstrap/app.php` | S | LOW | P3 |
 | **DEP‑02** | Dependency | Major upgrades available: React 19, Inertia React 3, Vite 8, TypeScript 7, `@vitejs/plugin-react` 6, `laravel-vite-plugin` 3, Stripe PHP 22, Inertia Laravel 3, Tinker 3 | `package.json`; `composer outdated --direct` | L | LOW/MED | P3 |
 | **INFRA‑01** | Infra | PHP 8.2.12 is still security-supported but near end of life; CI uses 8.3 | `composer.json:9`; `php artisan about` | M | LOW | P3 |
-| **INFRA‑02** | Infra | The dev launcher starts app + Vite + queue + Reverb, but not `schedule:work`; fee reminders and photo pruning never run locally | `start-server.bat`; `routes/console.php` | S | LOW | P3 |
+| **INFRA‑02** | Infra | The dev launcher starts app + Vite + queue + Reverb, but not `schedule:work`; fee reminders and photo pruning never run locally | `../scripts/start-server.bat`; `routes/console.php` | S | LOW | P3 |
 
 ---
 
@@ -330,8 +330,8 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 
 - **Scheduler** — `fees:send-reminders` and `media:prune-photos` are scheduled but the local
   launcher doesn’t start `schedule:work`. Production must run the scheduler.
-- **Demo credentials** — `accounts.txt` is committed and contains the shared demo password; keep it
-  clearly labelled demo-only and never reuse those credentials for real accounts.
+- **Demo credentials** — `demo-accounts.txt` lists the seeded demo emails; never commit real or
+  production passwords, and never reuse the demo credentials for real accounts.
 - **`public/storage`** — not linked; currently unused because media is private. Fine unless the
   public disk is adopted later.
 - **PHP 8.2** — supported through 2026; plan the move to 8.3/8.4 before EOL.

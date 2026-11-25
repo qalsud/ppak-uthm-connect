@@ -162,7 +162,7 @@ Let's Encrypt certificates for both names once DNS resolves.
 
 ## 7. First-run hardening
 
-Rotate the seeded passwords (`accounts.txt` is public in the repo):
+Rotate the seeded passwords (`demo-accounts.txt` lists the demo emails; the deployed passwords are not in the repo):
 
 ```bash
 docker compose -f docker-compose.server.yml exec app php artisan tinker

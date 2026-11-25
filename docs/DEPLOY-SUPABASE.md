@@ -155,7 +155,7 @@ Also:
 - [ ] Confirm upload limits allow the app's 10 MB photo cap (the included `Dockerfile` sets
       `upload_max_filesize=12M`, `post_max_size=40M`, `memory_limit=512M`).
 - [ ] `php artisan storage:link` only if anything uses the `public` disk; private media does not.
-- [ ] Demo accounts seeded **and passwords rotated** (`accounts.txt` and this repo are public).
+- [ ] Demo accounts seeded **and passwords rotated** (`demo-accounts.txt` lists the demo emails; the deployed passwords are not in the repo).
 - [ ] `DEMO_SEED=false` after the first boot, or seeding will run again on restart (it is idempotent,
       but it is safer to turn it off).
 - [ ] Send one test email if `MAIL_MAILER` is configured; otherwise the bell still works and email is

@@ -296,4 +296,4 @@ check-out, plus the day's **medication requests** with mark-given/not-given.
 health & safety + growth pass added 29 Sep 2026.*
 
 > **Continuing this work?** Resume the session (or start fresh) using the handoff section in
-> [`README.md`](README.md#continuing-this-work-handoff).
+> [`README.md`](../README.md#continuing-this-work-handoff).

@@ -116,4 +116,4 @@ the remaining open items are unchanged.*
 - **Typing indicators**, **message pinning/starring**, **archive/mute**.
 
 > **Continuing this work?** Resume the session (or start fresh) using the handoff section in
-> [`README.md`](README.md#continuing-this-work-handoff).
+> [`README.md`](../README.md#continuing-this-work-handoff).

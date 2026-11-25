@@ -25,5 +25,8 @@ Thumbs.db
 
 design-ref/
 
+# Local demo credentials (the tracked list is docs/demo-accounts.txt)
+/accounts.txt
+
 # Demo handout (contains demo credentials - never commit)
 /PPAK-UTHM-Connect-Demo.pdf
