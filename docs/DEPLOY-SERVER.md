@@ -16,6 +16,9 @@ internal Docker network.
 
 > **Does the server already run nginx on 80/443?** Do not use Caddy. Follow the
 > [existing nginx + certbot](#existing-nginx--certbot-variant) variant at the end instead.
+>
+> **Deployed instance:** [`DEPLOY-PPAKUTHM.md`](DEPLOY-PPAKUTHM.md) records the exact runbook used
+> for the live `ppakuthm.com` server (nginx + certbot + `docker-compose.nginx.yml`).
 
 ---
 

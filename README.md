@@ -234,6 +234,7 @@ scripts/start-server.bat           Windows local dev launcher
 | [`DEPLOY.md`](docs/DEPLOY.md) | Deploying a demo (tunnel, Railway/Render, serverless) + demo script |
 | [`DEPLOY-SERVER.md`](docs/DEPLOY-SERVER.md) | Full stack on your own VPS (Caddy, or nginx + certbot) + HTTPS |
 | [`DEPLOY-SUPABASE.md`](docs/DEPLOY-SUPABASE.md) | Supabase Postgres + Storage for a temporary demo |
+| [`DEPLOY-PPAKUTHM.md`](docs/DEPLOY-PPAKUTHM.md) | Exact runbook for the live `ppakuthm.com` deployment (nginx + certbot + Docker) |
 
 ## Continuing this work (handoff)
 
