@@ -18,7 +18,7 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **282 passing / 1944 assertions** (40 feature files, no skipped tests) |
+| Tests | **282 passing / 1944 assertions** (41 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | Static analysis | **Larastan/PHPStan** (level 5, baseline) + **ESLint** — both pass |
 | Dependencies | `laravel/sanctum` and `vite-plugin-pwa` removed as unused; `league/flysystem-aws-s3-v3` added for Supabase Storage |
