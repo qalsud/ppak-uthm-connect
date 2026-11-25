@@ -14,6 +14,7 @@ use App\Support\AccountRules;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -124,7 +125,7 @@ class TeacherController extends Controller
         foreach ($rows as $index => $row) {
             $line = $index + 2;
             $name = trim((string) ($row['name'] ?? ''));
-            $email = trim((string) ($row['email'] ?? ''));
+            $email = Str::lower(trim((string) ($row['email'] ?? '')));
 
             if ($name === '') {
                 $skipped[] = ['line' => $line, 'reason' => 'missing_name'];

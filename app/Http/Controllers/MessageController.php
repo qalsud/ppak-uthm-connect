@@ -93,7 +93,7 @@ class MessageController extends Controller
         $messages = Message::query()
             ->with(['conversation.student:id,name,class', 'sender:id,name'])
             ->where('type', Message::TYPE_USER)
-            ->where('body', 'like', "%{$query}%")
+            ->whereLike('body', "%{$query}%")
             // Admins see everything; everyone else searches only the children
             // they can see (parent = own children, teacher = centre + class).
             ->when(! $user->isAdmin(), fn ($q) => $q->whereHas(

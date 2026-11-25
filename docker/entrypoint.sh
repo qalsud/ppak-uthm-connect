@@ -9,7 +9,7 @@ if [ -z "${APP_KEY:-}" ]; then
 fi
 
 # 2. Demo database. SQLite keeps the deploy dependency-free; set DB_CONNECTION=mysql
-#    (plus the DB_* variables) to use a managed database instead.
+#    or pgsql (plus the DB_* variables) to use a managed database instead.
 if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
   DB_FILE="${DB_DATABASE:-database/database.sqlite}"
   mkdir -p "$(dirname "$DB_FILE")"

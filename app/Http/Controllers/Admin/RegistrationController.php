@@ -34,8 +34,8 @@ class RegistrationController extends Controller
                 fn ($q) => $q->where('role', $role)
             )
             ->when($search !== '', fn ($q) => $q->where(
-                fn ($w) => $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
+                fn ($w) => $w->whereLike('name', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%")
             ))
             ->orderBy('created_at', 'desc')
             ->paginate(20)

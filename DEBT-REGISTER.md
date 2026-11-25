@@ -2,15 +2,15 @@
 
 *Tier‑1 debt sweep, 6 Nov 2026. Scope: the whole repository (Laravel 12 + Inertia v2 + React 18/TS + MySQL, Reverb, Stripe, dompdf, GD).*
 
-> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…10,
+> **Status:** audit + fix pass, 6 Nov 2026 — no production data was inspected. **DEP‑01, SEC‑01…11,
 > PERF‑01…05, DAT‑01/02, OPS‑01, TEST‑01/02, CODE‑01/02/03/04/05, INFRA‑02 and the failed-login
-> logging were fixed** (see *Resolved in this pass*); **SEC‑11 (gateway), INFRA‑01 (PHP 8.3),
-> DEP‑02 (major upgrades) and external error tracking remain open.**
+> logging were fixed** (see *Resolved in this pass*); **INFRA‑01 (PHP 8.3), DEP‑02 (major upgrades)
+> and external error tracking remain open.**
 > Findings come from the codebase, the dev MySQL schema, dependency audits and the existing test suite.
 >
 > **Payment gateway is undecided.** The Stripe integration is a **provisional adapter** — do not build
-> more gateway-specific UI or logic until a provider is chosen. **SEC‑11 (payment-completion race) is
-> intentionally on hold** for that reason.
+> more gateway-specific UI or logic until a provider is chosen. The payment-completion race is now
+> locked in a **gateway-agnostic** way (SEC‑11), so the provider choice no longer blocks it.
 
 ---
 
@@ -18,7 +18,7 @@
 
 | Signal | Result |
 |---|---|
-| Tests | **276 passing / 1918 assertions** (38 feature files, no skipped tests) |
+| Tests | **282 passing / 1944 assertions** (40 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | Static analysis | **Larastan/PHPStan** (level 5, baseline) + **ESLint** — both pass |
 | Dependencies | `laravel/sanctum` and `vite-plugin-pwa` removed as unused |
@@ -28,6 +28,7 @@
 | `composer audit` | **clean** |
 | Routes | **179** total; **138** role-guarded (96 admin · 22 parent · 20 teacher) + 18 auth-only |
 | DB | 37 tables, ~1.7 MB; indexes are mostly present |
+| Postgres | full suite **282 passing** on Postgres 16; all migrations run cleanly (Supabase-ready) |
 | Frontend audit | Lighthouse **100/100/100** on all main portals (from the previous pass) |
 | Queue | 1 historical failed job (`BroadcastNotificationCreated`); fixed docs now require a worker for live broadcasts |
 | Coverage | **not measured** — no Xdebug/PCOV driver installed |
@@ -35,9 +36,9 @@
 
 **Next three to pay down first**
 
-1. **SEC‑11** — once a payment provider is chosen, lock the completion flow.
-2. **INFRA‑01** — move local/CI/deploy to PHP 8.3+ before the 8.2 EOL.
-3. **DEP‑02** — plan the major upgrades (React 19, Inertia 3, Vite 8, TypeScript 7).
+1. **INFRA‑01** — move local/CI/deploy to PHP 8.3+ before the 8.2 EOL.
+2. **DEP‑02** — plan the major upgrades (React 19, Inertia 3, Vite 8, TypeScript 7).
+3. **PROC‑01** — choose external error tracking (Sentry/Telescope).
 
 ---
 
@@ -72,14 +73,33 @@
 | **INFRA‑02** | `start-server.bat` now also starts `schedule:work` (fee reminders + photo pruning) | script |
 | **TEST‑01** | Added Larastan/PHPStan (level 5, 208-error baseline) + ESLint flat config; CI runs both | `composer analyse`, `npm run lint` |
 | **CODE‑01** | Split `AttendanceController` (382→257 via `CheckoutService`), `Students.tsx` (861→519 via `StudentFormDialog`), `Child.tsx` (607→502 via `ChildProgressCard`) and `chat-inbox.tsx` (735→240 via list/thread/composer/stream/picker components) | tests, build/typecheck |
+| **SEC‑11** | Payment completion claims the row with a conditional `UPDATE … WHERE status != 'paid'` inside the transaction, so a webhook + success-page race sends notifications exactly once | `PaymentCompletionTest` |
 
-Suite after the fix pass: **276 tests / 1918 assertions** (15 new regression tests).
+Suite after the fix pass: **282 tests / 1944 assertions** (21 new regression tests).
 **All P0/P1 findings are resolved; the first two P2 batches, static analysis and the controller split are fixed.**
-**Still open:** SEC‑11 (on hold for the gateway decision), INFRA‑01 (PHP 8.3), DEP‑02 (major
-dependency upgrades) and external error tracking (Sentry/Telescope — a product decision).
+**Still open:** INFRA‑01 (PHP 8.3), DEP‑02 (major dependency upgrades) and external error tracking
+(Sentry/Telescope — a product decision).
 
 > The PHPStan baseline is a **ratchet**: it freezes 208 existing findings so new code cannot add more.
 > Pay it down whenever a file is touched; don't regenerate it to hide new errors.
+
+### Hosting readiness — Supabase / Postgres (Nov 2026)
+
+Supabase is planned as **Postgres + object storage**, not as a PHP host. See
+[`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) for the full runbook. What changed to make that safe:
+
+| Item | Status |
+|---|---|
+| Migrations on Postgres 16 | all pass (`migrate:fresh`) |
+| Full test suite on Postgres | **282 passing / 1944 assertions** |
+| CI | new `backend-postgres` job (`postgres:16` + `phpunit.pgsql.xml`) |
+| Case-insensitive search | all 21 `'like'` filters replaced with `whereLike()` (`ILIKE` on Postgres); `SearchCaseTest` guards it |
+| Media storage | private S3-compatible disk (Supabase Storage) via `MEDIA_DISK=s3`; media is streamed through authorised routes |
+| Connection | session pooler + `DB_SSLMODE=require` (documented) |
+| PHP image | `Dockerfile` now installs `pdo_pgsql` + `pgsql` alongside MySQL/SQLite |
+| Still required outside Supabase | PHP runtime, queue worker, scheduler, Reverb (optional), mail provider |
+
+Hosting does not close INFRA‑01 / DEP‑02 / PROC‑01; it only removes the MySQL-specific risk.
 
 ---
 
@@ -300,7 +320,7 @@ eventually fail (the dev DB already has a `MaxAttemptsExceededException` for one
 - **Secrets:** `.env` is ignored; no keys in source.
 - **Indexes:** every FK and the hot list columns are indexed; `attendance` and `progress_records`
   have the right unique keys.
-- **Quality gates:** 276 tests / 1918 assertions; `tsc` clean; build clean; Lighthouse 100 on all
+- **Quality gates:** 282 tests / 1944 assertions; `tsc` clean; build clean; Lighthouse 100 on all
   main portals; no skipped tests; no `dd`/`dump`/`console.log`; no `as any`.
 - **Slop:** CLEAN — comments explain *why*, names are domain-specific, no mock-everything tests.
 

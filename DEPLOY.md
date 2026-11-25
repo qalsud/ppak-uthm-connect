@@ -14,6 +14,10 @@ Laravel. Three realistic options, fastest first:
 
 A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option B works as-is.
 
+> **Using Supabase?** Supabase provides **Postgres + object storage**, not PHP hosting. Keep one of
+> the PHP hosts above and follow [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) for the database
+> (session pooler + SSL) and Storage (S3) settings.
+
 ## Local Docker stack (optional, production-shaped)
 
 `docker compose up --build` runs the whole app from the **same `Dockerfile`** Railway uses — handy

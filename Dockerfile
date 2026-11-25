@@ -24,9 +24,9 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
-        libonig-dev libzip-dev libsqlite3-dev \
+        libonig-dev libzip-dev libsqlite3-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql pgsql pdo_sqlite mbstring exif pcntl bcmath gd zip \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 

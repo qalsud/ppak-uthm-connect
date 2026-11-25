@@ -77,9 +77,9 @@ class ActivityLogController extends Controller
         return ActivityLog::query()
             ->with('user:id,name')
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->where('action', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                $w->whereLike('action', "%{$search}%")
+                    ->orWhereLike('description', "%{$search}%")
+                    ->orWhereHas('user', fn ($u) => $u->whereLike('name', "%{$search}%"));
             }))
             ->when(is_numeric($userId), fn ($q) => $q->where('user_id', (int) $userId))
             ->when($action, fn ($q) => $q->where('action', $action))

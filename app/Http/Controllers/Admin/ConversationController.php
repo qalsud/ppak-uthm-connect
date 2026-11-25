@@ -29,7 +29,7 @@ class ConversationController extends Controller
             ->withCount('messages')
             ->when($search !== '', fn ($q) => $q->whereHas(
                 'student',
-                fn ($w) => $w->where('name', 'like', "%{$search}%")
+                fn ($w) => $w->whereLike('name', "%{$search}%")
             ))
             ->orderByDesc('updated_at')
             ->paginate(20)

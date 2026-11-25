@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -61,6 +62,16 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'status' => AccountStatus::class,
         ];
+    }
+
+    /**
+     * Normalise the email on every write. MySQL's collation compared emails
+     * case-insensitively; Postgres does not, so the stored value must be
+     * canonical or logins and unique checks drift between the two.
+     */
+    public function setEmailAttribute(?string $value): void
+    {
+        $this->attributes['email'] = $value === null ? null : Str::lower(trim($value));
     }
 
     public function students()

@@ -33,6 +33,18 @@ class PaymentCompletionService
         }
 
         $result = DB::transaction(function () use ($payment) {
+            // A webhook and the success page can arrive together. Claim the row
+            // atomically instead of trusting the in-memory status, so only one
+            // caller flips it and notifications are sent exactly once.
+            $claimed = Payment::query()
+                ->whereKey($payment->getKey())
+                ->where('status', '!=', 'paid')
+                ->update(['status' => 'paid', 'paid_at' => now()]);
+
+            if ($claimed === 0) {
+                return null;
+            }
+
             $ids = $payment->financial_record_ids ?? [];
 
             // Only mark the snapshotted records; fall back to the student's
@@ -53,10 +65,13 @@ class PaymentCompletionService
                 ]);
             }
 
-            $payment->update(['status' => 'paid', 'paid_at' => now()]);
-
             return $payment->fresh();
         });
+
+        // Another request won the claim; it owns the notifications.
+        if ($result === null) {
+            return $payment->fresh();
+        }
 
         Notification::send($result->user, new PaymentCompletedNotification($result));
         AdminNotifier::send(new PaymentReceivedNotification($result));

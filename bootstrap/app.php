@@ -3,6 +3,7 @@
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\NormaliseEmailInput;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Behind a managed host's proxy (Railway/Render/Cloudflare) so HTTPS
         // URLs are generated correctly.
         $middleware->trustProxies(at: '*');
+
+        $middleware->append(NormaliseEmailInput::class);
 
         $middleware->web(append: [
             SetLocale::class,

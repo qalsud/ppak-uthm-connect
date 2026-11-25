@@ -47,7 +47,7 @@ class PaymentController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         if ($search !== '') {
-            $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+            $query->whereHas('student', fn ($q) => $q->whereLike('name', "%{$search}%"));
         }
 
         $records = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();

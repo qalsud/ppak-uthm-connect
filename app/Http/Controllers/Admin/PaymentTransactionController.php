@@ -30,9 +30,9 @@ class PaymentTransactionController extends Controller
             ->forActiveCentre()
             ->when(in_array($status, ['pending', 'paid', 'refunded', 'failed'], true), fn ($q) => $q->where('status', $status))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->whereHas('student', fn ($s) => $s->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
-                    ->orWhere('stripe_session_id', 'like', "%{$search}%");
+                $w->whereHas('student', fn ($s) => $s->whereLike('name', "%{$search}%"))
+                    ->orWhereHas('user', fn ($u) => $u->whereLike('name', "%{$search}%"))
+                    ->orWhereLike('stripe_session_id', "%{$search}%");
             }))
             ->orderByDesc('id')
             ->paginate(15)

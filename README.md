@@ -18,7 +18,7 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 | Backend | PHP 8.2+ · Laravel 12 |
 | Frontend | Inertia.js v2 · React 18 · TypeScript · Vite |
 | UI | Tailwind CSS v4 · shadcn/ui · Lucide |
-| Database | MySQL 8 (SQLite in-memory for tests) |
+| Database | MySQL 8 (default) · Postgres 16 (Supabase) · SQLite in-memory for tests |
 | Payments | Stripe Checkout + webhooks |
 | Receipts / reports | dompdf |
 | Images | GD + FreeType (private disk, watermark, compression) |
@@ -81,9 +81,10 @@ records, real **Stripe** payments + PDF receipts, and an **audit log**.
 
 ## Requirements
 
-- PHP **8.2+** (8.3 recommended) with `gd`, `exif`, `fileinfo`, `pdo_mysql`
+- PHP **8.2+** (8.3 recommended) with `gd`, `exif`, `fileinfo`, `pdo_mysql` (`pdo_pgsql` for Postgres)
 - Composer, Node 20+ / npm
-- MySQL 8 (Laragon's bundled MySQL, or Docker)
+- MySQL 8 (Laragon's bundled MySQL, or Docker) — or Postgres 16 for Supabase hosting
+  (see [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md))
 
 ## Quick start
 
@@ -137,7 +138,7 @@ and it seeds the demo on first boot.
 ## Tests & style
 
 ```bash
-php artisan test      # Pest - 276 tests / 1918 assertions
+php artisan test      # Pest - 282 tests / 1944 assertions
 vendor/bin/pint       # Laravel code style (auto-fix)
 composer analyse      # Larastan/PHPStan (baseline ratchet)
 npm run lint          # ESLint (React hooks + TypeScript)
@@ -209,7 +210,7 @@ resources/js/Components/           chat-inbox, photo-upload/photo-thumb, rating-
 resources/views/pdf/               receipt templates
 config/media.php                   photo pipeline defaults (overridable at /admin/settings)
 database/seeders/DatabaseSeeder.php full demo dataset (centres, attendance, health, growth, fees, chat)
-tests/Feature/                     Pest feature suite (276 tests)
+tests/Feature/                     Pest feature suite (282 tests)
 lang/en.json · lang/ms.json        bilingual keys
 ```
 
@@ -231,8 +232,8 @@ lang/en.json · lang/ms.json        bilingual keys
 
 ## Continuing this work (handoff)
 
-**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **276 tests /
-1918 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
+**Where we left off.** All work is committed and pushed to `main` (`git log -1`). **282 tests /
+1944 assertions** pass (`php artisan test`) and the frontend builds clean (`npm run build`).
 **Every planned phase of [`ADMIN-CONTROL-PLAN.md`](ADMIN-CONTROL-PLAN.md) is complete**
 (F · A · C · G · B · E · D) and the **issue register is clear**. Sessions have since added phases
 **B** (settings + versioned per-centre fees, editable records, Stripe refunds), **E** (oversight

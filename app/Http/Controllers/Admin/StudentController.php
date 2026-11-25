@@ -39,8 +39,8 @@ class StudentController extends Controller
             ->with('centre:id,name,short_name')
             ->when($centreId, fn ($q) => $q->where('centre_id', $centreId), fn ($q) => $q->forActiveCentre())
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('parent', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+                $w->whereLike('name', "%{$search}%")
+                    ->orWhereHas('parent', fn ($p) => $p->whereLike('name', "%{$search}%"));
             }))
             ->when(in_array($class, Student::classKeys(), true), fn ($q) => $q->where('class', $class))
             ->when(in_array($status, Student::statusKeys(), true), fn ($q) => $q->where('status', $status))

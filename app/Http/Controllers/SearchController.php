@@ -27,7 +27,7 @@ class SearchController extends Controller
 
         if ($user->isAdmin()) {
             $groups[] = $this->group(__('students'), Student::query()
-                ->where('name', 'like', $like)
+                ->whereLike('name', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (Student $s) => [
                     'label' => $s->name,
@@ -36,12 +36,12 @@ class SearchController extends Controller
                 ]));
 
             $groups[] = $this->group(__('teachers'), User::query()
-                ->where('role', UserRole::Teacher)->where('name', 'like', $like)
+                ->where('role', UserRole::Teacher)->whereLike('name', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (User $u) => ['label' => $u->name, 'sub' => $u->email, 'href' => '/admin/teachers']));
 
             $groups[] = $this->group(__('parents'), User::query()
-                ->where('role', UserRole::Parent)->where('name', 'like', $like)
+                ->where('role', UserRole::Parent)->whereLike('name', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (User $u) => ['label' => $u->name, 'sub' => $u->email, 'href' => '/admin/parents']));
         }
@@ -50,7 +50,7 @@ class SearchController extends Controller
             $groups[] = $this->group(__('students'), Student::query()
                 ->active()
                 ->visibleTo($user)
-                ->where('name', 'like', $like)
+                ->whereLike('name', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (Student $s) => [
                     'label' => $s->name,
@@ -62,7 +62,7 @@ class SearchController extends Controller
         if ($user->isParent()) {
             $groups[] = $this->group(__('children'), $user->students()
                 ->active()
-                ->where('name', 'like', $like)
+                ->whereLike('name', $like)
                 ->orderBy('name')->limit(5)->get()
                 ->map(fn (Student $s) => [
                     'label' => $s->name,
@@ -75,7 +75,7 @@ class SearchController extends Controller
 
         $groups[] = $this->group(__('memos'), Memo::query()
             ->visibleTo($user)
-            ->where('title', 'like', $like)
+            ->whereLike('title', $like)
             ->orderByDesc('created_at')->limit(5)->get()
             ->map(fn (Memo $m) => ['label' => $m->title, 'sub' => __('memo'), 'href' => $memoHref]));
 

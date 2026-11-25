@@ -23,6 +23,7 @@ first in a new session.***
 4. **`DEBT-REGISTER.md`** — prioritised technical-debt ledger (P0 dependency CVEs + P1 auth gaps first)
 5. **`LITTLELIVES-COMPARISON.md`** — feature comparison / roadmap
 6. **`DEPLOY.md`** — deploying the demo
+7. **`DEPLOY-SUPABASE.md`** — Postgres + storage on Supabase (temporary hosting)
 
 ---
 
@@ -32,7 +33,7 @@ first in a new session.***
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `git log -1` |
-| Tests | **276 passing** (`php artisan test`) |
+| Tests | **282 passing** (`php artisan test`) - also **282 on Postgres 16** |
 | Build | clean (`npm run build`) |
 | Route guard | `php artisan check:routes` - **103** frontend route names verified |
 | Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
@@ -44,8 +45,8 @@ first in a new session.***
 register is clear**.
 
 > **Open decision — payment gateway.** Stripe is currently a **provisional adapter**; do not build
-> more gateway-specific UI/logic until a provider is chosen. The payment-completion race (`SEC‑11`)
-> is on hold for that reason.
+> more gateway-specific UI/logic until a provider is chosen. The payment-completion race (`SEC‑11`) is
+> now fixed provider-agnostically, so the gateway choice no longer blocks it.
 
 ---
 
@@ -62,7 +63,12 @@ register is clear**.
   `ChildProgressCard` and the chat inbox (list/thread/composer/stream/picker) out of the largest files.
   P3 cleanup: redundant indexes dropped, unused `sanctum`/PWA dependencies removed, and the launcher
   now also runs `schedule:work`.
-  **15 regression tests** added; all P0/P1 items, the first two P2 batches and static analysis are resolved.
+  **21 regression tests** added; all P0/P1 items, the first two P2 batches and static analysis are resolved.
+- **Postgres/Supabase readiness (Nov 2026).** All migrations run on Postgres 16 and the **full suite
+  passes there (282 tests)**. Search moved from `LIKE` to `whereLike()` (Postgres `ILIKE`), guarded by
+  `SearchCaseTest`; added `phpunit.pgsql.xml`, a CI `backend-postgres` job, and
+  [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) covering the session pooler, SSL, Supabase Storage S3,
+  and the processes Supabase cannot run (PHP, queue worker, scheduler, Reverb).
 - **UI/refactor + accessibility pass (5 Nov 2026).** De-duplicated the admin list screens onto shared
   hooks/components (debounced search, row selection, status/centre filters, bulk bar, responsive
   record card, filter tabs, accessible icon buttons). Extracted backend `Csv` + `AccountQuery`
@@ -116,10 +122,12 @@ register is clear**.
 0. **PERMATA curriculum integration** — [`PERMATA-CURRICULUM-PLAN.md`](PERMATA-CURRICULUM-PLAN.md)
    is **on hold (KIV)** pending **stakeholder input** (see §7 of that file). Researched and drafted,
    not built; resume when the stakeholder questions are answered.
-1. **Pay down the Tier-1 debt register** — [`DEBT-REGISTER.md`](DEBT-REGISTER.md).
-   Start with **DEP‑01** (Symfony CVEs) and **SEC‑01…06** (cross-centre authorization gaps).
-2. **Hosting/deploy** — [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger); ensure `migrate --force`
-   runs and the scheduler (`schedule:run`) is active.
+1. **Pay down the rest of the Tier-1 debt register** — [`DEBT-REGISTER.md`](DEBT-REGISTER.md).
+   Only **INFRA‑01** (PHP 8.3+ on the host), **DEP‑02** (major upgrades) and **PROC‑01**
+   (error tracking) remain.
+2. **Hosting/deploy** — [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) for Supabase Postgres + Storage,
+   then [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger). Ensure `migrate --force` runs and the
+   scheduler (`schedule:run`) is active.
 3. **Tier 2** ([`LITTLELIVES-COMPARISON.md`](LITTLELIVES-COMPARISON.md)) — growth chart, school
    calendar/events, light admissions pipeline. (Term progress-report PDF ✅ shipped 10 Oct 2026.)
 4. **Realtime** ([`MESSAGES-REVIEW.md`](MESSAGES-REVIEW.md)) — ✅ **true realtime chat shipped** on

@@ -23,8 +23,8 @@ class AccountQuery
                 fn (Builder $query) => $query->where('status', $status),
             )
             ->when($search !== '', fn (Builder $query) => $query->where(function (Builder $where) use ($search) {
-                $where->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                $where->whereLike('name', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%");
             }));
     }
 
