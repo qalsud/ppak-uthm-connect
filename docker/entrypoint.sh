@@ -36,6 +36,12 @@ if [ "$1" = "apache2-foreground" ]; then
   # 5. Caches (route:cache is skipped — the landing route uses a closure).
   php artisan config:cache || true
   php artisan view:cache || true
+
+  # 6. Free hosts (Render/Koyeb) inject PORT; Apache defaults to 80.
+  if [ -n "${PORT:-}" ] && [ "${PORT}" != "80" ]; then
+    sed -i "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
+    sed -i "s/:80>/:${PORT}>/" /etc/apache2/sites-available/000-default.conf
+  fi
 fi
 
 exec "$@"

@@ -130,6 +130,9 @@ The included image's entrypoint forwards its command, so the worker and schedule
 services from the same image** with start commands `php artisan queue:work` and
 `php artisan schedule:work`. Only the web service runs migrations, seeding and cache warming.
 
+The entrypoint also binds Apache to the `PORT` environment variable, so the same image works on
+Render and Koyeb (which inject a port) as well as Railway (which defaults to `80`).
+
 ## 5. Production environment checklist
 
 ```ini
@@ -173,6 +176,55 @@ Also:
   and before deleting the project.
 - **Region/latency.** Pick the region closest to the PHP host; every query crosses the network.
 - **Egress.** Serving photos through PHP counts as database/storage egress plus app bandwidth.
+
+### Completely free temporary stack (Render Free + Supabase Free)
+
+The lowest-effort $0 demo: **Render Free** web service (Docker) + **Supabase Free** Postgres/Storage.
+Render provides a 512 MB / 0.1 CPU instance with 750 hours/month; it sleeps after 15 minutes idle and
+takes about a minute to wake. Supabase Free gives 500 MB database + ~1 GB storage, with 2 active
+projects.
+
+**Render setup**
+
+1. Render → **New → Web Service** → connect the GitHub repo → **Runtime: Docker** → instance type
+   **Free** → health check path `/up`.
+2. Set `APP_URL` to the `https://….onrender.com` URL once it exists.
+3. Deploy. The entrypoint binds Apache to Render's injected `PORT`, runs `migrate --force` and seeds.
+
+**Environment differences for the free plan**
+
+```ini
+QUEUE_CONNECTION=sync          # no worker on the free plan; queued broadcasts run inline
+BROADCAST_CONNECTION=null      # no Reverb; chat/bell fall back to polling
+MAIL_MAILER=log                # no SMTP; the in-app bell still works
+MEDIA_MAX_UPLOAD_KB=5120       # 5 MB per image stretches the free storage
+MEDIA_TARGET_KB=512
+MEDIA_MAX_PIXELS=12000000      # 12 MP is safe in 512 MB; the 40 MP default can OOM
+```
+
+Everything else (`APP_KEY`, `DB_*`, `AWS_*`, `SESSION_*`, `CACHE_STORE`) is the same as above.
+**Set `APP_KEY` explicitly** — letting the entrypoint generate one on every cold start invalidates
+sessions.
+
+**What you give up**
+
+- No queue worker → `QUEUE_CONNECTION=sync` (leaving it on `database` makes the `jobs` table grow).
+- No scheduler → fee reminders and photo pruning do not run. For a short demo that is fine; set
+  `CHECKOUT_PHOTO_RETENTION_DAYS=0` if you prefer not to promise pruning that never runs.
+- No Reverb → live updates become 15–20 second polling.
+- Cold starts → open the URL once before showing it to your supervisor.
+
+**Supabase pause:** a free project pauses after ~7 days of low activity. Open the app (or the
+Supabase dashboard) at least once a week, or restore the project before the demo.
+
+**Alternatives**
+
+- **Koyeb Free** — one permanent 512 MB / 0.1 vCPU service, Docker-friendly; signup requires a card
+  and the free region is Frankfurt or Washington, D.C.
+- **Oracle Cloud Always Free** — a genuinely permanent ARM VM (2 OCPU / 12 GB in 2026), but you
+  manage the OS, Apache, PHP and TLS. Best if the demo must stay up without cold starts.
+- **Google Cloud Run** — generous always-free request/compute tier and scale-to-zero, but requires a
+  billing account (card) and more setup.
 
 ## 7. Postgres-specific notes for this app
 
