@@ -126,6 +126,10 @@ Supabase Realtime is **not** a drop-in replacement for Reverb — the app's even
 broadcast events on private channels. Leave `BROADCAST_CONNECTION=null` or keep Reverb; do not point
 `BROADCAST_CONNECTION` at Supabase.
 
+The included image's entrypoint forwards its command, so the worker and scheduler can be **extra
+services from the same image** with start commands `php artisan queue:work` and
+`php artisan schedule:work`. Only the web service runs migrations, seeding and cache warming.
+
 ## 5. Production environment checklist
 
 ```ini
