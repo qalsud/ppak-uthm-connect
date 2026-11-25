@@ -14,6 +14,9 @@ Browser ──WSS────> Caddy :443 ──> reverb     :8082   (live chat 
 Only Caddy publishes ports. Postgres, Reverb, the queue worker and the scheduler stay on the
 internal Docker network.
 
+> **Does the server already run nginx on 80/443?** Do not use Caddy. Follow the
+> [existing nginx + certbot](#existing-nginx--certbot-variant) variant at the end instead.
+
 ---
 
 ## 0. Check the server
@@ -271,3 +274,60 @@ ssh user@server 'cd /opt/ppak && docker compose -f docker-compose.server.yml up 
 - [ ] Firewall allows only 22/80/443.
 - [ ] Database and photo-volume backups tested at least once.
 - [ ] SSH uses keys (disable password login if it is not already).
+
+---
+
+## Existing nginx + certbot variant
+
+Use this when **nginx already serves other sites on 80/443** and cannot be stopped. It runs the
+same app stack without Caddy; nginx proxies to the containers on localhost.
+
+**Ports:** app `127.0.0.1:8083`, Reverb `127.0.0.1:8084`. Nothing is exposed directly.
+
+1. Start the stack with the nginx compose file:
+
+   ```bash
+   docker compose -f docker-compose.nginx.yml up -d --build
+   ```
+
+2. Install the nginx site (adjust the domain if yours differs):
+
+   ```bash
+   sudo cp docker/nginx/ppakuthm.com.conf /etc/nginx/sites-available/ppakuthm.com.conf
+   sudo ln -s /etc/nginx/sites-available/ppakuthm.com.conf /etc/nginx/sites-enabled/
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+   At this point `http://ppakuthm.com/up` should return 200.
+
+3. Add TLS with the existing certbot:
+
+   ```bash
+   sudo certbot --nginx -d ppakuthm.com -d www.ppakuthm.com -d ws.ppakuthm.com
+   ```
+
+   Choose the **redirect** option. Certbot edits the site in `sites-enabled`; the repo copy stays
+   HTTP-only for reference.
+
+4. Share the session between the apex and `www` in `.env`:
+
+   ```ini
+   SESSION_DOMAIN=.ppakuthm.com
+   ```
+
+   Then recreate the app:
+
+   ```bash
+   docker compose -f docker-compose.nginx.yml up -d
+   ```
+
+5. Verify:
+
+   - `https://ppakuthm.com/up` → 200
+   - `https://www.ppakuthm.com` → the same app
+   - chat updates live over `wss://ws.ppakuthm.com`
+   - `docker compose -f docker-compose.nginx.yml ps` shows `8083`/`8084` bound to `127.0.0.1` only
+
+If you change `WS_DOMAIN` or `REVERB_APP_KEY` later, rebuild (`--build`) because Vite bakes them
+into the JS bundle.
