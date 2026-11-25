@@ -37,6 +37,7 @@ WORKDIR /var/www/html
 COPY . .
 COPY --from=assets /app/public/build ./public/build
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
     && sed -i 's/\r$//' docker/entrypoint.sh \

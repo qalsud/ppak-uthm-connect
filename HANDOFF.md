@@ -123,7 +123,7 @@ register is clear**.
    is **on hold (KIV)** pending **stakeholder input** (see §7 of that file). Researched and drafted,
    not built; resume when the stakeholder questions are answered.
 1. **Pay down the rest of the Tier-1 debt register** — [`DEBT-REGISTER.md`](DEBT-REGISTER.md).
-   Only **INFRA‑01** (PHP 8.3+ on the host), **DEP‑02** (major upgrades) and **PROC‑01**
+   Only **INFRA‑01** (local PHP 8.3+; CI/Docker already 8.3), **DEP‑02** (major upgrades) and **PROC‑01**
    (error tracking) remain.
 2. **Hosting/deploy** — [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) for Supabase Postgres + Storage,
    then [`DEPLOY.md`](DEPLOY.md) (Railway or Hostinger). Ensure `migrate --force` runs and the

@@ -36,7 +36,7 @@
 
 **Next three to pay down first**
 
-1. **INFRA‑01** — move local/CI/deploy to PHP 8.3+ before the 8.2 EOL.
+1. **INFRA‑01** — move the local runtime to PHP 8.3+ (CI and the Docker image already use 8.3).
 2. **DEP‑02** — plan the major upgrades (React 19, Inertia 3, Vite 8, TypeScript 7).
 3. **PROC‑01** — choose external error tracking (Sentry/Telescope).
 
@@ -96,7 +96,7 @@ Supabase is planned as **Postgres + object storage**, not as a PHP host. See
 | Case-insensitive search | all 21 `'like'` filters replaced with `whereLike()` (`ILIKE` on Postgres); `SearchCaseTest` guards it |
 | Media storage | private S3-compatible disk (Supabase Storage) via `MEDIA_DISK=s3`; media is streamed through authorised routes |
 | Connection | session pooler + `DB_SSLMODE=require` (documented) |
-| PHP image | `Dockerfile` now installs `pdo_pgsql` + `pgsql` alongside MySQL/SQLite |
+| PHP image | `Dockerfile` installs `pdo_pgsql` + `pgsql` and raises upload/memory limits for photos |
 | Still required outside Supabase | PHP runtime, queue worker, scheduler, Reverb (optional), mail provider |
 
 Hosting does not close INFRA‑01 / DEP‑02 / PROC‑01; it only removes the MySQL-specific risk.

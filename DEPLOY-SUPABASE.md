@@ -142,6 +142,8 @@ Also:
       before changing env values).
 - [ ] `php artisan migrate --force` — no pending migrations.
 - [ ] Confirm `pdo_pgsql` is enabled on the PHP host (the included `Dockerfile` installs it).
+- [ ] Confirm upload limits allow the app's 10 MB photo cap (the included `Dockerfile` sets
+      `upload_max_filesize=12M`, `post_max_size=40M`, `memory_limit=512M`).
 - [ ] `php artisan storage:link` only if anything uses the `public` disk; private media does not.
 - [ ] Demo accounts seeded **and passwords rotated** (`accounts.txt` and this repo are public).
 - [ ] `DEMO_SEED=false` after the first boot, or seeding will run again on restart (it is idempotent,
