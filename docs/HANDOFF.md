@@ -11,8 +11,8 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 > date/future/audit/approved-absence reconciliation plus an explicit Absent action, absence conflict
 > validation, admin progress delete, centre-scoped fee generation, scheduler never-run state,
 > parent fee receipts and teacher class-scoped memos. The app shell, profile, navigation, conversation
-> rows and progress labels were polished. **303 tests pass**; Pint, PHPStan, ESLint, `tsc` and the
-> production build pass. Everything is committed and pushed to `main`.
+> rows and progress labels were polished. **303 tests pass on SQLite and Postgres 16**; Pint, PHPStan,
+> ESLint, `tsc` and the production build pass. Everything is committed and pushed to `main`.
 >
 > **Pending:** live deployment, a fresh DB + photo backup, a clean demo reseed and a post-deploy UAT
 > replay. SSH access to `187.127.114.77` is required (no key is configured on the workstation);
@@ -44,7 +44,7 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `a218ec8` (redacted UAT baseline); code batch `d2d2e78` |
-| Tests | **303 passing** (`php artisan test`) |
+| Tests | **303 passing** (`php artisan test`) — also **303 on Postgres 16** |
 | Build | clean (`npm run build`, `tsc`, ESLint, Pint, PHPStan) |
 | Route guard | `php artisan check:routes` — frontend route names verified |
 | Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
