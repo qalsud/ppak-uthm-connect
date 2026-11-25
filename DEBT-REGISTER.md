@@ -21,7 +21,7 @@
 | Tests | **282 passing / 1944 assertions** (40 feature files, no skipped tests) |
 | TypeScript | `tsc --noEmit` clean |
 | Static analysis | **Larastan/PHPStan** (level 5, baseline) + **ESLint** — both pass |
-| Dependencies | `laravel/sanctum` and `vite-plugin-pwa` removed as unused |
+| Dependencies | `laravel/sanctum` and `vite-plugin-pwa` removed as unused; `league/flysystem-aws-s3-v3` added for Supabase Storage |
 | PHP style | Pint **passes** |
 | Build | clean |
 | `npm audit` | **0 vulnerabilities** |
@@ -94,7 +94,7 @@ Supabase is planned as **Postgres + object storage**, not as a PHP host. See
 | Full test suite on Postgres | **282 passing / 1944 assertions** |
 | CI | new `backend-postgres` job (`postgres:16` + `phpunit.pgsql.xml`) |
 | Case-insensitive search | all 21 `'like'` filters replaced with `whereLike()` (`ILIKE` on Postgres); `SearchCaseTest` guards it |
-| Media storage | private S3-compatible disk (Supabase Storage) via `MEDIA_DISK=s3`; media is streamed through authorised routes |
+| Media storage | private S3-compatible disk (Supabase Storage) via `MEDIA_DISK=s3`; `league/flysystem-aws-s3-v3` installed; media is streamed through authorised routes |
 | Connection | session pooler + `DB_SSLMODE=require` (documented) |
 | PHP image | `Dockerfile` installs `pdo_pgsql` + `pgsql` and raises upload/memory limits for photos |
 | Still required outside Supabase | PHP runtime, queue worker, scheduler, Reverb (optional), mail provider |

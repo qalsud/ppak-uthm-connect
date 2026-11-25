@@ -87,6 +87,9 @@ AWS_USE_PATH_STYLE_ENDPOINT=true
 `AWS_USE_PATH_STYLE_ENDPOINT=true` is required: Supabase's endpoint contains a path
 (`/storage/v1/s3`), and the default virtual-hosted style produces invalid requests.
 
+The S3 driver needs `league/flysystem-aws-s3-v3`; it is now in `composer.json`, so no extra install
+step is needed when the image is built.
+
 `AWS_URL` can stay empty. Media is served through `PhotoController` using
 `Storage::disk(...)->response()`, which streams from the private bucket; nothing depends on public
 object URLs.
