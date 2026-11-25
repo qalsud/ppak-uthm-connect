@@ -19,8 +19,8 @@ A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option
 > (session pooler + SSL) and Storage (S3) settings.
 >
 > **Have a VPS with SSH?** [`DEPLOY-SERVER.md`](DEPLOY-SERVER.md) runs the **whole stack** on it
-> (Postgres, queue worker, scheduler, Reverb and automatic HTTPS) with a free DuckDNS subdomain —
-> no purchased domain required.
+> (Postgres, queue worker, scheduler, Reverb and automatic HTTPS) with your own domain or a free
+> DuckDNS subdomain.
 
 ## Local Docker stack (optional, production-shaped)
 

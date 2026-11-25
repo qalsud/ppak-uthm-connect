@@ -1,7 +1,7 @@
-# Deploying on your own server (no domain needed)
+# Deploying on your own server (with or without a domain)
 
-This runs the **whole app on one VPS** with a free DuckDNS subdomain and automatic HTTPS. No
-purchased domain, no Supabase, no cold starts.
+This runs the **whole app on one VPS**. Use your own domain (recommended), or a free DuckDNS
+subdomain if you do not have one yet. No Supabase, no cold starts.
 
 ```
 Browser ──HTTPS──> Caddy :443 ──> app        (Apache + PHP-FPM module)
@@ -31,13 +31,35 @@ sudo ss -tlnp | grep -E ':(80|443)\b'
 Recommended: **2 vCPU / 2 GB RAM / 10 GB disk**. A 1 GB VPS works with swap and a lower PHP memory
 limit (see §10). Ports **80 and 443 must be free** — stop any existing Apache/Nginx first.
 
-## 1. Create the free DuckDNS names
+## 1. DNS
+
+You need **two hostnames** pointing at the server: one for the app and one for the WebSocket
+endpoint. With your own domain these are usually `app.example.com` and `ws.example.com`; with
+DuckDNS they are `ppak-demo.duckdns.org` and `ppak-ws.duckdns.org`.
+
+### Option A — your own domain (recommended)
+
+| Type | Name | Value |
+|---|---|---|
+| A | `app` (or `@` for the apex) | server public IPv4 |
+| A | `ws` | server public IPv4 |
+
+Add the records at your registrar or DNS provider, then verify:
+
+```bash
+dig +short app.example.com
+dig +short ws.example.com
+```
+
+If you use Cloudflare DNS, set both records to **DNS only** (grey cloud) for the first deploy so
+Caddy can complete the Let's Encrypt challenge. You can enable the proxy later with SSL mode
+**Full (strict)**.
+
+### Option B — free DuckDNS
 
 1. Sign in at [duckdns.org](https://www.duckdns.org).
 2. Create **two** subdomains, e.g. `ppak-demo` and `ppak-ws`.
 3. Point both at the server's public IPv4 address.
-
-Verify from the server (or your machine):
 
 ```bash
 dig +short ppak-demo.duckdns.org
@@ -82,9 +104,9 @@ openssl rand -hex 16   # REVERB_APP_SECRET
 Edit `.env` and set at least:
 
 - `APP_KEY` — the generated `base64:…` value
-- `APP_URL=https://ppak-demo.duckdns.org`
-- `DOMAIN=ppak-demo.duckdns.org`
-- `WS_DOMAIN=ppak-ws.duckdns.org`
+- `APP_URL=https://app.example.com`
+- `DOMAIN=app.example.com`
+- `WS_DOMAIN=ws.example.com`
 - `DB_PASSWORD`
 - `REVERB_APP_KEY`, `REVERB_APP_SECRET`
 
@@ -125,14 +147,14 @@ Let's Encrypt certificates for both names once DNS resolves.
 
 | Check | Expected |
 |---|---|
-| `https://ppak-demo.duckdns.org/up` | `200 OK` |
-| `https://ppak-demo.duckdns.org` | login page |
+| `https://app.example.com/up` | `200 OK` |
+| `https://app.example.com` | login page |
 | Admin / teacher / parent logins | work |
 | Check a child out with a photo | image uploads and reloads |
 | Open a chat in two browsers | messages appear live over WSS |
 | `docker compose ps` | no `5432`/`8082` published |
 
-`https://ppak-ws.duckdns.org` is the WebSocket endpoint; a plain browser visit returning `404` or
+`https://ws.example.com` is the WebSocket endpoint; a plain browser visit returning `404` or
 `426` is normal.
 
 ## 7. First-run hardening
@@ -220,7 +242,7 @@ architectures must match — build with `--platform linux/arm64` for an ARM VPS)
 ```bash
 docker build -t ppak-uthm-connect:server \
   --build-arg VITE_REVERB_APP_KEY=... \
-  --build-arg VITE_REVERB_HOST=ppak-ws.duckdns.org \
+  --build-arg VITE_REVERB_HOST=ws.example.com \
   --build-arg VITE_REVERB_PORT=443 \
   --build-arg VITE_REVERB_SCHEME=https .
 docker save ppak-uthm-connect:server | gzip | ssh user@server 'gunzip | docker load'
