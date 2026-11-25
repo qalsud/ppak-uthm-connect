@@ -1,17 +1,27 @@
 # Session Handoff — PPAK UTHM Connect
 
-*Updated 5 Nov 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026; realtime,
+*Updated 26 Nov 2026. The admin plan and a full UI/i18n sweep were completed 30 Sep 2026; realtime,
 memo photos and the progress report shipped 10 Oct 2026; a UI/refactor + accessibility pass shipped
-5 Nov 2026. The **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input. **Read this
-first in a new session.***
+5 Nov 2026. On 26 Nov 2026 the UAT/UI-UX fix batch shipped (`d2d2e78`) and the redacted UAT baseline
+was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pending stakeholder input.
+**Read this first in a new session.***
 
-> **Session wrap — 5 Nov 2026.** UI/refactor pass: shared list primitives (`useServerSearch`,
-> `useRowSelection`, `StatusFilter`, `CentreFilter`, `BulkActionBar`, `MobileRecordCard`,
-> `FilterTabs`, `IconButton`), backend `Csv` + `AccountQuery` helpers, the `forActiveCentre` scope,
-> WCAG contrast fixes, and automatic accessible names for form controls. Lighthouse now reports
-> **100 accessibility / best-practices / SEO** on every main admin, teacher and parent screen.
-> Everything is **committed and pushed** to `main`; the working tree is **clean**. The
-> [PERMATA curriculum plan](PERMATA-CURRICULUM-PLAN.md) remains KIV. Nothing blocks a fresh start.
+> **Session wrap — 26 Nov 2026.** Closed the high/medium UAT findings and the main UI/UX review
+> items: login failure handling and container logging, strict teacher class/centre scope, attendance
+> date/future/audit/approved-absence reconciliation plus an explicit Absent action, absence conflict
+> validation, admin progress delete, centre-scoped fee generation, scheduler never-run state,
+> parent fee receipts and teacher class-scoped memos. The app shell, profile, navigation, conversation
+> rows and progress labels were polished. **303 tests pass**; Pint, PHPStan, ESLint, `tsc` and the
+> production build pass. Everything is committed and pushed to `main`.
+>
+> **Pending:** live deployment, a fresh DB + photo backup, a clean demo reseed and a post-deploy UAT
+> replay. SSH access to `187.127.114.77` is required (no key is configured on the workstation);
+> use [`DEPLOY-PPAKUTHM.md`](DEPLOY-PPAKUTHM.md). The live `.env` must set `LOG_CHANNEL=stderr` before
+> rebuilding, then `DEMO_SEED=true` only for the clean reseed and `DEMO_SEED=false` afterwards.
+>
+> Local-only leftovers: `docker-compose.yml` has a user port edit, and the untracked original
+> `UAT-REPORT-PPAKUTHM-2026-11-26.md` at the repo root contains plaintext demo passwords. Never
+> commit it; the archived `docs/` copy is redacted.
 
 ---
 
@@ -33,14 +43,14 @@ first in a new session.***
 | | |
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
-| Last commit | `git log -1` |
-| Tests | **282 passing** (`php artisan test`) - also **282 on Postgres 16** |
-| Build | clean (`npm run build`) |
-| Route guard | `php artisan check:routes` - **103** frontend route names verified |
+| Last commit | `a218ec8` (redacted UAT baseline); code batch `d2d2e78` |
+| Tests | **303 passing** (`php artisan test`) |
+| Build | clean (`npm run build`, `tsc`, ESLint, Pint, PHPStan) |
+| Route guard | `php artisan check:routes` — frontend route names verified |
 | Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
 | Accessibility | **Lighthouse 100** (accessibility · best practices · SEO) on all main portals |
-| Seeder | idempotent, re-runnable; **enriched** full demo (`php artisan migrate:fresh --seed`) |
-| Working tree | clean |
+| Seeder | idempotent, re-runnable; verified with `migrate:fresh --seed` on SQLite |
+| Working tree | local-only `docker-compose.yml` port edit + untracked original UAT report |
 
 **All phases of `ADMIN-CONTROL-PLAN.md` are complete** (F · A · C · G · B · E · D) and the **issue
 register is clear**.
@@ -53,6 +63,15 @@ register is clear**.
 
 ## What this session shipped
 
+- **UAT + UI/UX fix batch (26 Nov 2026).** See [`FIX-PLAN-2026-11.md`](FIX-PLAN-2026-11.md) and the
+  archived redacted [`UAT-REPORT-PPAKUTHM-2026-11-26.md`](UAT-REPORT-PPAKUTHM-2026-11-26.md).
+  Login failures no longer 500 (stderr logging + storage ownership), teachers require a class and
+  centre, attendance honours the selected date, rejects future edits, audits check-ins, reconciles
+  approved absences and supports an explicit Absent reason. Parent absences reject past/same-day
+  conflicts and approval is blocked when attendance exists. Added progress delete, negative overtime
+  feedback, scheduler never-run state, centre-scoped fee generation, parent receipts and teacher
+  class-scoped memos. Shell/nav/profile/conversation/progress UI polished. **21 new regression tests**;
+  total **303 passing**. Deployment is pending SSH access.
 - **Tier-1 debt sweep + P0/P1/P2 fixes (6 Nov 2026).** Added [`DEBT-REGISTER.md`](DEBT-REGISTER.md)
   (30 findings, P0–P3). Fixed the Symfony advisories (Laravel 12.71 / Symfony 7.4.22–23), closed the
   cross-centre authorization gaps in photos, conversations, message search, global search, parent
