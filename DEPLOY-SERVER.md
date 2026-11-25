@@ -259,6 +259,7 @@ ssh user@server 'cd /opt/ppak && docker compose -f docker-compose.server.yml up 
 | Caddy cannot get a certificate | DNS not pointing to the server, or 80/443 blocked. `docker compose logs caddy` |
 | `404` on the app domain | `docker compose ps` — app unhealthy? `docker compose logs app` |
 | `500` after deploy | Usually `APP_KEY` missing or Postgres not ready. Check app logs |
+| `502` on list pages, nginx log says `upstream sent too big header` | Raise the proxy header buffers: `proxy_buffer_size 32k; proxy_buffers 8 32k; proxy_busy_buffers_size 64k;` in the app server block, then `nginx -t` and reload |
 | Login works but redirects to `http://` | `APP_URL` must be the `https://` URL; recreate the app container |
 | Realtime not connecting | The bundle still points at the build-time `WS_DOMAIN`. Rebuild after changing it |
 | Mixed-content WebSocket errors | `APP_URL` must be HTTPS and `REVERB_SCHEME=http` only for the internal app→Reverb hop |
