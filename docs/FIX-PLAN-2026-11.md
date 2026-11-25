@@ -3,10 +3,14 @@
 This plan combines two independent reviews of the live `ppakuthm.com` build:
 
 - **[`UI-UX-REVIEW.md`](UI-UX-REVIEW.md)** — 76 screenshots across admin desktop, teacher mobile and parent mobile.
-- **`UAT-REPORT-PPAKUTHM-2026-11-26.md`** — 48 UAT scenarios: **26 PASS / 17 FAIL / 5 BLOCKED**.
+- **[`UAT-REPORT-PPAKUTHM-2026-11-26.md`](UAT-REPORT-PPAKUTHM-2026-11-26.md)** — 48 UAT scenarios: **26 PASS / 17 FAIL / 5 BLOCKED**.
 
-> **Security note:** the UAT report contains plaintext demo passwords. It is currently untracked
-> and must **not** be committed as-is. Redact the credentials before archiving it under `docs/`.
+> **Security note:** the archived report has the demo passwords redacted. The original untracked
+> copy contains plaintext credentials and must never be committed.
+>
+> **Implementation status (26 Nov 2026):** the code-side fixes for this plan and the UI/UX review
+> shipped in `d2d2e78`. Live deployment, the DB/photo backup and the clean demo reseed are still
+> pending server access.
 
 ---
 
