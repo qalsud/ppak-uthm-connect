@@ -12,6 +12,7 @@ Start with the root [README](../README.md) for the feature map, setup and local 
 | [`DEPLOY-SERVER.md`](DEPLOY-SERVER.md) | **current** | Full stack on your own VPS (Caddy, or nginx + certbot), with HTTPS |
 | [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) | **current** | Supabase Postgres + Storage for a temporary demo |
 | [`DEPLOY-PPAKUTHM.md`](DEPLOY-PPAKUTHM.md) | **runbook** | Exact deployment used for the live `ppakuthm.com` instance (nginx + certbot + Docker) |
+| [`UI-UX-REVIEW.md`](UI-UX-REVIEW.md) | **current** | Screenshot-based UI/UX audit (Nov 2026) with prioritised fixes |
 | [`demo-accounts.txt`](demo-accounts.txt) | reference | Seeded demo emails; public deployments rotate the passwords |
 
 ## Plans

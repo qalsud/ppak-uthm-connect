@@ -235,6 +235,7 @@ scripts/start-server.bat           Windows local dev launcher
 | [`DEPLOY-SERVER.md`](docs/DEPLOY-SERVER.md) | Full stack on your own VPS (Caddy, or nginx + certbot) + HTTPS |
 | [`DEPLOY-SUPABASE.md`](docs/DEPLOY-SUPABASE.md) | Supabase Postgres + Storage for a temporary demo |
 | [`DEPLOY-PPAKUTHM.md`](docs/DEPLOY-PPAKUTHM.md) | Exact runbook for the live `ppakuthm.com` deployment (nginx + certbot + Docker) |
+| [`UI-UX-REVIEW.md`](docs/UI-UX-REVIEW.md) | Screenshot-based UI/UX audit (Nov 2026) with prioritised fixes |
 
 ## Continuing this work (handoff)
 
