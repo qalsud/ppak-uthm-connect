@@ -227,6 +227,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/register/attendance/mark-all', [TeacherAttendanceController::class, 'markAll'])->name('register.attendance.mark-all');
             Route::post('/register/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('register.attendance.checkout');
             Route::post('/register/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('register.attendance.store');
+            Route::post('/register/attendance/{student}/absent', [TeacherAttendanceController::class, 'absent'])->name('register.attendance.absent');
 
             Route::post('/register/medications/{medication}', [TeacherMedicationController::class, 'update'])->name('register.medications.update');
             Route::post('/register/absences/{absence}', [TeacherAbsenceController::class, 'update'])->name('register.absences.update');
@@ -240,6 +241,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/register/progress', [TeacherProgressController::class, 'index'])->name('register.progress.index');
             Route::post('/register/progress', [TeacherProgressController::class, 'store'])->name('register.progress.store');
             Route::get('/register/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('register.progress.report');
+            Route::delete('/register/progress/{record}', [TeacherProgressController::class, 'destroy'])->name('register.progress.destroy');
 
             Route::get('/register/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('register.daily-updates.index');
 
@@ -259,6 +261,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::get('/progress', [TeacherProgressController::class, 'index'])->name('progress.index');
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
             Route::get('/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('progress.report');
+            Route::delete('/progress/{record}', [TeacherProgressController::class, 'destroy'])->name('progress.destroy');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');
             Route::get('/growth', [TeacherGrowthController::class, 'index'])->name('growth.index');
             Route::post('/growth', [TeacherGrowthController::class, 'store'])->name('growth.store');
@@ -266,7 +269,9 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/attendance/mark-all', [TeacherAttendanceController::class, 'markAll'])->name('attendance.mark-all');
             Route::post('/attendance/{student}/checkout', [TeacherAttendanceController::class, 'checkout'])->name('attendance.checkout');
             Route::post('/attendance/{student}', [TeacherAttendanceController::class, 'store'])->name('attendance.store');
+            Route::post('/attendance/{student}/absent', [TeacherAttendanceController::class, 'absent'])->name('attendance.absent');
             Route::get('/memos', [TeacherMemoController::class, 'index'])->name('memos.index');
+            Route::post('/memos', [TeacherMemoController::class, 'store'])->name('memos.store');
             Route::post('/medications/{medication}', [TeacherMedicationController::class, 'update'])->name('medications.update');
             Route::post('/absences/{absence}', [TeacherAbsenceController::class, 'update'])->name('absences.update');
 
@@ -293,6 +298,7 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::delete('/absences/{absence}', [ParentAbsenceController::class, 'destroy'])->name('absences.destroy');
             Route::get('/teachers', [ParentContactController::class, 'index'])->name('teachers.index');
             Route::get('/financials', [ParentFinancialController::class, 'index'])->name('financials.index');
+            Route::get('/financials/{record}/receipt', [ParentFinancialController::class, 'receipt'])->name('financials.receipt');
             Route::get('/memos', [ParentMemoController::class, 'index'])->name('memos.index');
 
             Route::get('/attendance', [ParentAttendanceController::class, 'index'])->name('attendance.index');

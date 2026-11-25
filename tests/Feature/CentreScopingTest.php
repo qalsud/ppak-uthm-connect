@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Models\Centre;
+use App\Models\FeeSetting;
+use App\Models\FinancialRecord;
 use App\Models\Student;
 use App\Models\User;
 use Database\Seeders\CentreSeeder;
@@ -94,4 +96,51 @@ test('the centre seeder is idempotent', function () {
     $this->seed(CentreSeeder::class);
 
     expect(Centre::count())->toBe(2);
+});
+
+test('generating fees only covers children at the active centre', function () {
+    FeeSetting::create(['monthly_fee' => 300, 'overtime_rate' => 6]);
+
+    $admin = User::factory()->role(UserRole::Admin)->create();
+    $mine = Student::factory()->create(['centre_id' => $this->khalifah->id]);
+    $theirs = Student::factory()->create(['centre_id' => $this->taska->id]);
+
+    $this->actingAs($admin)->post(route('admin.centres.switch'), [
+        'centre_id' => $this->khalifah->id,
+    ])->assertRedirect();
+
+    $this->actingAs($admin)
+        ->post(route('admin.payments.generate'), ['month' => 'January'])
+        ->assertRedirect();
+
+    expect(FinancialRecord::where('student_id', $mine->id)->where('month', 'January')->exists())->toBeTrue()
+        ->and(FinancialRecord::where('student_id', $theirs->id)->where('month', 'January')->exists())->toBeFalse();
+});
+
+test('a parent contact list only shows teachers for their class and centre', function () {
+    $parent = User::factory()->role(UserRole::Parent)->create();
+    Student::factory()->create([
+        'parent_id' => $parent->id,
+        'class' => '5tahun',
+        'centre_id' => $this->khalifah->id,
+    ]);
+
+    $match = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    $match->centres()->attach($this->khalifah->id);
+
+    // Same class, different centre.
+    $otherCentre = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    $otherCentre->centres()->attach($this->taska->id);
+
+    // Same centre, different class.
+    $otherClass = User::factory()->role(UserRole::Teacher)->create(['class' => '6bintang']);
+    $otherClass->centres()->attach($this->khalifah->id);
+
+    $this->actingAs($parent)
+        ->get(route('parent.teachers.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Parent/Teachers')
+            ->has('teachers', 1)
+            ->where('teachers.0.id', $match->id));
 });

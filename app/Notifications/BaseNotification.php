@@ -19,12 +19,21 @@ abstract class BaseNotification extends Notification
 
     abstract public function url(): ?string;
 
+    /**
+     * The in-app link for a specific recipient. Most notifications have one
+     * destination; override this when a role has its own screen (e.g. memos).
+     */
+    protected function urlFor(object $notifiable): ?string
+    {
+        return $this->url();
+    }
+
     public function toArray(object $notifiable): array
     {
         return [
             'title' => $this->title(),
             'body' => $this->body(),
-            'url' => $this->url(),
+            'url' => $this->urlFor($notifiable),
         ];
     }
 
@@ -33,7 +42,7 @@ abstract class BaseNotification extends Notification
         return new BroadcastMessage([
             'title' => $this->title(),
             'body' => $this->body(),
-            'url' => $this->url(),
+            'url' => $this->urlFor($notifiable),
         ]);
     }
 
@@ -44,7 +53,7 @@ abstract class BaseNotification extends Notification
             ->greeting('PPAK UTHM Connect')
             ->line($this->body());
 
-        if ($url = $this->url()) {
+        if ($url = $this->urlFor($notifiable)) {
             $mail->action('Open PPAK UTHM Connect', url($url));
         }
 

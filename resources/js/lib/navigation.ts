@@ -54,6 +54,7 @@ export const adminNav: NavItem[] = [
             { label: 'progress', href: '/admin/register/progress', icon: BookOpen },
             { label: 'growth', href: '/admin/register/growth', icon: Ruler },
             { label: 'daily_updates', href: '/admin/register/daily-updates', icon: BellRing },
+            { label: 'messages', href: '/admin/register/messages', icon: MessageSquare },
         ],
     },
     { label: 'conversations', href: '/admin/conversations', icon: MessageSquare },

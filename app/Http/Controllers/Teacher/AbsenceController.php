@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
+use App\Models\Attendance;
 use App\Models\Message;
 use App\Notifications\AbsenceReviewedNotification;
 use App\Services\Messaging\ConversationService;
@@ -12,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AbsenceController extends Controller
 {
@@ -26,6 +28,21 @@ class AbsenceController extends Controller
             'status' => ['required', Rule::in(['approved', 'declined'])],
             'review_note' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if ($data['status'] === 'approved') {
+            $attended = Attendance::query()
+                ->where('student_id', $absence->student_id)
+                ->whereDate('date', '>=', $absence->start_date?->toDateString())
+                ->whereDate('date', '<=', $absence->end_date?->toDateString())
+                ->where(fn ($q) => $q->whereNotNull('arrived_at')->orWhereNotNull('departed_at'))
+                ->exists();
+
+            if ($attended) {
+                throw ValidationException::withMessages([
+                    'status' => __('absence_conflict'),
+                ]);
+            }
+        }
 
         $absence->update([
             'status' => $data['status'],

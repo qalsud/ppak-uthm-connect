@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parent;
 use App\Http\Controllers\Controller;
 use App\Models\AbsenceAttachment;
 use App\Models\AbsenceRequest;
+use App\Models\Attendance;
 use App\Models\Message;
 use App\Models\Student;
 use App\Models\User;
@@ -31,7 +32,7 @@ class AbsenceController extends Controller
         $data = $request->validate([
             'start_date' => [
                 'required', 'date',
-                'after_or_equal:'.today()->subDays(7)->toDateString(),
+                'after_or_equal:'.today()->toDateString(),
                 'before_or_equal:'.today()->addDays(90)->toDateString(),
             ],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
@@ -67,6 +68,21 @@ class AbsenceController extends Controller
         if ($overlaps) {
             throw ValidationException::withMessages([
                 'start_date' => __('absence_overlap'),
+            ]);
+        }
+
+        // A child who already attended one of these days cannot be marked
+        // absent for it; the parent should correct the attendance with staff.
+        $attended = Attendance::query()
+            ->where('student_id', $student->id)
+            ->whereDate('date', '>=', $start?->toDateString())
+            ->whereDate('date', '<=', $end?->toDateString())
+            ->where(fn ($q) => $q->whereNotNull('arrived_at')->orWhereNotNull('departed_at'))
+            ->exists();
+
+        if ($attended) {
+            throw ValidationException::withMessages([
+                'start_date' => __('absence_conflict'),
             ]);
         }
 

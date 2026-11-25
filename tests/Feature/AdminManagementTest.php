@@ -5,6 +5,7 @@ use App\Enums\UserRole;
 use App\Models\AbsenceRequest;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
+use App\Models\Centre;
 use App\Models\Conversation;
 use App\Models\DailyActivity;
 use App\Models\FeeSetting;
@@ -90,10 +91,14 @@ test('admin can reject a pending registration', function () {
 });
 
 test('admin can create and delete a teacher', function () {
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre']);
+
     $this->actingAs(admin())->post(route('admin.teachers.store'), [
         'name' => 'Cikgu Baru',
         'email' => 'cikgu@ppakuthm.com',
         'password' => 'password123',
+        'class' => '5tahun',
+        'centre_ids' => [$centre->id],
     ])->assertRedirect();
 
     $teacher = User::query()->where('email', 'cikgu@ppakuthm.com')->first();
@@ -106,6 +111,14 @@ test('admin can create and delete a teacher', function () {
         ->assertRedirect();
 
     expect(User::find($teacher->id))->toBeNull();
+});
+
+test('a teacher must be assigned a class and at least one centre', function () {
+    $this->actingAs(admin())->post(route('admin.teachers.store'), [
+        'name' => 'Cikgu Tanpa Skop',
+        'email' => 'tanpa-skop@ppakuthm.com',
+        'password' => 'password123',
+    ])->assertSessionHasErrors(['class', 'centre_ids']);
 });
 
 test('admin can create a student', function () {
@@ -225,13 +238,17 @@ test('admin can import teachers from a csv with a default password', function ()
 });
 
 test('admin can reset a teacher password', function () {
-    $teacher = User::factory()->role(UserRole::Teacher)->create(['password' => 'oldpassword']);
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre']);
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['password' => 'oldpassword', 'class' => '5tahun']);
+    $teacher->centres()->attach($centre->id);
 
     $this->actingAs(admin())->put(route('admin.teachers.update', $teacher), [
         'name' => $teacher->name,
         'email' => $teacher->email,
         'status' => 'active',
         'password' => 'newpassword',
+        'class' => '5tahun',
+        'centre_ids' => [$centre->id],
     ])->assertRedirect();
 
     expect(Hash::check('newpassword', $teacher->fresh()->password))->toBeTrue();

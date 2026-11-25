@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 /** The account states every user-management list offers. */
-export const ACCOUNT_STATUSES = ['pending', 'active', 'awaiting', 'rejected'] as const;
+export const ACCOUNT_STATUSES = ['pending', 'inactive', 'active', 'awaiting', 'rejected'] as const;
 
 /**
  * Status dropdown with per-status counts. Shared by Parents, Teachers and

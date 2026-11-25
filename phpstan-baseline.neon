@@ -163,14 +163,14 @@ parameters:
 			path: app/Http/Controllers/Admin/ListController.php
 
 		-
-			message: '#^Relation ''students'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/MemoController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$students_count\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ParentController.php
+
+		-
+			message: '#^Relation ''students'' is not found in App\\Models\\User model\.$#'
+			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/ParentController.php
 
@@ -183,12 +183,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\User\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Admin/ParentController.php
-
-		-
-			message: '#^Relation ''students'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/ParentController.php
 

@@ -182,7 +182,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         <Logo chip className="size-8" />
                                     </Link>
                                 )}
-                                <p className="truncate text-lg font-semibold text-foreground">
+                                <p className="hidden truncate text-lg font-semibold text-foreground lg:block">
                                     {heading}
                                 </p>
                             </div>

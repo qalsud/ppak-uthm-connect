@@ -40,7 +40,8 @@ export default function CheckInDialog({
         ...(date ? { date } : {}),
     });
 
-    const submit = () =>
+    const submit = () => {
+        form.transform((data) => ({ ...data, ...(date ? { date } : {}) }));
         form.post(actionRoute(isAdmin, 'attendance.store', { student: studentId }), {
             preserveScroll: true,
             onSuccess: () => {
@@ -48,6 +49,7 @@ export default function CheckInDialog({
                 onOpenChange(false);
             },
         });
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,6 +89,10 @@ export default function CheckInDialog({
                             onChange={(e) => form.setData('health_note', e.target.value)}
                         />
                     </div>
+
+                    {form.errors.date && (
+                        <p className="text-xs text-destructive">{form.errors.date}</p>
+                    )}
                 </div>
 
                 <DialogFooter>

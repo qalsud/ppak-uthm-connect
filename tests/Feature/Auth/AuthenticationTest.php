@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AccountStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -27,9 +28,23 @@ test('users can not authenticate with invalid password', function () {
     $this->post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
-    ]);
+    ])->assertSessionHasErrors('email');
 
     $this->assertGuest();
+});
+
+test('inactive and pending users cannot authenticate', function () {
+    $inactive = User::factory()->create(['status' => AccountStatus::Inactive]);
+    $pending = User::factory()->pending()->create();
+
+    foreach ([$inactive, $pending] as $user) {
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
 });
 
 test('failed login attempts are logged with the identifier and IP', function () {

@@ -153,7 +153,7 @@ class PaymentController extends Controller
 
         $created = 0;
 
-        $students = Student::query()->active()->with('parent')->get();
+        $students = Student::query()->active()->forActiveCentre()->with('parent')->get();
 
         foreach ($students as $student) {
             $existing = $this->forMonth($student->id, $data['month']);

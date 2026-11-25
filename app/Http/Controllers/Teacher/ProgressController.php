@@ -86,6 +86,22 @@ class ProgressController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, ProgressRecord $record): RedirectResponse
+    {
+        $student = Student::query()->findOrFail($record->student_id);
+
+        abort_unless($request->user()->canManage($student), 403);
+
+        $date = $record->date?->toDateString();
+
+        $record->photos->each->delete();
+        $record->delete();
+
+        ActivityLog::record('progress.deleted', $student, $student->name, ['date' => $date]);
+
+        return back()->with('success', __('approval.deleted'));
+    }
+
     public function store(Request $request, ImageStore $images): RedirectResponse
     {
         $validated = $request->validate([

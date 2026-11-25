@@ -463,7 +463,7 @@ export default function Payments({ records, months, classes, students, fee, summ
                     </Select>
                 </FormField>
 
-                <FormField label={t('overtime')}>
+                <FormField label={t('overtime')} error={addForm.errors.overtime_hours}>
                     <Input
                         type="number"
                         min="0"

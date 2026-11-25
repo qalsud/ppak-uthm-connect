@@ -256,7 +256,7 @@ export default function Teachers({
                                     meta={
                                         <>
                                             <p className="text-xs text-muted-foreground">
-                                                {teacher.class ? classLabel(teacher.class) : t('all_classes')}
+                                                {teacher.class ? classLabel(teacher.class) : t('unassigned')}
                                             </p>
                                             <p className="mt-0.5 text-xs">
                                                 {(teacher.centre_ids ?? []).length > 0 ? (
@@ -436,17 +436,17 @@ export default function Teachers({
                     <FormField
                         label={t('class')}
                         hint={t('class_assignment_hint')}
+                        error={form.errors.class}
                         className="sm:col-span-2"
                     >
                         <Select
-                            value={form.data.class || 'none'}
-                            onValueChange={(v) => form.setData('class', v === 'none' ? '' : v)}
+                            value={form.data.class}
+                            onValueChange={(v) => form.setData('class', v)}
                         >
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue placeholder={t('select_class')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">{t('all_classes')}</SelectItem>
                                 {classes.map((c) => (
                                     <SelectItem key={c} value={c}>
                                         {classLabel(c)}
@@ -460,6 +460,7 @@ export default function Teachers({
                         <FormField
                             label={t('assign_centre')}
                             hint={t('teacher_centres_hint')}
+                            error={form.errors.centre_ids}
                             className="sm:col-span-2"
                         >
                             <div className="flex flex-wrap gap-2">
@@ -489,12 +490,6 @@ export default function Teachers({
                                     );
                                 })}
                             </div>
-                            {form.data.centre_ids.length === 0 && (
-                                <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-700">
-                                    <AlertTriangle className="size-3.5" />
-                                    {t('unrestricted_warning')}
-                                </p>
-                            )}
                         </FormField>
                     )}
 

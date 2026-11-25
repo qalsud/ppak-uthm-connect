@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { CreditCard, Wallet } from 'lucide-react';
+import { CreditCard, Download, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -180,6 +180,15 @@ export default function ParentFinancials({
                                                             status={r.status}
                                                             label={r.status === 'paid' ? t('paid') : t('unpaid')}
                                                         />
+                                                        {r.status === 'paid' && (
+                                                            <a
+                                                                href={route('parent.financials.receipt', r.id)}
+                                                                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+                                                                aria-label={t('view_receipt')}
+                                                            >
+                                                                <Download className="size-4" />
+                                                            </a>
+                                                        )}
                                                     </span>
                                                 </label>
                                             );

@@ -52,10 +52,10 @@ class DatabaseSeeder extends Seeder
 
         // ---- Teachers ------------------------------------------------------
         $teacherData = [
-            ['Nurul Syazana binti Abdu Ghani', 'teacher@ppakuthm.com', '950120-03-5512', '0111234567'],
-            ['Farha Nur binti Ismail', 'farha@example.com', '930408-02-5524', '0128765432'],
-            ['Ahmad Zaki bin Osman', 'zaki@example.com', '910911-14-5549', '0135557788'],
-            ['Siti Hajar binti Mohamad Asbar', 'hajar@example.com', '960223-06-5535', '0147778899'],
+            ['Nurul Syazana binti Abdu Ghani', 'teacher@ppakuthm.com', '950120-03-5512', '0111234567', '6bintang'],
+            ['Farha Nur binti Ismail', 'farha@example.com', '930408-02-5524', '0128765432', '5tahun'],
+            ['Ahmad Zaki bin Osman', 'zaki@example.com', '910911-14-5549', '0135557788', '5tahun'],
+            ['Siti Hajar binti Mohamad Asbar', 'hajar@example.com', '960223-06-5535', '0147778899', '5tahun'],
         ];
 
         $teachers = collect($teacherData)->map(fn ($t) => User::create([
@@ -65,6 +65,7 @@ class DatabaseSeeder extends Seeder
             'phone' => $t[3],
             'password' => 'password123',
             'role' => UserRole::Teacher,
+            'class' => $t[4],
             'status' => AccountStatus::Active,
             'email_verified_at' => now(),
         ]));
@@ -190,8 +191,8 @@ class DatabaseSeeder extends Seeder
             ]));
 
             $teachers->each(fn (User $teacher, int $i) => $teacher->centres()->sync(match ($i) {
-                2 => [],                      // unrestricted — shows the UI warning
                 3 => [$taska->id],            // second centre
+                2 => [$taska->id],            // Taska class teacher
                 default => [$khalifah->id],
             }));
         }

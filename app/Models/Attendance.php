@@ -25,6 +25,7 @@ class Attendance extends Model
         'health_note',
         'absence_request_id',
         'absence_type',
+        'absence_note',
         'collected_by',
         'collector_override_reason',
     ];
@@ -72,7 +73,7 @@ class Attendance extends Model
             return 'school';
         }
 
-        if ($this->absence_request_id) {
+        if ($this->absence_request_id || $this->absence_type) {
             return 'absent';
         }
 
@@ -117,12 +118,13 @@ class Attendance extends Model
         ];
     }
 
-    /** @return array{absence_type: string|null, absence_reason: string|null} */
+    /** @return array{absence_type: string|null, absence_reason: string|null, absence_note: string|null} */
     private function absencePayload(): array
     {
         return [
             'absence_type' => $this->absence_type,
             'absence_reason' => $this->absenceRequest?->reason,
+            'absence_note' => $this->absence_note,
         ];
     }
 
@@ -148,6 +150,7 @@ class Attendance extends Model
             'health_note' => null,
             'absence_type' => null,
             'absence_reason' => null,
+            'absence_note' => null,
             'photo' => null,
             'note' => null,
             'photo_override' => false,
@@ -170,6 +173,19 @@ class Attendance extends Model
         // The child turned up, so any approved absence no longer applies.
         $this->absence_request_id = null;
         $this->absence_type = null;
+        $this->absence_note = null;
+    }
+
+    /** Explicitly mark the day absent (teacher/admin correction). */
+    public function markAbsent(string $type, ?string $note = null): void
+    {
+        $this->arrived_at = null;
+        $this->arrived_by = null;
+        $this->departed_at = null;
+        $this->departed_by = null;
+        $this->absence_request_id = null;
+        $this->absence_type = $type;
+        $this->absence_note = $note;
     }
 
     /** Mark the child as departed (auto-fills arrival if it was never set). */

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\ActivityLog;
 use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
@@ -95,4 +96,43 @@ test('the report period filters the included records', function () {
         ->and($all['counts']['good'])->toBe(1)
         ->and($all['counts']['poor'])->toBe(1)
         ->and($recent['counts']['total'])->toBe(1);
+});
+
+test('a teacher can delete a progress record for their class', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    [, $student] = progressChild();
+    $record = progressRecord($student, $teacher, now()->subDay()->toDateString());
+
+    $this->actingAs($teacher)
+        ->delete(route('teacher.progress.destroy', $record))
+        ->assertRedirect();
+
+    expect(ProgressRecord::find($record->id))->toBeNull()
+        ->and(ActivityLog::where('action', 'progress.deleted')->exists())->toBeTrue();
+});
+
+test('a teacher cannot delete a progress record for another class', function () {
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '6bintang']);
+    $owner = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    [, $student] = progressChild();
+    $record = progressRecord($student, $owner, now()->subDay()->toDateString());
+
+    $this->actingAs($teacher)
+        ->delete(route('teacher.progress.destroy', $record))
+        ->assertForbidden();
+
+    expect(ProgressRecord::find($record->id))->not->toBeNull();
+});
+
+test('an admin can delete a progress record', function () {
+    $admin = User::factory()->role(UserRole::Admin)->create();
+    $teacher = User::factory()->role(UserRole::Teacher)->create(['class' => '5tahun']);
+    [, $student] = progressChild();
+    $record = progressRecord($student, $teacher, now()->subDay()->toDateString());
+
+    $this->actingAs($admin)
+        ->delete(route('admin.register.progress.destroy', $record))
+        ->assertRedirect();
+
+    expect(ProgressRecord::find($record->id))->toBeNull();
 });

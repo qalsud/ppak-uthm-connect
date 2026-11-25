@@ -1,10 +1,12 @@
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, UserMinus } from 'lucide-react';
 import { useState } from 'react';
 
+import AbsentDialog from '@/Components/absent-dialog';
 import CheckInDialog from '@/Components/check-in-dialog';
 import CheckoutDialog, { type Collector } from '@/Components/checkout-dialog';
 import PhotoThumb from '@/Components/photo-thumb';
 import { Button } from '@/Components/ui/button';
+import { localDate } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
 import type { PhotoInfo } from '@/lib/photo';
 
@@ -16,6 +18,7 @@ export type AttendanceSummary = {
     health_note?: string | null;
     absence_type?: string | null;
     absence_reason?: string | null;
+    absence_note?: string | null;
     collected_by?: string | null;
     collector_override?: string | null;
     photo?: PhotoInfo | null;
@@ -64,12 +67,28 @@ export default function AttendanceActions({
     const { t } = useI18n();
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkoutOpen, setCheckoutOpen] = useState(false);
+    const [absentOpen, setAbsentOpen] = useState(false);
 
     // Parents are read-only: attendance is marked by teachers.
     const readOnly = role === 'parent';
+    const {
+        status,
+        arrived_at,
+        departed_at,
+        temperature,
+        health_note,
+        absence_type,
+        absence_reason,
+        absence_note,
+        photo,
+        note,
+        photo_override,
+        collected_by,
+        collector_override,
+    } = attendance;
 
-    const { status, arrived_at, departed_at, temperature, health_note, absence_type, absence_reason, photo, note, photo_override, collected_by, collector_override } =
-        attendance;
+    const future = !!date && date > localDate();
+    const futureBlocked = future && status !== 'absent';
 
     const elevated = temperature !== null && temperature !== undefined && parseFloat(temperature) >= 37.5;
 
@@ -112,8 +131,8 @@ export default function AttendanceActions({
                 </p>
             )}
 
-            {status === 'absent' && absence_reason && (
-                <p className="text-[11px] text-muted-foreground">{absence_reason}</p>
+            {status === 'absent' && (absence_note || absence_reason) && (
+                <p className="text-[11px] text-muted-foreground">{absence_note || absence_reason}</p>
             )}
 
             {/* Checkout proof */}
@@ -132,26 +151,43 @@ export default function AttendanceActions({
             {readOnly ? (
                 <p className="text-[11px] text-muted-foreground">{t('updated_by_teacher')}</p>
             ) : (
-                <div className="grid grid-cols-2 gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="h-10 gap-1.5 rounded-xl text-xs"
-                        disabled={status === 'school' || status === 'absent'}
-                        onClick={() => setCheckInOpen(true)}
-                    >
-                        <LogIn className="size-4" />
-                        {t('at_school')}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="h-10 gap-1.5 rounded-xl text-xs"
-                        disabled={status === 'home'}
-                        onClick={() => setCheckoutOpen(true)}
-                    >                        <LogOut className="size-4" />
-                        {t('back_home')}
-                    </Button>
+                <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 gap-1.5 rounded-xl text-xs"
+                            disabled={futureBlocked || status === 'school'}
+                            onClick={() => setCheckInOpen(true)}
+                        >
+                            <LogIn className="size-4" />
+                            {t('at_school')}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 gap-1.5 rounded-xl text-xs"
+                            disabled={futureBlocked || status === 'home' || status === 'absent'}
+                            onClick={() => setCheckoutOpen(true)}
+                        >
+                            <LogOut className="size-4" />
+                            {t('back_home')}
+                        </Button>
+                    </div>
+                    {status === 'none' && !futureBlocked && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 w-full gap-1.5 rounded-xl text-xs text-destructive"
+                            onClick={() => setAbsentOpen(true)}
+                        >
+                            <UserMinus className="size-4" />
+                            {t('mark_absent')}
+                        </Button>
+                    )}
+                    {futureBlocked && (
+                        <p className="text-[11px] text-muted-foreground">{t('future_view_only')}</p>
+                    )}
                 </div>
             )}
 
@@ -173,6 +209,14 @@ export default function AttendanceActions({
                         isAdmin={isAdmin}
                         open={checkoutOpen}
                         onOpenChange={setCheckoutOpen}
+                    />
+                    <AbsentDialog
+                        studentId={studentId}
+                        studentName={studentName ?? ''}
+                        date={date}
+                        isAdmin={isAdmin}
+                        open={absentOpen}
+                        onOpenChange={setAbsentOpen}
                     />
                 </>
             )}

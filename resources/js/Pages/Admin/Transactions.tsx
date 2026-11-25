@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { CreditCard, Eye, RotateCcw, Search } from 'lucide-react';
+import { AlertTriangle, CreditCard, Eye, RotateCcw, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import EmptyState from '@/Components/empty-state';
@@ -116,6 +116,16 @@ export default function Transactions({ payments, signals, stripeConfigured, filt
     return (
         <AppShell nav={adminNav} bottomNav={adminBottomNav} title={t('admin')}>
             <PageHeader title={t('transactions')} description={t('transactions_desc')} />
+
+            {!stripeConfigured && (
+                <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <div>
+                        <p className="font-medium">{t('stripe_not_configured')}</p>
+                        <p className="text-xs">{t('stripe_not_configured_desc')}</p>
+                    </div>
+                </div>
+            )}
 
             <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <StatCard label={t('collected')} value={formatMoney(signals.collected)} icon={CreditCard} />

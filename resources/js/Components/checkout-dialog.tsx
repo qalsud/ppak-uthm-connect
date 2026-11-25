@@ -89,12 +89,14 @@ export default function CheckoutDialog({
         (form.data.collected_by !== '' &&
             (!notListed || form.data.collector_override.trim().length > 0));
 
-    const submit = () =>
+    const submit = () => {
+        form.transform((data) => ({ ...data, ...(date ? { date } : {}) }));
         form.post(actionRoute(isAdmin, 'attendance.checkout', { student: studentId }), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => close(false),
         });
+    };
 
     return (
         <Dialog open={open} onOpenChange={close}>

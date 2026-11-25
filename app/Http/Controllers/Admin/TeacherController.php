@@ -62,8 +62,8 @@ class TeacherController extends Controller
     {
         $data = $request->validate([
             ...AccountRules::write(),
-            'class' => ['nullable', Rule::in(Student::classKeys())],
-            'centre_ids' => ['nullable', 'array'],
+            'class' => ['required', Rule::in(Student::classKeys())],
+            'centre_ids' => ['required', 'array', 'min:1'],
             'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
         ]);
 
@@ -92,8 +92,8 @@ class TeacherController extends Controller
         $data = $request->validate([
             ...AccountRules::write($user, requirePassword: false),
             'status' => AccountRules::status(),
-            'class' => ['nullable', Rule::in(Student::classKeys())],
-            'centre_ids' => ['nullable', 'array'],
+            'class' => ['required', Rule::in(Student::classKeys())],
+            'centre_ids' => ['required', 'array', 'min:1'],
             'centre_ids.*' => ['integer', Rule::exists('centres', 'id')],
         ]);
 

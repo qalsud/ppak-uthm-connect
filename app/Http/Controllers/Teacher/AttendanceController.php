@@ -11,11 +11,13 @@ use App\Models\Student;
 use App\Notifications\CheckInRecordedNotification;
 use App\Services\Attendance\CheckoutService;
 use App\Services\Images\ImageStore;
+use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
@@ -126,17 +128,32 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'action' => ['required', Rule::in(['arrive'])],
-            // Teachers may correct an upcoming absence day (e.g. the child turns
-            // up), so allow the same forward window as the absence form.
-            'date' => ['nullable', 'date', 'before_or_equal:'.today()->addDays(90)->toDateString()],
+            // Backdating is limited to a week. Future dates are only allowed
+            // when correcting an approved-absence day (the child turns up).
+            'date' => [
+                'nullable', 'date',
+                'after_or_equal:'.today()->subDays(7)->toDateString(),
+                'before_or_equal:'.today()->addDays(90)->toDateString(),
+            ],
             'temperature' => ['nullable', 'numeric', 'between:30,45'],
             'health_note' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $attendance = Attendance::firstOrNew([
-            'student_id' => $student->id,
-            'date' => $data['date'] ?? today()->toDateString(),
-        ]);
+        $date = $data['date'] ?? today()->toDateString();
+
+        $attendance = Attendance::query()
+            ->where('student_id', $student->id)
+            ->whereDate('date', $date)
+            ->first()
+            ?? new Attendance(['student_id' => $student->id, 'date' => $date]);
+
+        // A future day is view-only unless it is an approved absence that the
+        // teacher is correcting because the child actually turned up.
+        if ($attendance->date?->isAfter(today()) && ! $attendance->absence_request_id) {
+            throw ValidationException::withMessages([
+                'date' => __('future_attendance_blocked'),
+            ]);
+        }
 
         $wasArrived = (bool) $attendance->arrived_at;
 
@@ -156,9 +173,54 @@ class AttendanceController extends Controller
 
         $attendance->save();
 
+        ActivityLog::record('attendance.arrived', $student, $student->name, [
+            'date' => $attendance->date?->toDateString(),
+            'temperature' => $attendance->temperature,
+        ]);
+
         if (! $wasArrived && $student->parent) {
             Notification::send($student->parent, new CheckInRecordedNotification($student, $attendance));
         }
+
+        return back()->with('success', __('approval.attendance_saved'));
+    }
+
+    /** Explicitly mark a child absent for the selected day. */
+    public function absent(Request $request, Student $student): RedirectResponse
+    {
+        abort_unless($request->user()->canManage($student), 403);
+
+        $data = $request->validate([
+            'absence_type' => ['required', Rule::in(Lists::keys('absence_type'))],
+            'absence_note' => ['nullable', 'string', 'max:255'],
+            'date' => [
+                'nullable', 'date',
+                'after_or_equal:'.today()->subDays(7)->toDateString(),
+                'before_or_equal:'.today()->toDateString(),
+            ],
+        ]);
+
+        $date = $data['date'] ?? today()->toDateString();
+
+        $attendance = Attendance::query()
+            ->where('student_id', $student->id)
+            ->whereDate('date', $date)
+            ->first()
+            ?? new Attendance(['student_id' => $student->id, 'date' => $date]);
+
+        if ($attendance->arrived_at || $attendance->departed_at) {
+            throw ValidationException::withMessages([
+                'absence_type' => __('already_attended'),
+            ]);
+        }
+
+        $attendance->markAbsent($data['absence_type'], $data['absence_note'] ?? null);
+        $attendance->save();
+
+        ActivityLog::record('attendance.absent', $student, $student->name, [
+            'date' => $attendance->date?->toDateString(),
+            'type' => $data['absence_type'],
+        ]);
 
         return back()->with('success', __('approval.attendance_saved'));
     }

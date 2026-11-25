@@ -154,12 +154,12 @@ export default function ConversationList({
                                     </span>
                                 </div>
                                 <p
-                                    className={`flex items-center gap-1 truncate text-xs ${
+                                    className={`flex min-w-0 items-center gap-1 text-xs ${
                                         active ? 'text-white/80' : 'text-muted-foreground'
                                     }`}
                                 >
                                     {c.last_type === 'system' && <FileText className="size-3 shrink-0" />}
-                                    <span className="truncate">{c.last_message || '—'}</span>
+                                    <span className="min-w-0 flex-1 truncate">{c.last_message || '—'}</span>
                                 </p>
                             </div>
                             {unread && (

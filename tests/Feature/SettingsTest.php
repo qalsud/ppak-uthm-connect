@@ -130,3 +130,29 @@ test('running a scheduled command records that it ran', function () {
 
     expect(setting('scheduler.fee_reminders_last_run'))->not->toBeNull();
 });
+
+test('the scheduler distinguishes never-run from stale', function () {
+    $admin = settingsAdmin();
+
+    $this->actingAs($admin)
+        ->get(route('admin.settings.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('scheduler.fee_reminders.not_run', true)
+            ->where('scheduler.fee_reminders.stale', false));
+
+    Settings::put('scheduler.fee_reminders_last_run', now()->subHours(30)->toIso8601String());
+
+    $this->actingAs($admin)
+        ->get(route('admin.settings.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('scheduler.fee_reminders.not_run', false)
+            ->where('scheduler.fee_reminders.stale', true));
+
+    Settings::put('scheduler.fee_reminders_last_run', now()->subHour()->toIso8601String());
+
+    $this->actingAs($admin)
+        ->get(route('admin.settings.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('scheduler.fee_reminders.not_run', false)
+            ->where('scheduler.fee_reminders.stale', false));
+});

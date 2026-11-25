@@ -22,4 +22,13 @@ class MemoPostedNotification extends BaseNotification
     {
         return route('parent.memos.index');
     }
+
+    protected function urlFor(object $notifiable): ?string
+    {
+        if (method_exists($notifiable, 'isTeacher') && $notifiable->isTeacher()) {
+            return route('teacher.memos.index');
+        }
+
+        return $this->url();
+    }
 }

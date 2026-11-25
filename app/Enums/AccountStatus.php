@@ -7,6 +7,7 @@ enum AccountStatus: string
     case Pending = 'pending';
     case AwaitingActivation = 'awaiting';
     case Active = 'active';
+    case Inactive = 'inactive';
     case Rejected = 'rejected';
 
     public function label(): string
@@ -15,6 +16,7 @@ enum AccountStatus: string
             self::Pending => 'Pending',
             self::AwaitingActivation => 'Awaiting activation',
             self::Active => 'Active',
+            self::Inactive => 'Inactive',
             self::Rejected => 'Rejected',
         };
     }

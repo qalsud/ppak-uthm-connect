@@ -127,6 +127,7 @@ class AbsenceRequest extends Model
 
             $attendance->absence_request_id = null;
             $attendance->absence_type = null;
+            $attendance->absence_note = null;
 
             if ($attendance->arrived_at || $attendance->departed_at) {
                 $attendance->save();

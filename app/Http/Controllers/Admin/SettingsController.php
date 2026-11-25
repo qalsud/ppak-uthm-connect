@@ -103,7 +103,8 @@ class SettingsController extends Controller
                 'command' => $command,
                 'last_run' => $lastAt?->toIso8601String(),
                 'last_run_human' => $lastAt?->diffForHumans(),
-                'stale' => $lastAt === null || $lastAt->lt(now()->subHours(25)),
+                'not_run' => $lastAt === null,
+                'stale' => $lastAt !== null && $lastAt->lt(now()->subHours(25)),
             ];
         }
 

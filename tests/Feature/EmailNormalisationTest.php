@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\Centre;
 use App\Models\User;
 use Illuminate\Support\Facades\Password;
 
@@ -23,6 +24,7 @@ test('the user model stores emails lowercased and trimmed', function () {
 
 test('an admin cannot create a case-variant duplicate account', function () {
     $admin = User::factory()->role(UserRole::Admin)->create();
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre']);
     User::factory()->create(['email' => 'teacher@example.com']);
 
     $this->actingAs($admin)
@@ -30,6 +32,8 @@ test('an admin cannot create a case-variant duplicate account', function () {
             'name' => 'Another Teacher',
             'email' => 'Teacher@Example.com',
             'password' => 'password123',
+            'class' => '5tahun',
+            'centre_ids' => [$centre->id],
         ])
         ->assertSessionHasErrors('email');
 

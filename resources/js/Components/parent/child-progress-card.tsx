@@ -101,13 +101,28 @@ export default function ChildProgressCard({
                                         {formatDate(p.date)}
                                     </span>
                                 </div>
-                                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                    <RatingChip value={p.activity_done} />
-                                    <RatingChip value={p.child_proficiency} />
-                                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                                        {listLabel(lists, 'progress_development', p.development_proficiency)}
-                                    </span>
-                                </div>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                        <div>
+                            <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                {t('activity_performance')}
+                            </p>
+                            <RatingChip value={p.activity_done} />
+                        </div>
+                        <div>
+                            <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                {t('skill_mastery')}
+                            </p>
+                            <RatingChip value={p.child_proficiency} />
+                        </div>
+                        <div>
+                            <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                {t('development_area')}
+                            </p>
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                                {listLabel(lists, 'progress_development', p.development_proficiency)}
+                            </span>
+                        </div>
+                    </div>
                                 <p className="mt-1.5 text-[11px] text-muted-foreground">
                                     {t('permata_activity')}:{' '}
                                     {listLabel(lists, 'progress_permata', p.permata_activity)} ·{' '}

@@ -1,7 +1,8 @@
 import { router, useForm } from '@inertiajs/react';
-import { BookOpen, CalendarDays, Download, Info, LineChart, Save, User } from 'lucide-react';
+import { BookOpen, CalendarDays, Download, Info, LineChart, Pencil, Save, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 
+import ConfirmDialog from '@/Components/confirm-dialog';
 import PageHeader from '@/Components/page-header';
 import PhotoThumb from '@/Components/photo-thumb';
 import PhotoUpload from '@/Components/photo-upload';
@@ -42,7 +43,7 @@ type Record = {
     free_activity: string;
     development_proficiency: string;
     notes: string | null;
-    student: { name: string; class: string };
+    student: { id: number; name: string; class: string };
     teacher: { name: string } | null;
     photo?: PhotoInfo | null;
 };
@@ -103,8 +104,37 @@ export default function Progress({
     const progressLabel = (group: string, value?: string | null) => listLabel(lists, group, value);
 
     const form = useForm({ ...emptyForm, student_id: filters.student || '' });
+    const [deleteTarget, setDeleteTarget] = useState<Record | null>(null);
 
     const ready = form.data.student_id !== '' && form.data.date !== '';
+
+    const editRecord = (record: Record) => {
+        form.setData({
+            student_id: String(record.student.id),
+            date: record.date,
+            sub_theme: record.sub_theme ?? '',
+            activity_done: record.activity_done,
+            child_proficiency: record.child_proficiency,
+            permata_activity: record.permata_activity,
+            free_activity: record.free_activity,
+            development_proficiency: record.development_proficiency,
+            notes: record.notes ?? '',
+            photo: null,
+        });
+        form.clearErrors();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const confirmDelete = () => {
+        if (!deleteTarget) {
+            return;
+        }
+
+        router.delete(actionRoute(shell.isAdmin, 'progress.destroy', { record: deleteTarget.id }), {
+            preserveScroll: true,
+            onFinish: () => setDeleteTarget(null),
+        });
+    };
 
     const submit = () =>
         form.post(actionRoute(shell.isAdmin, 'progress.store'), {
@@ -464,11 +494,29 @@ export default function Progress({
                                                 {r.sub_theme ? ` · ${r.sub_theme}` : ''}
                                             </p>
                                         </div>
-                                        {r.teacher && (
-                                            <span className="shrink-0 text-[11px] text-muted-foreground">
-                                                {r.teacher.name}
-                                            </span>
-                                        )}
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            {r.teacher && (
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    {r.teacher.name}
+                                                </span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => editRecord(r)}
+                                                className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+                                                aria-label={t('edit')}
+                                            >
+                                                <Pencil className="size-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleteTarget(r)}
+                                                className="rounded-md p-1 text-destructive hover:bg-accent"
+                                                aria-label={t('delete')}
+                                            >
+                                                <Trash2 className="size-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -500,6 +548,15 @@ export default function Progress({
                     )}
                 </CardContent>
             </Card>
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(v) => !v && setDeleteTarget(null)}
+                title={`${t('delete')} ${deleteTarget?.student.name ?? ''}?`}
+                description={t('cannot_be_undone')}
+                confirmLabel={t('delete')}
+                onConfirm={confirmDelete}
+            />
         </AppShell>
     );
 }

@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { AlertTriangle, CheckCircle2, Settings as SettingsIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, Settings as SettingsIcon } from 'lucide-react';
 import { useState } from 'react';
 
 import PageHeader from '@/Components/page-header';
@@ -28,6 +28,7 @@ type JobStatus = {
     command: string;
     last_run: string | null;
     last_run_human: string | null;
+    not_run: boolean;
     stale: boolean;
 };
 
@@ -176,17 +177,25 @@ export default function AdminSettings({
                             </div>
                             <span
                                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                                    job.stale
-                                        ? 'bg-amber-50 text-amber-700'
-                                        : 'bg-emerald-50 text-emerald-700'
+                                    job.not_run
+                                        ? 'bg-slate-100 text-slate-600'
+                                        : job.stale
+                                          ? 'bg-amber-50 text-amber-700'
+                                          : 'bg-emerald-50 text-emerald-700'
                                 }`}
                             >
-                                {job.stale ? (
+                                {job.not_run ? (
+                                    <Clock3 className="size-3.5" />
+                                ) : job.stale ? (
                                     <AlertTriangle className="size-3.5" />
                                 ) : (
                                     <CheckCircle2 className="size-3.5" />
                                 )}
-                                {job.stale ? t('scheduler_stale') : t('scheduler_ok')}
+                                {job.not_run
+                                    ? t('scheduler_not_run')
+                                    : job.stale
+                                      ? t('scheduler_stale')
+                                      : t('scheduler_ok')}
                             </span>
                         </div>
                     ))}

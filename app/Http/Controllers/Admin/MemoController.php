@@ -2,22 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\AccountStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Centre;
 use App\Models\Memo;
 use App\Models\Student;
-use App\Models\User;
-use App\Notifications\MemoPostedNotification;
-use App\Services\Images\ImageStore;
+use App\Services\Memos\MemoService;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -25,7 +18,7 @@ use Inertia\Response;
 
 class MemoController extends Controller
 {
-    public function __construct(private ImageStore $images) {}
+    public function __construct(private MemoService $memos) {}
 
     public function index(): Response
     {
@@ -44,30 +37,24 @@ class MemoController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validated($request);
-
-        $memo = Memo::create([
-            ...$data,
-            'author_id' => $request->user()->id,
-        ]);
-
-        $this->storeAttachments($memo, $request->file('attachments') ?? [], $request->user());
-
-        Notification::send($this->recipients($memo), new MemoPostedNotification($memo));
-
-        ActivityLog::record('memo.created', $memo, $memo->title, ['audience' => $memo->audience]);
+        $this->memos->create(
+            $request->user(),
+            $this->validated($request),
+            $request->file('attachments') ?? [],
+        );
 
         return back()->with('success', __('approval.memo_created'));
     }
 
     public function update(Request $request, Memo $memo): RedirectResponse
     {
-        $memo->update($this->validated($request));
-
-        $this->removeAttachments($memo, (array) $request->input('remove_attachments', []));
-        $this->storeAttachments($memo, $request->file('attachments') ?? [], $request->user());
-
-        ActivityLog::record('memo.updated', $memo, $memo->title, ['audience' => $memo->audience]);
+        $this->memos->update(
+            $memo,
+            $request->user(),
+            $this->validated($request),
+            $request->file('attachments') ?? [],
+            (array) $request->input('remove_attachments', []),
+        );
 
         return back()->with('success', __('approval.updated'));
     }
@@ -114,81 +101,5 @@ class MemoController extends Controller
         }
 
         return $data;
-    }
-
-    /**
-     * Store uploaded photos on the private disk and attach them to the memo.
-     *
-     * @param  array<int, UploadedFile|null>  $files
-     */
-    private function storeAttachments(Memo $memo, array $files, User $uploader): void
-    {
-        foreach (array_filter($files) as $file) {
-            $stored = $this->images->store($file, 'memos');
-
-            $memo->attachments()->create([
-                'disk' => $stored->disk,
-                'path' => $stored->path,
-                'thumb_path' => $stored->thumbPath,
-                'original_name' => $file->getClientOriginalName(),
-                'mime' => $stored->mime,
-                'size' => $stored->size,
-                'width' => $stored->width,
-                'height' => $stored->height,
-                'uploaded_by' => $uploader->id,
-            ]);
-        }
-    }
-
-    /**
-     * Delete the given attachments (only ones that belong to this memo).
-     *
-     * @param  array<int, int|string>  $ids
-     */
-    private function removeAttachments(Memo $memo, array $ids): void
-    {
-        if ($ids === []) {
-            return;
-        }
-
-        $memo->attachments()->whereIn('id', $ids)->get()->each->delete();
-    }
-
-    /** @return Collection<int, User> */
-    private function recipients(Memo $memo): Collection
-    {
-        $active = User::query()->where('status', AccountStatus::Active);
-
-        // Restrict to the memo's centre when it has one.
-        $inCentre = fn ($q) => $memo->centre_id
-            ? $q->where(fn ($w) => $w
-                ->whereHas('centres', fn ($c) => $c->where('centres.id', $memo->centre_id))
-                ->orWhereDoesntHave('centres'))
-            : $q;
-
-        return match ($memo->audience) {
-            'parents' => $inCentre((clone $active)->where('role', UserRole::Parent))->get(),
-            'teachers' => $inCentre((clone $active)->where('role', UserRole::Teacher))->get(),
-            'class' => (clone $active)
-                ->whereIn('role', [UserRole::Parent, UserRole::Teacher])
-                ->where(function ($q) use ($memo) {
-                    // Parents of that class (in the memo's centre)...
-                    $q->orWhereHas('students', fn ($s) => $s
-                        ->where('class', $memo->class)
-                        ->when($memo->centre_id, fn ($c) => $c->where('centre_id', $memo->centre_id)));
-
-                    // ...plus teachers of that class at that centre. A teacher
-                    // with no class assigned is unrestricted, so include them.
-                    $q->orWhere(fn ($w) => $w
-                        ->where('role', UserRole::Teacher)
-                        ->where(fn ($c) => $c->where('class', $memo->class)->orWhereNull('class')));
-                })
-                ->when($memo->centre_id, fn ($q) => $q->where(fn ($w) => $w
-                    ->where('role', UserRole::Parent)
-                    ->orWhereHas('centres', fn ($c) => $c->where('centres.id', $memo->centre_id))
-                    ->orWhereDoesntHave('centres')))
-                ->get(),
-            default => (clone $active)->whereIn('role', [UserRole::Parent, UserRole::Teacher])->get(),
-        };
     }
 }
