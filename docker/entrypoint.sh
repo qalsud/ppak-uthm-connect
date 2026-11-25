@@ -3,6 +3,11 @@ set -e
 
 cd /var/www/html
 
+# Optional per-container memory cap for small VPSes (e.g. PHP_MEMORY_LIMIT=256M).
+if [ -n "${PHP_MEMORY_LIMIT:-}" ]; then
+  printf 'memory_limit = %s\n' "${PHP_MEMORY_LIMIT}" > /usr/local/etc/php/conf.d/zz-memory.ini
+fi
+
 # The web service uses the image's default CMD. A second service (queue worker,
 # scheduler, Reverb) passes its own command as arguments.
 if [ $# -eq 0 ]; then

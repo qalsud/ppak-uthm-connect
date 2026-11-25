@@ -24,6 +24,7 @@ first in a new session.***
 5. **`LITTLELIVES-COMPARISON.md`** — feature comparison / roadmap
 6. **`DEPLOY.md`** — deploying the demo
 7. **`DEPLOY-SUPABASE.md`** — Postgres + storage on Supabase (temporary hosting)
+8. **`DEPLOY-SERVER.md`** — full stack on your own VPS with a free DuckDNS name + HTTPS
 
 ---
 

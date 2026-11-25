@@ -1,0 +1,11 @@
+# Caddy terminates TLS for both DuckDNS names and proxies to the internal
+# Docker network. Certificates are obtained automatically from Let's Encrypt.
+
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy app:80
+}
+
+{$WS_DOMAIN} {
+	reverse_proxy reverb:8082
+}

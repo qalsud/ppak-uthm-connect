@@ -17,6 +17,10 @@ A `Dockerfile`, `docker/entrypoint.sh` and Apache config are included — Option
 > **Using Supabase?** Supabase provides **Postgres + object storage**, not PHP hosting. Keep one of
 > the PHP hosts above and follow [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) for the database
 > (session pooler + SSL) and Storage (S3) settings.
+>
+> **Have a VPS with SSH?** [`DEPLOY-SERVER.md`](DEPLOY-SERVER.md) runs the **whole stack** on it
+> (Postgres, queue worker, scheduler, Reverb and automatic HTTPS) with a free DuckDNS subdomain —
+> no purchased domain required.
 
 ## Local Docker stack (optional, production-shaped)
 

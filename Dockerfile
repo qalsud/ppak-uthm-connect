@@ -23,7 +23,7 @@ FROM php:8.3-apache
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git unzip libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+        git unzip curl libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
         libonig-dev libzip-dev libsqlite3-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql pdo_pgsql pgsql pdo_sqlite mbstring exif pcntl bcmath gd zip \
