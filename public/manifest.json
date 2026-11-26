@@ -1,0 +1,37 @@
+{
+    "id": "/",
+    "name": "PPAK UTHM Connect",
+    "short_name": "PPAK Connect",
+    "description": "The official portal for the Centre for Early Childhood Education, Universiti Tun Hussein Onn Malaysia. Attendance, daily updates, progress and fees for parents, teachers and administrators.",
+    "lang": "en",
+    "dir": "ltr",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "portrait-primary",
+    "background_color": "#f7f5f0",
+    "theme_color": "#2d6abb",
+    "categories": ["education", "productivity"],
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

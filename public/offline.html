@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#2d6abb" />
+        <title>Offline — PPAK UTHM Connect</title>
+        <style>
+            :root {
+                color-scheme: light;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                display: grid;
+                min-height: 100dvh;
+                margin: 0;
+                place-items: center;
+                padding: 24px;
+                background: #f7f5f0;
+                color: #1f2933;
+                font-family: "Segoe UI", Arial, sans-serif;
+            }
+            .card {
+                width: min(100%, 420px);
+                padding: 32px 28px;
+                border: 1px solid #e4ded2;
+                border-radius: 20px;
+                background: #fff;
+                text-align: center;
+                box-shadow: 0 20px 50px rgb(21 34 89 / 8%);
+            }
+            img {
+                width: 72px;
+                height: auto;
+                margin-bottom: 20px;
+            }
+            h1 {
+                margin: 0 0 8px;
+                color: #152259;
+                font-size: 22px;
+            }
+            p {
+                margin: 0 0 22px;
+                color: #62707c;
+                font-size: 14px;
+                line-height: 1.55;
+            }
+            button {
+                width: 100%;
+                min-height: 44px;
+                border: 0;
+                border-radius: 12px;
+                background: #2d6abb;
+                color: #fff;
+                font: inherit;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            .muted {
+                margin: 18px 0 0;
+                color: #8a949e;
+                font-size: 11px;
+            }
+        </style>
+    </head>
+    <body>
+        <main class="card">
+            <img src="/images/logo-ppak.png" alt="PPAK UTHM" />
+            <h1>You are offline</h1>
+            <p>
+                PPAK UTHM Connect needs a connection for live attendance, messages and fees.
+                Check your connection and try again.
+            </p>
+            <button type="button" onclick="window.location.reload()">Try again</button>
+            <p class="muted">PPAK UTHM Connect</p>
+        </main>
+    </body>
+</html>

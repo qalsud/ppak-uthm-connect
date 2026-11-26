@@ -10,9 +10,16 @@
             content="PPAK UTHM Connect — the official portal for the Centre for Early Childhood Education, Universiti Tun Hussein Onn Malaysia. Attendance, daily updates, progress and fees for parents, teachers and administrators."
         />
 
-        <!-- Favicon -->
-        <link rel="icon" href="/images/logo-ppak.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/images/logo-ppak.png" />
+        <!-- Favicon and PWA -->
+        <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2d6abb" />
+        <meta name="application-name" content="PPAK Connect" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="PPAK Connect" />
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

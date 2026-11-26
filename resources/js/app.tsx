@@ -14,6 +14,16 @@ configureEcho({
     broadcaster: 'reverb',
 });
 
+// Register the PWA service worker only in production; Vite's dev server should
+// not be shadowed by a cached shell.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+            // Installability is a progressive enhancement; never break the app.
+        });
+    });
+}
+
 const appName = import.meta.env.VITE_APP_NAME || 'PPAK UTHM';
 
 /**

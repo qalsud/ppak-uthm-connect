@@ -7,6 +7,8 @@ import LanguageSwitcher from '@/Components/language-switcher';
 import Logo from '@/Components/logo';
 import NotificationBell from '@/Components/notification-bell';
 import CentreSwitcher from '@/Components/centre-switcher';
+import PwaInstallMenuItem from '@/Components/pwa-install-menu-item';
+import PwaInstallPrompt from '@/Components/pwa-install-prompt';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
@@ -237,6 +239,7 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                                         <div className="py-1 pl-1 lg:hidden">
                                             <LanguageSwitcher />
                                         </div>
+                                        <PwaInstallMenuItem />
                                         <DropdownMenuItem onClick={handleLogout}>
                                             <LogOut className="size-4" />
                                             {t('logout')}
@@ -313,6 +316,8 @@ export default function AppShell({ children, nav = [], bottomNav = [], title }: 
                     </div>
                 </nav>
             )}
+
+            <PwaInstallPrompt />
         </div>
     );
 }

@@ -3,9 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-// NOTE: PWA/service-worker support is intentionally not installed yet (real
-// icons + offline strategy are a later phase). A premature service worker can
-// serve stale pages to browsers during development.
+// The PWA lives in public/: manifest.json, sw.js and offline.html. The service
+// worker is registered from app.tsx in production only, so Vite HMR never
+// serves a stale app shell during development.
 export default defineConfig({
     plugins: [
         laravel({
