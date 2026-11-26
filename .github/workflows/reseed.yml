@@ -1,0 +1,46 @@
+name: Reseed demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RESEED to wipe and reseed the live database'
+        required: true
+        type: string
+
+concurrency:
+  group: production-operations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  reseed:
+    name: Wipe and reseed the demo database
+    if: github.event.inputs.confirm == 'RESEED'
+    runs-on: ubuntu-latest
+    environment: production-destructive
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare SSH
+        uses: ./.github/actions/ssh-setup
+        with:
+          private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Run reseed over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          ssh -i ~/.ssh/deploy_key -p "$PORT" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "$SSH_USER@$SSH_HOST" reseed

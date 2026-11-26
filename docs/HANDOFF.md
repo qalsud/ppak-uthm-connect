@@ -19,6 +19,10 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 > use [`DEPLOY-PPAKUTHM.md`](DEPLOY-PPAKUTHM.md). The live `.env` must set `LOG_CHANNEL=stderr` before
 > rebuilding, then `DEMO_SEED=true` only for the clean reseed and `DEMO_SEED=false` afterwards.
 >
+> **Deployment automation:** the CI/CD split is committed — [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md),
+> `deploy.yml`, `backup.yml`, `reseed.yml` and `scripts/remote-deploy.sh`. It is **not active** until
+> the server deploy user/key, GitHub secrets and the `AUTO_DEPLOY` variable are configured.
+>
 > Local-only leftovers: `docker-compose.yml` has a user port edit, and the untracked original
 > `UAT-REPORT-PPAKUTHM-2026-11-26.md` at the repo root contains plaintext demo passwords. Never
 > commit it; the archived `docs/` copy is redacted.

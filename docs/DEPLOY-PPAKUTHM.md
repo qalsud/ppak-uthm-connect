@@ -4,6 +4,7 @@ This is the **actual runbook used to deploy the live instance** at `https://ppak
 "what we really ran" companion to the generic [`DEPLOY-SERVER.md`](DEPLOY-SERVER.md).
 
 Use this when rebuilding the same server, moving to a new VPS, or onboarding someone else.
+For the GitHub Actions CI/CD workflows, see [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md).
 
 > **What this deployment is:** one Ubuntu VPS running **nginx + certbot + Docker Compose**, with the
 > app, queue worker, scheduler, Reverb and Postgres in containers. **No Supabase** — the database and
