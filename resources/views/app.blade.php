@@ -11,8 +11,8 @@
         />
 
         <!-- Favicon and PWA -->
-        <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+        <link rel="icon" href="/images/pwa/icon-192.png" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/images/pwa/apple-touch-icon.png" sizes="180x180" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2d6abb" />
         <meta name="application-name" content="PPAK Connect" />

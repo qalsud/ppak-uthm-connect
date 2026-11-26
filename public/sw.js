@@ -1,12 +1,12 @@
-const CACHE = 'ppak-shell-v1';
+const CACHE = 'ppak-shell-v2';
 const OFFLINE_URL = '/offline.html';
 const PRECACHE = [
     OFFLINE_URL,
     '/manifest.json',
     '/images/logo-ppak.png',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png',
-    '/icons/apple-touch-icon.png',
+    '/images/pwa/icon-192.png',
+    '/images/pwa/icon-512.png',
+    '/images/pwa/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,7 +49,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     // Vite assets are content-hashed; cache-first is safe for them.
-    if (url.pathname.startsWith('/build/') || url.pathname.startsWith('/icons/')) {
+    if (url.pathname.startsWith('/build/') || url.pathname.startsWith('/images/pwa/')) {
         event.respondWith(
             caches.match(request).then(
                 (cached) =>

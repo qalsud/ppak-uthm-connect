@@ -86,7 +86,7 @@ export default function PwaInstallPrompt() {
         >
             <div className="flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-xl shadow-black/10">
                 <img
-                    src="/icons/icon-192.png"
+                    src="/images/pwa/icon-192.png"
                     alt=""
                     className="size-10 shrink-0 rounded-xl"
                     width={40}
