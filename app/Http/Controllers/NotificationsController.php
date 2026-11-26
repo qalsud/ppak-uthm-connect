@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Notifications\BaseNotification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,8 +36,9 @@ class NotificationsController extends Controller
         }
 
         $notifications = $user->notifications()
+            ->getQuery()
             ->when($unread, fn ($query) => $query->whereNull('read_at'))
-            ->when($category, fn ($query) => $query->where('data->category', $category))
+            ->when($category, fn ($query) => $this->whereCategory($query, $category))
             ->latest()
             ->paginate(self::PAGE_SIZE)
             ->withQueryString()
@@ -48,12 +51,15 @@ class NotificationsController extends Controller
                 'unread' => $unread,
             ],
             'categories' => collect(BaseNotification::CATEGORIES)
-                ->map(fn (string $value) => [
-                    'value' => $value,
-                    'unread' => $user->unreadNotifications()
-                        ->where('data->category', $value)
-                        ->count(),
-                ])
+                ->map(function (string $value) use ($user) {
+                    $query = $user->unreadNotifications()->getQuery();
+                    $this->whereCategory($query, $value);
+
+                    return [
+                        'value' => $value,
+                        'unread' => $query->count(),
+                    ];
+                })
                 ->all(),
             'unreadCount' => $user->unreadNotifications()->count(),
         ]);
@@ -118,6 +124,24 @@ class NotificationsController extends Controller
     private function find(Request $request, string $notification): DatabaseNotification
     {
         return $request->user()->notifications()->whereKey($notification)->firstOrFail();
+    }
+
+    /**
+     * Category lives inside the JSON `data` column. Laravel's `data->category`
+     * shortcut assumes a native JSON column, but the notifications table uses
+     * text on Postgres, so pick the correct expression per driver.
+     */
+    private function whereCategory(Builder $query, string $category): void
+    {
+        $column = $query->getModel()->getTable().'.data';
+
+        $expression = match (DB::connection()->getDriverName()) {
+            'pgsql' => "({$column}::jsonb ->> 'category')",
+            'mysql', 'mariadb' => "json_unquote(json_extract({$column}, '$.category'))",
+            default => "json_extract({$column}, '$.category')",
+        };
+
+        $query->whereRaw($expression.' = ?', [$category]);
     }
 
     /** @return array<string, mixed> */
