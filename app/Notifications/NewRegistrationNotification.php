@@ -8,6 +8,16 @@ class NewRegistrationNotification extends BaseNotification
 {
     public function __construct(private User $registrant) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_REGISTRATION;
+    }
+
+    public function priority(): string
+    {
+        return self::PRIORITY_HIGH;
+    }
+
     public function title(): string
     {
         return 'Pendaftaran baharu / New registration';

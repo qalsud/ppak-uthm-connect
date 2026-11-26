@@ -13,28 +13,23 @@ import {
 import { Separator } from '@/Components/ui/separator';
 import { formatDateTime } from '@/lib/date';
 import { useI18n } from '@/lib/i18n';
+import { categoryMeta, type NotificationItem } from '@/lib/notification-meta';
+import { cn } from '@/lib/utils';
 import type { PageProps } from '@/types';
 
-type Item = {
-    id: string;
-    read_at: string | null;
-    created_at: string;
-    data: { title?: string; body?: string; url?: string };
-};
-
 /**
- * In-app notification bell. Polls the /notifications endpoint — functional on
- * its own and becomes live/instant when Pusher keys are configured server-side.
+ * In-app notification bell. Polls the compact feed and refreshes instantly
+ * when Reverb delivers a broadcast notification.
  */
 export default function NotificationBell() {
     const { t } = useI18n();
     const userId = usePage<PageProps>().props.auth.user.id;
-    const [items, setItems] = useState<Item[]>([]);
+    const [items, setItems] = useState<NotificationItem[]>([]);
     const [count, setCount] = useState(0);
 
     const load = useCallback(async () => {
         try {
-            const { data } = await window.axios.get('/notifications');
+            const { data } = await window.axios.get('/notifications/feed');
             setCount(data.count ?? 0);
             setItems(data.data ?? []);
         } catch {
@@ -49,19 +44,42 @@ export default function NotificationBell() {
         return () => clearInterval(interval);
     }, [load]);
 
-    // Instant refresh when a new message is delivered to this user. The slow
-    // poll above stays as a safety net when Reverb is unreachable.
-    useEcho(`App.Models.User.${userId}`, '.message.sent', () => load(), [userId, load]);
+    // Laravel broadcasts every database notification on the user's private
+    // channel. The poll above remains as a safety net when Reverb is offline.
+    useEcho(`App.Models.User.${userId}`, '.notification', () => load(), [userId, load]);
 
-    const open = async (item: Item) => {
-        try {
-            await window.axios.post('/notifications/read-all');
-        } catch {
-            // ignore
+    const open = async (item: NotificationItem) => {
+        if (!item.read_at) {
+            try {
+                const { data } = await window.axios.post(`/notifications/${item.id}/read`);
+                setCount(data.count ?? 0);
+                setItems((current) =>
+                    current.map((entry) =>
+                        entry.id === item.id ? { ...entry, read_at: data.read_at } : entry,
+                    ),
+                );
+            } catch {
+                // ignore; the link is still useful
+            }
         }
-        setCount(0);
+
         if (item.data.url) {
             router.visit(item.data.url);
+        }
+    };
+
+    const markAllRead = async () => {
+        try {
+            await window.axios.post('/notifications/read-all');
+            setCount(0);
+            setItems((current) =>
+                current.map((entry) => ({
+                    ...entry,
+                    read_at: entry.read_at ?? new Date().toISOString(),
+                })),
+            );
+        } catch {
+            // ignore
         }
     };
 
@@ -93,10 +111,7 @@ export default function NotificationBell() {
                             variant="ghost"
                             size="sm"
                             className="h-7 gap-1 text-xs"
-                            onClick={() => {
-                                window.axios.post('/notifications/read-all');
-                                setCount(0);
-                            }}
+                            onClick={markAllRead}
                         >
                             <CheckCheck className="size-3" aria-hidden="true" />
                             {t('mark_all_read')}
@@ -110,30 +125,56 @@ export default function NotificationBell() {
                     </p>
                 ) : (
                     <div className="min-h-0 flex-1 overflow-y-auto">
-                        {items.map((item) => (
-                            <DropdownMenuItem
-                                key={item.id}
-                                onClick={() => open(item)}
-                                className="cursor-pointer items-start gap-2 px-3 py-2"
-                            >
-                                <span
-                                    className={`mt-1 size-2 shrink-0 rounded-full ${item.read_at ? 'bg-muted' : 'bg-brand-blue'}`}
-                                />
-                                <span className="min-w-0">
-                                    <span className="block break-words text-sm font-medium">
-                                        {item.data.title}
+                        {items.map((item) => {
+                            const meta = categoryMeta(item.data.category);
+                            const Icon = meta.icon;
+
+                            return (
+                                <DropdownMenuItem
+                                    key={item.id}
+                                    onClick={() => open(item)}
+                                    className="cursor-pointer items-start gap-2.5 px-3 py-2.5"
+                                >
+                                    <span
+                                        className={cn(
+                                            'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg',
+                                            meta.className,
+                                        )}
+                                    >
+                                        <Icon className="size-3.5" aria-hidden="true" />
                                     </span>
-                                    <span className="mt-0.5 line-clamp-2 block break-words text-xs text-muted-foreground">
-                                        {item.data.body}
+                                    <span className="min-w-0 flex-1">
+                                        <span className="flex items-start gap-2">
+                                            <span className="min-w-0 flex-1 break-words text-sm font-medium">
+                                                {item.data.title}
+                                            </span>
+                                            {!item.read_at && (
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="mt-1.5 size-2 shrink-0 rounded-full bg-brand-blue"
+                                                />
+                                            )}
+                                        </span>
+                                        <span className="mt-0.5 line-clamp-2 block break-words text-xs text-muted-foreground">
+                                            {item.data.body}
+                                        </span>
+                                        <span className="mt-0.5 block text-[11px] text-muted-foreground/70">
+                                            {formatDateTime(item.created_at)}
+                                        </span>
                                     </span>
-                                    <span className="mt-0.5 block text-[11px] text-muted-foreground/70">
-                                        {formatDateTime(item.created_at)}
-                                    </span>
-                                </span>
-                            </DropdownMenuItem>
-                        ))}
+                                </DropdownMenuItem>
+                            );
+                        })}
                     </div>
                 )}
+                <Separator className="shrink-0" />
+                <button
+                    type="button"
+                    onClick={() => router.visit('/notifications')}
+                    className="shrink-0 px-3 py-2.5 text-center text-xs font-semibold text-primary transition-colors hover:bg-muted"
+                >
+                    {t('view_all_notifications')}
+                </button>
             </DropdownMenuContent>
         </DropdownMenu>
     );

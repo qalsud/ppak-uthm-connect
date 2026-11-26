@@ -1,5 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
-import { ChevronDown, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, Clock, FileText, Globe2, Pencil, Pin, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import ConfirmDialog from '@/Components/confirm-dialog';
@@ -12,7 +12,7 @@ import PhotoPicker from '@/Components/photo-picker';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { FormField } from '@/Components/ui/form-field';
+import { FormCheckbox, FormField, FormGrid } from '@/Components/ui/form-field';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -41,6 +41,11 @@ type Memo = {
     created_at: string;
     author: { id: number; name: string } | null;
     photos: PhotoInfo[];
+    is_public: boolean;
+    publish_at: string | null;
+    expires_at: string | null;
+    is_pinned: boolean;
+    notify_users: boolean;
 };
 
 const MAX_PHOTOS = 3;
@@ -55,6 +60,7 @@ export default function Memos({
 }) {
     const { t } = useI18n();
     const classLabel = useClassLabelHook();
+    const audienceOptions = useList('memo_audience');
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Memo | null>(null);
     const [expanded, setExpanded] = useState<number[]>([]);
@@ -66,6 +72,11 @@ export default function Memos({
         audience: 'all',
         class: '',
         centre_id: '',
+        is_public: false,
+        publish_at: '',
+        expires_at: '',
+        is_pinned: false,
+        notify_users: true,
         attachments: [] as File[],
         remove_attachments: [] as number[],
     });
@@ -84,6 +95,25 @@ export default function Memos({
         return memo.centre ? `${memo.centre.name} · ${base}` : base;
     };
 
+    /** Public-visibility state: scheduled, live, or expired. */
+    const publicStatus = (memo: Memo): 'scheduled' | 'live' | 'expired' | null => {
+        if (!memo.is_public) {
+            return null;
+        }
+
+        const now = Date.now();
+
+        if (memo.publish_at && new Date(memo.publish_at).getTime() > now) {
+            return 'scheduled';
+        }
+
+        if (memo.expires_at && new Date(memo.expires_at).getTime() <= now) {
+            return 'expired';
+        }
+
+        return 'live';
+    };
+
     const openCreate = () => {
         setEditing(null);
         form.setData({
@@ -92,6 +122,11 @@ export default function Memos({
             audience: 'all',
             class: '',
             centre_id: '',
+            is_public: false,
+            publish_at: '',
+            expires_at: '',
+            is_pinned: false,
+            notify_users: true,
             attachments: [],
             remove_attachments: [],
         });
@@ -107,6 +142,11 @@ export default function Memos({
             audience: memo.audience,
             class: memo.class ?? '',
             centre_id: memo.centre_id ? String(memo.centre_id) : '',
+            is_public: memo.is_public,
+            publish_at: memo.publish_at ? memo.publish_at.slice(0, 16) : '',
+            expires_at: memo.expires_at ? memo.expires_at.slice(0, 16) : '',
+            is_pinned: memo.is_pinned,
+            notify_users: memo.notify_users,
             attachments: [],
             remove_attachments: [],
         });
@@ -176,9 +216,33 @@ export default function Memos({
                                         <p className="mt-0.5 text-xs text-muted-foreground">
                                             {memo.author?.name} · {formatDate(memo.created_at)}
                                         </p>
-                                        <Badge variant="secondary" className="mt-1.5">
-                                            {audienceLabel(memo)}
-                                        </Badge>
+                                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                            <Badge variant="secondary">{audienceLabel(memo)}</Badge>
+                                            {memo.is_public && (
+                                                <Badge variant="outline" className="gap-1">
+                                                    <Globe2 className="size-3" />
+                                                    {t('memo_public_badge')}
+                                                </Badge>
+                                            )}
+                                            {memo.is_pinned && (
+                                                <Badge variant="outline" className="gap-1">
+                                                    <Pin className="size-3" />
+                                                    {t('memo_pinned_badge')}
+                                                </Badge>
+                                            )}
+                                            {publicStatus(memo) === 'scheduled' && (
+                                                <Badge variant="outline" className="gap-1">
+                                                    <Clock className="size-3" />
+                                                    {t('memo_scheduled')}
+                                                </Badge>
+                                            )}
+                                            {publicStatus(memo) === 'expired' && (
+                                                <Badge variant="outline" className="gap-1 text-muted-foreground">
+                                                    <Clock className="size-3" />
+                                                    {t('memo_expired')}
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex shrink-0">
                                         <IconButton label={t('edit')} onClick={() => openEdit(memo)}>
@@ -236,56 +300,151 @@ export default function Memos({
                     />
                 </FormField>
 
-                <FormField label={t('audience')}>
-                    <Select value={form.data.audience} onValueChange={(v) => form.setData('audience', v)}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                            <SelectContent>
-                                {useList('memo_audience').map((a) => (
-                                    <SelectItem key={a.value} value={a.value}>
-                                        {a.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                    </Select>
-                </FormField>
+                <FormCheckbox
+                    label={t('memo_public')}
+                    description={t('memo_public_hint')}
+                    checked={form.data.is_public}
+                    onChange={(checked) => {
+                        form.setData({
+                            ...form.data,
+                            is_public: checked,
+                            audience: checked ? 'all' : form.data.audience,
+                            class: checked ? '' : form.data.class,
+                            attachments: checked ? [] : form.data.attachments,
+                            // A public notice is text-only: clear existing
+                            // photos in the same save so the update is valid.
+                            remove_attachments: checked
+                                ? (editing?.photos ?? []).map((photo) => photo.id)
+                                : [],
+                        });
+                    }}
+                />
 
-                {form.data.audience === 'class' && (
-                    <FormField label={t('class')} error={form.errors.class}>
-                        <Select value={form.data.class} onValueChange={(v) => form.setData('class', v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={t('class')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {classes.map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {classLabel(c)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </FormField>
+                {form.data.is_public ? (
+                    <>
+                        <FormField label={t('description')} error={form.errors.description}>
+                            <Textarea
+                                rows={6}
+                                value={form.data.description}
+                                onChange={(e) => form.setData('description', e.target.value)}
+                            />
+                        </FormField>
+
+                        <FormGrid>
+                            <FormField
+                                label={t('memo_publish_at')}
+                                hint={t('memo_publish_at_hint')}
+                                error={form.errors.publish_at}
+                            >
+                                <Input
+                                    type="datetime-local"
+                                    value={form.data.publish_at}
+                                    onChange={(e) => form.setData('publish_at', e.target.value)}
+                                />
+                            </FormField>
+                            <FormField
+                                label={t('memo_expires_at')}
+                                hint={t('memo_expires_at_hint')}
+                                error={form.errors.expires_at}
+                            >
+                                <Input
+                                    type="datetime-local"
+                                    value={form.data.expires_at}
+                                    onChange={(e) => form.setData('expires_at', e.target.value)}
+                                />
+                            </FormField>
+                        </FormGrid>
+
+                        <FormCheckbox
+                            label={t('memo_pinned')}
+                            description={t('memo_pinned_hint')}
+                            checked={form.data.is_pinned}
+                            onChange={(checked) => form.setData('is_pinned', checked)}
+                        />
+
+                        <FormCheckbox
+                            label={t('memo_notify_users')}
+                            description={t('memo_notify_users_hint')}
+                            checked={form.data.notify_users}
+                            onChange={(checked) => form.setData('notify_users', checked)}
+                        />
+
+                        <p className="rounded-xl bg-muted p-3 text-[11px] text-muted-foreground">
+                            {t('memo_public_text_only_note')}
+                            {editing && editing.photos.length > 0 && (
+                                <span className="mt-1 block font-medium text-amber-700">
+                                    {t('memo_public_photos_removed')}
+                                </span>
+                            )}
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <FormField label={t('audience')}>
+                            <Select
+                                value={form.data.audience}
+                                onValueChange={(v) => form.setData('audience', v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {audienceOptions.map((a) => (
+                                        <SelectItem key={a.value} value={a.value}>
+                                            {a.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+
+                        {form.data.audience === 'class' && (
+                            <FormField label={t('class')} error={form.errors.class}>
+                                <Select
+                                    value={form.data.class}
+                                    onValueChange={(v) => form.setData('class', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('class')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {classes.map((c) => (
+                                            <SelectItem key={c} value={c}>
+                                                {classLabel(c)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormField>
+                        )}
+
+                        <FormField label={t('description')} error={form.errors.description}>
+                            <Textarea
+                                rows={6}
+                                value={form.data.description}
+                                onChange={(e) => form.setData('description', e.target.value)}
+                            />
+                        </FormField>
+
+                        <FormField label={t('photos')} error={form.errors.attachments}>
+                            <PhotoPicker
+                                files={form.data.attachments}
+                                onChange={(files) => form.setData('attachments', files)}
+                                existing={editing?.photos ?? []}
+                                removed={form.data.remove_attachments}
+                                onToggleExisting={toggleExistingPhoto}
+                                max={MAX_PHOTOS}
+                            />
+                        </FormField>
+
+                        <FormCheckbox
+                            label={t('memo_notify_users')}
+                            description={t('memo_notify_users_hint')}
+                            checked={form.data.notify_users}
+                            onChange={(checked) => form.setData('notify_users', checked)}
+                        />
+                    </>
                 )}
-
-                <FormField label={t('description')} error={form.errors.description}>
-                    <Textarea
-                        rows={6}
-                        value={form.data.description}
-                        onChange={(e) => form.setData('description', e.target.value)}
-                    />
-                </FormField>
-
-                <FormField label={t('photos')} error={form.errors.attachments}>
-                    <PhotoPicker
-                        files={form.data.attachments}
-                        onChange={(files) => form.setData('attachments', files)}
-                        existing={editing?.photos ?? []}
-                        removed={form.data.remove_attachments}
-                        onToggleExisting={toggleExistingPhoto}
-                        max={MAX_PHOTOS}
-                    />
-                </FormField>
             </FormDialog>
 
             <ConfirmDialog

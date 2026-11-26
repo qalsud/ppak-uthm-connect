@@ -13,3 +13,6 @@ Schedule::command('media:prune-photos')->dailyAt('03:00');
 
 // Remind parents about fees due within 3 days (or overdue).
 Schedule::command('fees:send-reminders')->dailyAt('08:00');
+
+// Keep the notification table bounded; unread items are never pruned.
+Schedule::command('notifications:prune')->weeklyOn(1, '04:00');

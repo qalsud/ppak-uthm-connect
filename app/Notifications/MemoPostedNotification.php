@@ -8,6 +8,11 @@ class MemoPostedNotification extends BaseNotification
 {
     public function __construct(private Memo $memo) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_MEMOS;
+    }
+
     public function title(): string
     {
         return 'Notis baharu / New memo';

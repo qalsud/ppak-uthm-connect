@@ -22,7 +22,7 @@ class ProgressReport
     public function records(Student $student, ?string $from, ?string $to): Collection
     {
         return $student->progressRecords()
-            ->with('teacher:id,name')
+            ->with(['teacher:id,name', 'groupActivity:id,sub_theme,class,date'])
             ->when($from, fn ($query) => $query->whereDate('date', '>=', Carbon::parse($from)))
             ->when($to, fn ($query) => $query->whereDate('date', '<=', Carbon::parse($to)))
             ->orderBy('date')

@@ -18,7 +18,12 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 export default function Edit({
     mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+    notificationDefaults,
+}: PageProps<{
+    mustVerifyEmail: boolean;
+    status?: string;
+    notificationDefaults: Record<string, boolean>;
+}>) {
     const { t } = useI18n();
     const { auth } = usePage<PageProps>().props;
     const role = auth.user.role;
@@ -38,6 +43,7 @@ export default function Edit({
                     <UpdateProfileInformationForm
                         mustVerifyEmail={mustVerifyEmail}
                         status={status}
+                        notificationDefaults={notificationDefaults}
                         className="max-w-xl"
                     />
                 </div>

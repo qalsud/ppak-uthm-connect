@@ -41,7 +41,7 @@ trait HasStoredImage
             'url' => $this->url(),
             'thumb' => $this->thumbUrl(),
             'note' => $this->note,
-            'uploaded_by' => $this->uploadedBy?->name,
+            'uploaded_by' => data_get($this->uploadedBy, 'name'),
             'created_at' => $this->created_at?->format('Y-m-d H:i'),
             'name' => $this->original_name ?? null,
             'mime' => $this->mime ?? null,

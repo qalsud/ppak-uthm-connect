@@ -11,6 +11,7 @@ use App\Services\Memos\MemoService;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -79,6 +80,11 @@ class MemoController extends Controller
             'audience' => ['nullable', Rule::in(Lists::keys('memo_audience'))],
             'class' => ['nullable', Rule::in(Student::classKeys())],
             'centre_id' => ['nullable', 'integer', Rule::exists('centres', 'id')],
+            'is_public' => ['sometimes', 'boolean'],
+            'publish_at' => ['nullable', 'date'],
+            'expires_at' => ['nullable', 'date'],
+            'is_pinned' => ['sometimes', 'boolean'],
+            'notify_users' => ['sometimes', 'boolean'],
             'attachments' => ['nullable', 'array', 'max:'.Memo::MAX_PHOTOS],
             'attachments.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$maxKb],
             'remove_attachments' => ['nullable', 'array'],
@@ -98,6 +104,38 @@ class MemoController extends Controller
 
         if ($data['audience'] !== 'class') {
             $data['class'] = null;
+        }
+
+        $data['is_public'] = (bool) ($data['is_public'] ?? false);
+        $data['is_pinned'] = (bool) ($data['is_pinned'] ?? false);
+        $data['notify_users'] = (bool) ($data['notify_users'] ?? true);
+
+        if ($data['is_public']) {
+            $memo = $request->route('memo');
+
+            // Only count photos that will remain after this request.
+            $remove = collect((array) $request->input('remove_attachments', []))
+                ->map(fn ($id) => (int) $id);
+            $remaining = $memo instanceof Memo
+                ? $memo->attachments()->whereNotIn('id', $remove)->count()
+                : 0;
+
+            if ($request->hasFile('attachments') || $remaining > 0) {
+                throw ValidationException::withMessages([
+                    'is_public' => __('approval.public_memo_text_only'),
+                ]);
+            }
+
+            $data['audience'] = 'all';
+            $data['class'] = null;
+            $data['centre_id'] = null;
+            $data['publish_at'] ??= now();
+
+            if (! empty($data['expires_at']) && Carbon::parse($data['expires_at'])->lt(Carbon::parse($data['publish_at']))) {
+                throw ValidationException::withMessages([
+                    'expires_at' => __('approval.public_memo_expiry'),
+                ]);
+            }
         }
 
         return $data;

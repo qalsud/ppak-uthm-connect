@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Parent;
 
 use App\Http\Controllers\Controller;
+use App\Models\MedicationRequest;
 use App\Models\Student;
+use App\Models\User;
+use App\Notifications\MedicationRequestedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class MedicationController extends Controller
 {
@@ -27,11 +31,20 @@ class MedicationController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $student->medicationRequests()->create([
+        $medication = MedicationRequest::create([
             ...$data,
+            'student_id' => $student->id,
             'requested_by' => $request->user()->id,
             'status' => 'pending',
         ]);
+
+        // Tell the teaching team at this child's centre so the request is not
+        // missed before the medicine is due.
+        $teachers = User::staffForStudent($student);
+
+        if ($teachers->isNotEmpty()) {
+            Notification::send($teachers, new MedicationRequestedNotification($medication));
+        }
 
         return back()->with('success', __('approval.medication_requested'));
     }

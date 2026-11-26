@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Notifications\BaseNotification;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,12 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $preferenceRules = collect(BaseNotification::CATEGORIES)
+            ->mapWithKeys(fn (string $category) => [
+                'notification_preferences.'.$category => ['sometimes', 'boolean'],
+            ])
+            ->all();
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -27,6 +34,8 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'notify_email_messages' => ['sometimes', 'boolean'],
+            'notification_preferences' => ['sometimes', 'array'],
+            ...$preferenceRules,
         ];
     }
 }

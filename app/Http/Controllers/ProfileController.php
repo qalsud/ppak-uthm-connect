@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Notifications\BaseNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,12 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            // The effective default for categories the user has not saved yet.
+            'notificationDefaults' => collect(BaseNotification::CATEGORIES)
+                ->mapWithKeys(fn (string $category) => [
+                    $category => in_array($category, BaseNotification::EMAIL_DEFAULT_CATEGORIES, true),
+                ])
+                ->all(),
         ]);
     }
 
@@ -31,7 +38,14 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $data = $request->validated();
+
+        // Keep the legacy chat flag in sync for older code paths.
+        if (array_key_exists('notification_preferences', $data)) {
+            $data['notify_email_messages'] = (bool) ($data['notification_preferences']['messages'] ?? false);
+        }
+
+        $request->user()->fill($data);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

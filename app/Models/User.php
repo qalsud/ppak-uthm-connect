@@ -32,6 +32,7 @@ class User extends Authenticatable
         'role',
         'class',
         'notify_email_messages',
+        'notification_preferences',
         'status',
         'rejection_reason',
         'activation_token',
@@ -59,6 +60,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'notify_email_messages' => 'boolean',
+            'notification_preferences' => 'array',
             'role' => UserRole::class,
             'status' => AccountStatus::class,
         ];

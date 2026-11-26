@@ -14,19 +14,9 @@ class MessageReceivedNotification extends BaseNotification
         private string $body,
     ) {}
 
-    /**
-     * Email is opt-in per user (`notify_email_messages`) so a busy chat does
-     * not flood inboxes — the in-app bell always fires.
-     */
-    public function via(object $notifiable): array
+    public function category(): string
     {
-        $channels = ['database', 'broadcast'];
-
-        if (($notifiable->notify_email_messages ?? false) === true) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
+        return self::CATEGORY_MESSAGES;
     }
 
     public function title(): string

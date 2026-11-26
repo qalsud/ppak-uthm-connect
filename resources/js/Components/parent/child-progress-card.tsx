@@ -23,6 +23,8 @@ export type ProgressItem = {
     development_proficiency: string;
     notes: string | null;
     photo?: PhotoInfo | null;
+    is_group?: boolean;
+    group_photo?: PhotoInfo | null;
 };
 
 export default function ChildProgressCard({
@@ -38,7 +40,7 @@ export default function ChildProgressCard({
     const [reportTo, setReportTo] = useState(localDate());
 
     return (
-        <Card className="rounded-2xl border-0 shadow-sm">
+        <Card id="progress" className="scroll-mt-24 rounded-2xl border-0 shadow-sm">
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
                     <BookOpen className="size-4 text-primary" />
@@ -97,8 +99,15 @@ export default function ChildProgressCard({
                                     <span className="font-medium">
                                         {p.sub_theme ?? t('progress')}
                                     </span>
-                                    <span className="shrink-0 text-xs text-muted-foreground">
-                                        {formatDate(p.date)}
+                                    <span className="flex shrink-0 items-center gap-1.5">
+                                        {p.is_group && (
+                                            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                                                {t('progress.group_activity')}
+                                            </span>
+                                        )}
+                                        <span className="text-xs text-muted-foreground">
+                                            {formatDate(p.date)}
+                                        </span>
                                     </span>
                                 </div>
                     <div className="mt-2 grid grid-cols-3 gap-2">
@@ -137,6 +146,14 @@ export default function ChildProgressCard({
                                 {p.photo && (
                                     <div className="mt-2">
                                         <PhotoThumb photo={p.photo} size="size-20" />
+                                    </div>
+                                )}
+                                {p.group_photo && (
+                                    <div className="mt-2">
+                                        <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                            {t('progress.group_activity')}
+                                        </p>
+                                        <PhotoThumb photo={p.group_photo} size="size-24" />
                                     </div>
                                 )}
                             </div>

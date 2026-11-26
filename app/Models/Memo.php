@@ -22,6 +22,24 @@ class Memo extends Model
         'audience',
         'class',
         'centre_id',
+        'is_public',
+        'publish_at',
+        'expires_at',
+        'is_pinned',
+        'notify_users',
+    ];
+
+    protected $casts = [
+        'is_public' => 'boolean',
+        'publish_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'is_pinned' => 'boolean',
+        'notify_users' => 'boolean',
+    ];
+
+    /** Default flags for new memos (the DB defaults are not hydrated on create). */
+    protected $attributes = [
+        'notify_users' => true,
     ];
 
     /** Expose the photos (authorised URLs) to the frontend. */
@@ -109,5 +127,18 @@ class Memo extends Model
         $centreId = ActiveCentre::id();
 
         return $centreId ? $query->where('centre_id', $centreId) : $query;
+    }
+
+    /** Public landing notices that are live right now. */
+    public function scopePublicLanding($query)
+    {
+        return $query
+            ->where('is_public', true)
+            ->where(fn ($q) => $q->whereNull('publish_at')->orWhere('publish_at', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->orderByDesc('is_pinned')
+            // NULL publish_at means "live now"; fall back to the creation time
+            // so ordering is identical on SQLite and PostgreSQL.
+            ->orderByRaw('COALESCE(publish_at, created_at) DESC');
     }
 }

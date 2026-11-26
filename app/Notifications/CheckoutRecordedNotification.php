@@ -13,6 +13,16 @@ class CheckoutRecordedNotification extends BaseNotification
         private bool $hasPhoto,
     ) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ATTENDANCE;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->student->id;
+    }
+
     public function title(): string
     {
         return 'Pulang sekolah / Checked out';

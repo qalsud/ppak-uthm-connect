@@ -8,7 +8,10 @@ use App\Models\AuthorisedCollector;
 use App\Models\Memo;
 use App\Models\MemoAttachment;
 use App\Models\MessageAttachment;
+use App\Models\ProgressGroupActivity;
+use App\Models\ProgressGroupPhoto;
 use App\Models\ProgressPhoto;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -28,6 +31,34 @@ class PhotoController extends Controller
     public function progress(Request $request, ProgressPhoto $photo): StreamedResponse
     {
         return $this->serve($request, $photo);
+    }
+
+    /** Shared group photo: any participant's parent, their teacher, or admin. */
+    public function groupProgress(Request $request, ProgressGroupPhoto $photo): StreamedResponse
+    {
+        /** @var ProgressGroupActivity|null $group */
+        $group = $photo->groupActivity;
+        $user = $request->user();
+
+        abort_if($group === null, 404);
+
+        $allowed = $user !== null && (
+            $user->isAdmin()
+            || $group->records()
+                ->with('student')
+                ->get()
+                ->contains(function ($record) use ($user) {
+                    /** @var ProgressRecord $record */
+                    /** @var Student|null $student */
+                    $student = $record->student;
+
+                    return $this->canViewStudent($user, $student);
+                })
+        );
+
+        abort_unless($allowed, 403);
+
+        return $this->streamStored($photo);
     }
 
     public function message(Request $request, MessageAttachment $photo): StreamedResponse
@@ -127,7 +158,7 @@ class PhotoController extends Controller
     }
 
     /** Stream a stored image (or its thumbnail) from the private disk. */
-    private function streamStored(AttendancePhoto|ProgressPhoto|MessageAttachment|MemoAttachment $photo): StreamedResponse
+    private function streamStored(AttendancePhoto|ProgressPhoto|ProgressGroupPhoto|MessageAttachment|MemoAttachment $photo): StreamedResponse
     {
         $path = request()->query('variant') === 'thumb' && $photo->thumb_path
             ? $photo->thumb_path

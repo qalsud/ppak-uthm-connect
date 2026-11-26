@@ -12,6 +12,16 @@ class CheckInRecordedNotification extends BaseNotification
         private Attendance $attendance,
     ) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ATTENDANCE;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->student->id;
+    }
+
     public function title(): string
     {
         return 'Tiba sekolah / Checked in';

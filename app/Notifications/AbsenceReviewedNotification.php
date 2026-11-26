@@ -8,6 +8,26 @@ class AbsenceReviewedNotification extends BaseNotification
 {
     public function __construct(private AbsenceRequest $absence) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ABSENCE;
+    }
+
+    public function priority(): string
+    {
+        return self::PRIORITY_HIGH;
+    }
+
+    protected function emailEnabledByDefault(): bool
+    {
+        return true;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->absence->student_id;
+    }
+
     public function title(): string
     {
         return $this->absence->isApproved()

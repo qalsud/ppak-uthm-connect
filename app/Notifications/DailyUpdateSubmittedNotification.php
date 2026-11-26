@@ -12,6 +12,16 @@ class DailyUpdateSubmittedNotification extends BaseNotification
         private DailyUpdate $update,
     ) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ACTIVITIES;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->student->id;
+    }
+
     public function title(): string
     {
         return 'Kemas kini harian / Daily update';

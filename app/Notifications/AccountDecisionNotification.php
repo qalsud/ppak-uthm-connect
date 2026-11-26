@@ -10,6 +10,21 @@ class AccountDecisionNotification extends BaseNotification
         private ?string $reason = null,
     ) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ACCOUNT;
+    }
+
+    public function priority(): string
+    {
+        return self::PRIORITY_HIGH;
+    }
+
+    protected function emailEnabledByDefault(): bool
+    {
+        return true;
+    }
+
     public function title(): string
     {
         return $this->approved

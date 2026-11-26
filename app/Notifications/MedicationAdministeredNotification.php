@@ -8,6 +8,16 @@ class MedicationAdministeredNotification extends BaseNotification
 {
     public function __construct(private MedicationRequest $medication) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_MEDICATION;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->medication->student_id;
+    }
+
     public function title(): string
     {
         return 'Ubat diberikan / Medication given';

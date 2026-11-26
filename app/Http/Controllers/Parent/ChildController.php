@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\DailyActivity;
 use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
+use App\Models\ProgressRecord;
 use App\Models\Student;
 use App\Services\Reports\ProgressReport;
 use Illuminate\Http\RedirectResponse;
@@ -41,11 +42,19 @@ class ChildController extends Controller
                 ->latest('date')
                 ->limit(7)
                 ->get(),
-            'progress' => $student->progressRecords()
-                ->with('photos.uploadedBy:id,name')
+            'progress' => ProgressRecord::query()
+                ->where('student_id', $student->id)
+                ->with(['photos.uploadedBy:id,name', 'groupActivity.photos.uploadedBy:id,name'])
                 ->latest('date')
                 ->limit(7)
-                ->get(),
+                ->get()
+                ->each(function (ProgressRecord $record) {
+                    $record->setAttribute('is_group', $record->group_activity_id !== null);
+                    $record->setAttribute(
+                        'group_photo',
+                        $record->groupActivity?->latestPhoto()?->payload(),
+                    );
+                }),
             'attendanceHistory' => Attendance::historyFor($student->id, 14)
                 ->map(fn (Attendance $a) => $a->historyRow())
                 ->values(),

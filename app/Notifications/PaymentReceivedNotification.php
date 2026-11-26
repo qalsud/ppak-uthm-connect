@@ -8,6 +8,16 @@ class PaymentReceivedNotification extends BaseNotification
 {
     public function __construct(private Payment $payment) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_PAYMENTS;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->payment->student_id;
+    }
+
     public function title(): string
     {
         return 'Bayaran diterima / Payment received';

@@ -3,28 +3,59 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { useI18n } from '@/lib/i18n';
+import { categoryMeta, NOTIFICATION_CATEGORIES } from '@/lib/notification-meta';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
+import { Mail } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
+    notificationDefaults,
     className = '',
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    notificationDefaults: Record<string, boolean>;
     className?: string;
 }) {
     const { t } = useI18n();
     const user = usePage().props.auth.user;
+
+    const savedPreferences = (
+        user as { notification_preferences?: Record<string, boolean> | null }
+    ).notification_preferences ?? {};
+
+    const initialPreferences = Object.fromEntries(
+        NOTIFICATION_CATEGORIES.map((category) => [
+            category,
+            typeof savedPreferences[category] === 'boolean'
+                ? savedPreferences[category]
+                : category === 'messages'
+                  ? Boolean((user as { notify_email_messages?: boolean }).notify_email_messages)
+                  : Boolean(notificationDefaults[category]),
+        ]),
+    );
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
             email: user.email,
             notify_email_messages: (user as { notify_email_messages?: boolean }).notify_email_messages ?? false,
+            notification_preferences: initialPreferences,
         });
+
+    const toggleEmail = (category: string, checked: boolean) => {
+        setData({
+            ...data,
+            notification_preferences: {
+                ...data.notification_preferences,
+                [category]: checked,
+            },
+            ...(category === 'messages' ? { notify_email_messages: checked } : {}),
+        });
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -99,22 +130,48 @@ export default function UpdateProfileInformation({
                     </div>
                 )}
 
-                <div className="mt-4">
-                    <label className="flex cursor-pointer items-start gap-2.5">
-                        <input
-                            type="checkbox"
-                            className="mt-0.5 size-4 accent-primary"
-                            checked={data.notify_email_messages}
-                            onChange={(e) => setData('notify_email_messages', e.target.checked)}
-                        />
-                        <span className="text-sm text-gray-600">
-                            {t('notify_email_messages')}
-                            <span className="mt-0.5 block text-xs text-gray-500">
-                                {t('notify_email_messages_hint')}
-                            </span>
+                <div className="rounded-xl border p-4">
+                    <div className="flex items-start gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                            <Mail className="size-4" aria-hidden="true" />
                         </span>
-                    </label>
-                    <InputError className="mt-2" message={errors.notify_email_messages} />
+                        <div>
+                            <p className="text-sm font-medium text-gray-900">
+                                {t('notification_preferences')}
+                            </p>
+                            <p className="mt-0.5 text-xs text-gray-500">
+                                {t('notification_preferences_desc')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-1 sm:grid-cols-2">
+                        {NOTIFICATION_CATEGORIES.map((category) => {
+                            const meta = categoryMeta(category);
+
+                            return (
+                                <label
+                                    key={category}
+                                    className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="size-4 accent-primary"
+                                        checked={data.notification_preferences[category] ?? false}
+                                        onChange={(e) => toggleEmail(category, e.target.checked)}
+                                    />
+                                    <span className="text-sm text-gray-700">
+                                        {t(meta.labelKey)}
+                                    </span>
+                                </label>
+                            );
+                        })}
+                    </div>
+
+                    <p className="mt-2 px-2 text-[11px] text-gray-500">
+                        {t('notification_email_hint')}
+                    </p>
+                    <InputError className="mt-2" message={errors.notification_preferences} />
                 </div>
 
                 <div className="flex items-center gap-4">

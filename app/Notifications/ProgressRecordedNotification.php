@@ -8,6 +8,16 @@ class ProgressRecordedNotification extends BaseNotification
 {
     public function __construct(private Student $student) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_PROGRESS;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->student->id;
+    }
+
     public function title(): string
     {
         return 'Perkembangan murid / Progress';
@@ -20,6 +30,6 @@ class ProgressRecordedNotification extends BaseNotification
 
     public function url(): ?string
     {
-        return route('parent.activities.index');
+        return route('parent.children.show', $this->student).'#progress';
     }
 }

@@ -36,7 +36,9 @@ class MemoService
 
         $this->storeAttachments($memo, $files, $author);
 
-        Notification::send($this->recipients($memo), new MemoPostedNotification($memo));
+        if ($memo->notify_users) {
+            Notification::send($this->recipients($memo), new MemoPostedNotification($memo));
+        }
 
         ActivityLog::record('memo.created', $memo, $memo->title, ['audience' => $memo->audience]);
 

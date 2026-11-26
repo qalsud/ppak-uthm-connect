@@ -9,6 +9,21 @@ class FeeReminderNotification extends BaseNotification
         private int $count,
     ) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_FEES;
+    }
+
+    public function priority(): string
+    {
+        return self::PRIORITY_HIGH;
+    }
+
+    protected function emailEnabledByDefault(): bool
+    {
+        return true;
+    }
+
     public function title(): string
     {
         return 'Peringatan yuran / Fee reminder';

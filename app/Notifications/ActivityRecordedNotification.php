@@ -8,6 +8,16 @@ class ActivityRecordedNotification extends BaseNotification
 {
     public function __construct(private Student $student) {}
 
+    public function category(): string
+    {
+        return self::CATEGORY_ACTIVITIES;
+    }
+
+    public function studentId(): ?int
+    {
+        return $this->student->id;
+    }
+
     public function title(): string
     {
         return 'Aktiviti harian / Daily activity';

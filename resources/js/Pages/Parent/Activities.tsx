@@ -31,6 +31,8 @@ type Child = {
         development_proficiency: string;
         notes: string | null;
         photo?: PhotoInfo | null;
+        is_group?: boolean;
+        group_photo?: PhotoInfo | null;
     } | null;
     recent_activities: Array<{ id: number; date: string }>;
     recent_progress: Array<{
@@ -41,6 +43,8 @@ type Child = {
         child_proficiency: string;
         development: string;
         photo?: PhotoInfo | null;
+        is_group?: boolean;
+        group_photo?: PhotoInfo | null;
     }>;
 };
 
@@ -136,8 +140,15 @@ export default function ParentActivities({
                                             <p className="text-sm font-medium">
                                                 {child.latest_progress.sub_theme ?? t('progress')}
                                             </p>
-                                            <span className="text-xs text-muted-foreground">
-                                                {child.latest_progress.date}
+                                            <span className="flex items-center gap-1.5">
+                                                {child.latest_progress.is_group && (
+                                                    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                                                        {t('progress.group_activity')}
+                                                    </span>
+                                                )}
+                                                <span className="text-xs text-muted-foreground">
+                                                    {child.latest_progress.date}
+                                                </span>
                                             </span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-1.5">
@@ -168,6 +179,17 @@ export default function ParentActivities({
                                         )}
                                         {child.latest_progress.photo && (
                                             <PhotoThumb photo={child.latest_progress.photo} size="size-24" />
+                                        )}
+                                        {child.latest_progress.group_photo && (
+                                            <div>
+                                                <p className="mb-1 text-[10px] font-medium text-muted-foreground">
+                                                    {t('progress.group_activity')}
+                                                </p>
+                                                <PhotoThumb
+                                                    photo={child.latest_progress.group_photo}
+                                                    size="size-24"
+                                                />
+                                            </div>
                                         )}
                                     </div>
                                 ) : (
@@ -201,6 +223,11 @@ export default function ParentActivities({
                                             >
                                                 <span className="truncate text-muted-foreground">
                                                     {p.sub_theme ?? t('progress')}
+                                                    {p.is_group && (
+                                                        <span className="ml-1.5 rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700">
+                                                            {t('progress.group_activity')}
+                                                        </span>
+                                                    )}
                                                 </span>
                                                 <span className="flex shrink-0 items-center gap-1.5">
                                                     <RatingChip value={p.activity_done} />

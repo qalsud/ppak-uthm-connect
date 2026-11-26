@@ -46,17 +46,34 @@ use App\Http\Controllers\Teacher\MedicationController as TeacherMedicationContro
 use App\Http\Controllers\Teacher\MemoController as TeacherMemoController;
 use App\Http\Controllers\Teacher\MessageController as TeacherMessageController;
 use App\Http\Controllers\Teacher\ProgressController as TeacherProgressController;
+use App\Models\Memo;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 // Public landing
 Route::get('/', function () {
+    $announcements = Memo::query()
+        ->publicLanding()
+        ->limit(3)
+        ->get(['id', 'title', 'description', 'publish_at', 'created_at', 'is_pinned'])
+        ->map(fn (Memo $memo) => [
+            'id' => $memo->id,
+            'title' => $memo->title,
+            'excerpt' => Str::limit($memo->description, 180),
+            'description' => $memo->description,
+            'date' => ($memo->publish_at ?? $memo->created_at)?->toDateString(),
+            'pinned' => $memo->is_pinned,
+        ])
+        ->values();
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'announcements' => $announcements,
     ]);
 });
 
@@ -73,6 +90,10 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
     // Notifications (shared by all roles)
     Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/feed', [NotificationsController::class, 'feed'])->name('notifications.feed');
+    Route::post('/notifications/{notification}/read', [NotificationsController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/{notification}/unread', [NotificationsController::class, 'unread'])->name('notifications.unread');
+    Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy'])->name('notifications.destroy');
     Route::post('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
 
     // Global search (shared by all roles)
@@ -83,6 +104,8 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
         ->name('attendance.photos.show');
     Route::get('/progress/photos/{photo}', [PhotoController::class, 'progress'])
         ->name('progress.photos.show');
+    Route::get('/progress/group-photos/{photo}', [PhotoController::class, 'groupProgress'])
+        ->name('progress.group-photos.show');
     Route::get('/message-attachments/{photo}', [PhotoController::class, 'message'])
         ->name('message.photos.show');
     Route::get('/memo-attachments/{photo}', [PhotoController::class, 'memo'])
@@ -240,6 +263,9 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
 
             Route::get('/register/progress', [TeacherProgressController::class, 'index'])->name('register.progress.index');
             Route::post('/register/progress', [TeacherProgressController::class, 'store'])->name('register.progress.store');
+            Route::post('/register/progress/group/conflicts', [TeacherProgressController::class, 'groupConflicts'])->name('register.progress.group.conflicts');
+            Route::post('/register/progress/group', [TeacherProgressController::class, 'storeGroup'])->name('register.progress.group.store');
+            Route::delete('/register/progress/group/{group}', [TeacherProgressController::class, 'destroyGroup'])->name('register.progress.group.destroy');
             Route::get('/register/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('register.progress.report');
             Route::delete('/register/progress/{record}', [TeacherProgressController::class, 'destroy'])->name('register.progress.destroy');
 
@@ -260,6 +286,9 @@ Route::middleware(['auth', 'verified', 'account.active'])->group(function () {
             Route::post('/activities', [TeacherActivityController::class, 'store'])->name('activities.store');
             Route::get('/progress', [TeacherProgressController::class, 'index'])->name('progress.index');
             Route::post('/progress', [TeacherProgressController::class, 'store'])->name('progress.store');
+            Route::post('/progress/group/conflicts', [TeacherProgressController::class, 'groupConflicts'])->name('progress.group.conflicts');
+            Route::post('/progress/group', [TeacherProgressController::class, 'storeGroup'])->name('progress.group.store');
+            Route::delete('/progress/group/{group}', [TeacherProgressController::class, 'destroyGroup'])->name('progress.group.destroy');
             Route::get('/progress/{student}/report', [TeacherProgressController::class, 'report'])->name('progress.report');
             Route::delete('/progress/{record}', [TeacherProgressController::class, 'destroy'])->name('progress.destroy');
             Route::get('/daily-updates', [TeacherDailyUpdateController::class, 'index'])->name('daily-updates.index');

@@ -11,6 +11,7 @@ class ProgressRecord extends Model
     protected $fillable = [
         'student_id',
         'teacher_id',
+        'group_activity_id',
         'date',
         'sub_theme',
         'activity_done',
@@ -49,6 +50,12 @@ class ProgressRecord extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    /** @return BelongsTo<ProgressGroupActivity, $this> */
+    public function groupActivity(): BelongsTo
+    {
+        return $this->belongsTo(ProgressGroupActivity::class, 'group_activity_id');
     }
 
     public function photos(): HasMany

@@ -81,7 +81,12 @@
                 @foreach ($records as $record)
                     <tr>
                         <td>{{ $record->date?->format('d/m/Y') }}</td>
-                        <td>{{ $record->sub_theme ?: '—' }}</td>
+                        <td>
+                            @if ($record->group_activity_id)
+                                <span style="background:#e0ecff;color:#1d4ed8;border-radius:6px;padding:1px 5px;font-size:9px;">Group</span>
+                            @endif
+                            {{ $record->sub_theme ?: '—' }}
+                        </td>
                         <td>{{ $record->permata_activity }}</td>
                         <td>{{ $record->free_activity }}</td>
                         <td>{{ $record->activity_done }}</td>

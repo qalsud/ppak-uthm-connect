@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\MedicationRequest;
 use App\Models\Student;
 use App\Notifications\CheckInRecordedNotification;
+use App\Notifications\StudentMarkedAbsentNotification;
 use App\Services\Attendance\CheckoutService;
 use App\Services\Images\ImageStore;
 use App\Support\Lists;
@@ -221,6 +222,13 @@ class AttendanceController extends Controller
             'date' => $attendance->date?->toDateString(),
             'type' => $data['absence_type'],
         ]);
+
+        if ($student->parent) {
+            Notification::send(
+                $student->parent,
+                new StudentMarkedAbsentNotification($student, $attendance, $data['absence_type']),
+            );
+        }
 
         return back()->with('success', __('approval.attendance_saved'));
     }
