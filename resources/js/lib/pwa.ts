@@ -3,7 +3,7 @@ export type BeforeInstallPromptEvent = Event & {
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 };
 
-export const INSTALL_DISMISSED_KEY = 'ppak-install-dismissed';
+export const INSTALL_DISMISSED_KEY = 'ppak-install-dismissed-v2';
 
 export function isStandalone(): boolean {
     return (
@@ -16,5 +16,18 @@ export function isIos(): boolean {
     return (
         /iphone|ipad|ipod/i.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+}
+
+export function isMobile(): boolean {
+    return (
+        /android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+}
+
+export function isInAppBrowser(): boolean {
+    return /FBAN|FBAV|FB_IAB|Instagram|Line\/|WhatsApp|MicroMessenger|Snapchat/i.test(
+        navigator.userAgent,
     );
 }

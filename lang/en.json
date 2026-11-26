@@ -582,6 +582,8 @@
     "install_app": "Install PPAK Connect",
     "install_app_desc": "Add the app to your home screen for faster access.",
     "install_app_ios": "On iPhone or iPad, tap Share, then Add to Home Screen.",
+    "install_app_android": "Tap the browser menu (⋮), then choose Install app or Add to Home screen.",
+    "install_app_inapp": "Open this page in Chrome, then choose Install app from the browser menu.",
     "install": "Install",
     "not_now": "Not now",
     "reason_missing_name": "Missing name",

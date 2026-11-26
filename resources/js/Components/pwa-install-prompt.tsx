@@ -5,20 +5,25 @@ import { Button } from '@/Components/ui/button';
 import { useI18n } from '@/lib/i18n';
 import {
     INSTALL_DISMISSED_KEY,
+    isInAppBrowser,
     isIos,
+    isMobile,
     isStandalone,
     type BeforeInstallPromptEvent,
 } from '@/lib/pwa';
 
 /**
  * A small install prompt for the PWA. Chrome/Edge fire `beforeinstallprompt`;
- * iOS never does, so it gets a one-time "Share → Add to Home Screen" hint.
+ * iOS and in-app browsers never do, so they get a manual hint. Mobile devices
+ * also get the hint if Chrome holds the event back until after engagement.
  */
 export default function PwaInstallPrompt() {
     const { t } = useI18n();
     const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
     const [visible, setVisible] = useState(false);
     const [ios, setIos] = useState(false);
+    const [inApp, setInApp] = useState(false);
+    const [mobile, setMobile] = useState(false);
 
     useEffect(() => {
         if (isStandalone() || localStorage.getItem(INSTALL_DISMISSED_KEY) === '1') {
@@ -26,7 +31,12 @@ export default function PwaInstallPrompt() {
         }
 
         const iosDevice = isIos();
+        const mobileDevice = isMobile();
+        const inAppBrowser = isInAppBrowser();
+
         setIos(iosDevice);
+        setMobile(mobileDevice);
+        setInApp(inAppBrowser);
 
         const onPrompt = (event: Event) => {
             event.preventDefault();
@@ -43,12 +53,20 @@ export default function PwaInstallPrompt() {
         window.addEventListener('beforeinstallprompt', onPrompt);
         window.addEventListener('appinstalled', onInstalled);
 
-        // iOS has no install event; show the manual instructions once instead.
+        let timer: number | undefined;
+
         if (iosDevice) {
             setVisible(true);
+        } else if (mobileDevice) {
+            // Chrome may not fire beforeinstallprompt until the user has
+            // interacted. Show the browser-menu instructions as a fallback.
+            timer = window.setTimeout(() => setVisible(true), 2500);
         }
 
         return () => {
+            if (timer) {
+                window.clearTimeout(timer);
+            }
             window.removeEventListener('beforeinstallprompt', onPrompt);
             window.removeEventListener('appinstalled', onInstalled);
         };
@@ -78,6 +96,16 @@ export default function PwaInstallPrompt() {
         setVisible(false);
     };
 
+    const description = deferred
+        ? t('install_app_desc')
+        : inApp
+          ? t('install_app_inapp')
+          : ios
+            ? t('install_app_ios')
+            : mobile
+              ? t('install_app_android')
+              : t('install_app_desc');
+
     return (
         <div
             className="fixed inset-x-4 bottom-24 z-50 lg:bottom-6 lg:left-auto lg:right-6 lg:w-96"
@@ -95,7 +123,7 @@ export default function PwaInstallPrompt() {
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">{t('install_app')}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                        {ios ? t('install_app_ios') : t('install_app_desc')}
+                        {description}
                     </p>
                     <div className="mt-3 flex gap-2">
                         {!ios && deferred && (

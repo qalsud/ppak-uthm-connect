@@ -583,6 +583,8 @@
     "install_app": "Pasang PPAK Connect",
     "install_app_desc": "Tambah aplikasi ke skrin utama untuk akses lebih pantas.",
     "install_app_ios": "Pada iPhone atau iPad, ketik Kongsi, kemudian Tambah ke Skrin Utama.",
+    "install_app_android": "Ketik menu pelayar (⋮), kemudian pilih Pasang aplikasi atau Tambah ke Skrin Utama.",
+    "install_app_inapp": "Buka halaman ini dalam Chrome, kemudian pilih Pasang aplikasi dari menu pelayar.",
     "install": "Pasang",
     "not_now": "Bukan sekarang",
     "reason_missing_name": "Tiada nama",
