@@ -24,11 +24,11 @@ defence-in-depth.
 | `X-Frame-Options` | PASS — `SAMEORIGIN` |
 | `Referrer-Policy` | PASS — `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | PASS — camera, microphone, geolocation disabled |
-| `X-Powered-By` | **FAIL before fix** — PHP version leaked; removed in code |
-| Security headers on 404/error pages | **FAIL before fix** — headers were missing; middleware moved to the global stack |
+| `X-Powered-By` | PASS — removed from live responses after the 26 Nov deploy |
+| Security headers on 404/error pages | PASS — headers now present on live error responses |
 | `Content-Security-Policy` | **FAIL** — no CSP yet (see residual risks) |
 | `APP_DEBUG` | PASS — 404 responses show no debug/stack trace |
-| `Server` banner | nginx version still visible; `server_tokens off` added to the template, live reload pending |
+| `Server` banner | **WARNING** — nginx version still visible; `server_tokens off` added to the template, live reload pending |
 
 ---
 
