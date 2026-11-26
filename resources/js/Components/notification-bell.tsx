@@ -80,8 +80,13 @@ export default function NotificationBell() {
                     )}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-                <div className="flex items-center justify-between px-3 py-2">
+            <DropdownMenuContent
+                align="end"
+                sideOffset={8}
+                collisionPadding={8}
+                className="flex max-h-[var(--radix-dropdown-menu-content-available-height)] w-80 max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0"
+            >
+                <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-2">
                     <p className="text-sm font-semibold">{t('notifications')}</p>
                     {count > 0 && (
                         <Button
@@ -98,13 +103,13 @@ export default function NotificationBell() {
                         </Button>
                     )}
                 </div>
-                <Separator />
+                <Separator className="shrink-0" />
                 {items.length === 0 ? (
                     <p className="px-3 py-6 text-center text-xs text-muted-foreground">
                         {t('no_notifications')}
                     </p>
                 ) : (
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="min-h-0 flex-1 overflow-y-auto">
                         {items.map((item) => (
                             <DropdownMenuItem
                                 key={item.id}
@@ -115,13 +120,13 @@ export default function NotificationBell() {
                                     className={`mt-1 size-2 shrink-0 rounded-full ${item.read_at ? 'bg-muted' : 'bg-brand-blue'}`}
                                 />
                                 <span className="min-w-0">
-                                    <span className="block text-sm font-medium">
+                                    <span className="block break-words text-sm font-medium">
                                         {item.data.title}
                                     </span>
-                                    <span className="block truncate text-xs text-muted-foreground">
+                                    <span className="mt-0.5 line-clamp-2 block break-words text-xs text-muted-foreground">
                                         {item.data.body}
                                     </span>
-                                    <span className="block text-[11px] text-muted-foreground/70">
+                                    <span className="mt-0.5 block text-[11px] text-muted-foreground/70">
                                         {formatDateTime(item.created_at)}
                                     </span>
                                 </span>
