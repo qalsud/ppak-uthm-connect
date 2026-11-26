@@ -47,6 +47,7 @@ export default function ChatInbox({
     const [files, setFiles] = useState<File[]>([]);
     const [pending, setPending] = useState<Array<{ id: number; body: string }>>([]);
     const [sending, setSending] = useState(false);
+    const [sendError, setSendError] = useState<string | null>(null);
     const [editing, setEditing] = useState<ChatMessage | null>(null);
     const [editBody, setEditBody] = useState('');
     const [pickerOpen, setPickerOpen] = useState(false);
@@ -61,6 +62,7 @@ export default function ChatInbox({
         setEditing(null);
         setBody('');
         setFiles([]);
+        setSendError(null);
         lastIdRef.current = open?.messages.at(-1)?.id ?? 0;
         requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'auto' }));
         // Only reset when the thread changes, not on every incoming message.
@@ -111,6 +113,7 @@ export default function ChatInbox({
         const optimistic = { id: -Date.now(), body: body.trim() };
         setPending((p) => [...p, optimistic]);
         setSending(true);
+        setSendError(null);
 
         const form = new FormData();
         form.append('body', body.trim());
@@ -121,10 +124,21 @@ export default function ChatInbox({
             forceFormData: true,
             preserveScroll: true,
             only: ['open', 'conversations'],
-            onFinish: () => {
-                setSending(false);
+            onSuccess: () => {
+                setPending((p) => p.filter((x) => x.id !== optimistic.id));
+                setSendError(null);
                 setBody('');
                 setFiles([]);
+            },
+            onError: () => {
+                setPending((p) => p.filter((x) => x.id !== optimistic.id));
+                setSendError(t('message_send_failed'));
+            },
+            onFinish: () => {
+                setSending(false);
+                // A network failure may not fire onError; never leave the
+                // optimistic bubble spinning forever.
+                setPending((p) => p.filter((x) => x.id !== optimistic.id));
             },
         });
     };
@@ -216,6 +230,7 @@ export default function ChatInbox({
                                 files={files}
                                 setFiles={setFiles}
                                 sending={sending}
+                                error={sendError}
                                 onSend={send}
                                 editing={editing}
                                 editBody={editBody}

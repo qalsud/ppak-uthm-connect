@@ -12,6 +12,7 @@ export default function MessageComposer({
     files,
     setFiles,
     sending,
+    error,
     onSend,
     editing,
     editBody,
@@ -24,6 +25,7 @@ export default function MessageComposer({
     files: File[];
     setFiles: Dispatch<SetStateAction<File[]>>;
     sending: boolean;
+    error?: string | null;
     onSend: () => void;
     editing: ChatMessage | null;
     editBody: string;
@@ -44,6 +46,12 @@ export default function MessageComposer({
 
     return (
         <div className="border-t p-2.5">
+            {error && (
+                <p role="alert" className="mb-2 text-xs text-destructive">
+                    {error}
+                </p>
+            )}
+
             {editing && (
                 <div className="mb-2 space-y-1.5 rounded-xl border border-primary/40 bg-muted/40 p-2">
                     <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">

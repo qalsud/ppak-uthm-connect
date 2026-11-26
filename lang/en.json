@@ -427,6 +427,7 @@
     "edit_message": "Edit message",
     "attach": "Attach photo",
     "send": "Send",
+    "message_send_failed": "Message could not be sent. Please try again.",
     "yesterday": "Yesterday",
     "photo_unavailable": "Photo no longer available",
     "back": "Back",

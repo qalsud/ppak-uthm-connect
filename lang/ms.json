@@ -428,6 +428,7 @@
     "edit_message": "Edit mesej",
     "attach": "Lampir foto",
     "send": "Hantar",
+    "message_send_failed": "Mesej tidak dapat dihantar. Sila cuba lagi.",
     "yesterday": "Semalam",
     "photo_unavailable": "Foto tidak lagi tersedia",
     "back": "Kembali",
