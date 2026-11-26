@@ -27,6 +27,7 @@
 # The service worker and manifest must be revalidated so a new deploy is picked
 # up without waiting for an HTTP cache expiry.
 <IfModule mod_headers.c>
+    Header always unset X-Powered-By
     <FilesMatch "^(sw\.js|manifest\.json)$">
         Header set Cache-Control "no-cache, max-age=0, must-revalidate"
     </FilesMatch>

@@ -15,21 +15,31 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['middleware' => ['web', 'auth']],
+    )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Behind a managed host's proxy (Railway/Render/Cloudflare) so HTTPS
-        // URLs are generated correctly.
-        $middleware->trustProxies(at: '*');
+        // Only the local nginx proxy may set forwarded headers. A wildcard
+        // would let a client spoof its IP through X-Forwarded-For and bypass
+        // the login/rate limits. Override with TRUSTED_PROXIES when the app is
+        // placed behind a different proxy.
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '127.0.0.1,::1,172.16.0.0/12')),
+        )));
+
+        $middleware->trustProxies(at: $trustedProxies ?: ['127.0.0.1', '::1']);
 
         $middleware->append(NormaliseEmailInput::class);
+        $middleware->append(SecurityHeaders::class);
 
         $middleware->web(append: [
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            SecurityHeaders::class,
         ]);
 
         $middleware->alias([

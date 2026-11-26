@@ -13,6 +13,7 @@ Start with the root [README](../README.md) for the feature map, setup and local 
 | [`DEPLOY-SUPABASE.md`](DEPLOY-SUPABASE.md) | **current** | Supabase Postgres + Storage for a temporary demo |
 | [`DEPLOY-PPAKUTHM.md`](DEPLOY-PPAKUTHM.md) | **runbook** | Exact deployment used for the live `ppakuthm.com` instance (nginx + certbot + Docker) |
 | [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md) | **runbook** | CI/CD: auto-deploy, nightly backup and guarded reseed workflows |
+| [`SECURITY-AUDIT-2026-11.md`](SECURITY-AUDIT-2026-11.md) | **audit** | OWASP Top 10 + React/Inertia security audit, fixes and residual risks |
 | [`UI-UX-REVIEW.md`](UI-UX-REVIEW.md) | **current** | Screenshot-based UI/UX audit (Nov 2026) with prioritised fixes |
 | [`guides/`](guides/) | **current** | Five-page demo handouts for admin, teacher and parent users |
 | [`UAT-REPORT-PPAKUTHM-2026-11-26.md`](UAT-REPORT-PPAKUTHM-2026-11-26.md) | baseline | Redacted pre-fix UAT execution report (48 scenarios) |

@@ -62,8 +62,14 @@ class NewPasswordController extends Controller
             return redirect()->route('login')->with('status', __($status));
         }
 
+        // Do not reveal whether the email exists; INVALID_USER and
+        // INVALID_TOKEN both get the same public message.
+        $message = in_array($status, [Password::INVALID_USER, Password::INVALID_TOKEN], true)
+            ? __(Password::INVALID_TOKEN)
+            : trans($status);
+
         throw ValidationException::withMessages([
-            'email' => [trans($status)],
+            'email' => [$message],
         ]);
     }
 }

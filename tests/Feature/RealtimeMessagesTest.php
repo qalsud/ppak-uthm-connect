@@ -75,3 +75,12 @@ test('user channel authorization only allows the owner', function () {
     $this->actingAs($parent)->postJson('/broadcasting/auth', $payload)->assertOk();
     $this->actingAs($other)->postJson('/broadcasting/auth', $payload)->assertForbidden();
 });
+
+test('the broadcasting auth endpoint requires an authenticated session', function () {
+    broadcastingAsReverb();
+
+    $this->postJson('/broadcasting/auth', [
+        'channel_name' => 'private-App.Models.User.1',
+        'socket_id' => '1234.5678',
+    ])->assertUnauthorized();
+});

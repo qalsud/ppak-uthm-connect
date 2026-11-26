@@ -11,7 +11,7 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 > date/future/audit/approved-absence reconciliation plus an explicit Absent action, absence conflict
 > validation, admin progress delete, centre-scoped fee generation, scheduler never-run state,
 > parent fee receipts and teacher class-scoped memos. The app shell, profile, navigation, conversation
-> rows and progress labels were polished. **303 tests pass on SQLite and Postgres 16**; Pint, PHPStan,
+> rows and progress labels were polished. **308 tests pass on SQLite and Postgres 16**; Pint, PHPStan,
 > ESLint, `tsc` and the production build pass. Everything is committed and pushed to `main`.
 >
 > **Pending:** live deployment, a fresh DB + photo backup, a clean demo reseed and a post-deploy UAT
@@ -23,6 +23,10 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 > (`AUTO_DEPLOY=true`), with a pre-deploy DB/photo backup and a `/up` health check. Nightly backups
 > run at 03:00 MYT. The manual reseed workflow requires the `production-destructive` approval and the
 > `/opt/ppak/.allow-reseed` marker. See [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md).
+>
+> **Security:** the November 2026 OWASP audit is in [`SECURITY-AUDIT-2026-11.md`](SECURITY-AUDIT-2026-11.md).
+> Code-side hardening is applied; the remaining actions are the live nginx proxy-header reload,
+> live session/history encryption env, CSP, branch protection and off-site backups.
 >
 > Local-only leftovers: `docker-compose.yml` has a user port edit, and the untracked original
 > `UAT-REPORT-PPAKUTHM-2026-11-26.md` at the repo root contains plaintext demo passwords. Never
@@ -49,7 +53,7 @@ was archived (`a218ec8`). The **PERMATA curriculum plan is on hold (KIV)** pendi
 |---|---|
 | Branch | `main`, pushed to `github.com/qalsud/ppak-uthm-connect` |
 | Last commit | `a218ec8` (redacted UAT baseline); code batch `d2d2e78` |
-| Tests | **303 passing** (`php artisan test`) — also **303 on Postgres 16** |
+| Tests | **308 passing** (`php artisan test`) — also **308 on Postgres 16** |
 | Build | clean (`npm run build`, `tsc`, ESLint, Pint, PHPStan) |
 | Route guard | `php artisan check:routes` — frontend route names verified |
 | Static analysis | **Larastan/PHPStan** (baseline ratchet) + **ESLint** — both pass |
@@ -76,7 +80,8 @@ register is clear**.
   conflicts and approval is blocked when attendance exists. Added progress delete, negative overtime
   feedback, scheduler never-run state, centre-scoped fee generation, parent receipts and teacher
   class-scoped memos. Shell/nav/profile/conversation/progress UI polished. **21 new regression tests**;
-  total **303 passing**. Deployment is pending SSH access.
+  total **308 passing**. The live site was reseeded and the GitHub Actions deploy/backup/reseed
+  pipeline is active.
 - **Tier-1 debt sweep + P0/P1/P2 fixes (6 Nov 2026).** Added [`DEBT-REGISTER.md`](DEBT-REGISTER.md)
   (30 findings, P0–P3). Fixed the Symfony advisories (Laravel 12.71 / Symfony 7.4.22–23), closed the
   cross-centre authorization gaps in photos, conversations, message search, global search, parent

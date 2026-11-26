@@ -145,16 +145,61 @@ class TeacherController extends Controller
                 continue;
             }
 
-            User::create([
+            $class = trim((string) ($row['class'] ?? ''));
+
+            if ($class === '') {
+                $skipped[] = ['line' => $line, 'reason' => 'missing_class'];
+
+                continue;
+            }
+
+            if (! in_array($class, Student::classKeys(), true)) {
+                $skipped[] = ['line' => $line, 'reason' => 'invalid_class'];
+
+                continue;
+            }
+
+            $centreKey = trim((string) ($row['centre'] ?? ''));
+
+            if ($centreKey === '') {
+                $skipped[] = ['line' => $line, 'reason' => 'missing_centre'];
+
+                continue;
+            }
+
+            $centre = Centre::query()
+                ->where('code', $centreKey)
+                ->orWhere('short_name', $centreKey)
+                ->orWhere('name', $centreKey)
+                ->first();
+
+            if (! $centre) {
+                $skipped[] = ['line' => $line, 'reason' => 'invalid_centre'];
+
+                continue;
+            }
+
+            $password = trim((string) ($row['password'] ?? ''));
+
+            if (strlen($password) < 8) {
+                $skipped[] = ['line' => $line, 'reason' => 'invalid_password'];
+
+                continue;
+            }
+
+            $teacher = User::create([
                 'name' => $name,
                 'email' => $email,
                 'ic_number' => trim((string) ($row['ic_number'] ?? '')) ?: null,
                 'phone' => trim((string) ($row['phone'] ?? '')) ?: null,
-                'password' => trim((string) ($row['password'] ?? '')) ?: 'password123',
+                'password' => $password,
                 'role' => UserRole::Teacher,
+                'class' => $class,
                 'status' => AccountStatus::Active,
                 'email_verified_at' => now(),
             ]);
+
+            $teacher->centres()->sync([$centre->id]);
 
             $imported++;
         }

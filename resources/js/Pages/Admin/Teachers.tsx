@@ -530,7 +530,7 @@ export default function Teachers({
                 onOpenChange={setImporting}
                 action={route('admin.teachers.import')}
                 hint={t('import_hint_teachers')}
-                templateColumns={['name', 'email', 'ic_number', 'phone', 'password']}
+                templateColumns={['name', 'email', 'ic_number', 'phone', 'password', 'class', 'centre']}
                 templateName="teachers-template.csv"
             />
 

@@ -47,6 +47,8 @@ class LoginRequest extends FormRequest
         $user = User::where('email', $this->input('email'))->first();
 
         if ($user && ! $user->isActive()) {
+            RateLimiter::hit($this->throttleKey());
+
             Log::warning('Inactive account login attempt', [
                 'email' => $this->input('email'),
                 'ip' => $this->ip(),

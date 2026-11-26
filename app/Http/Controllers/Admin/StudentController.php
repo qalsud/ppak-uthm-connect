@@ -13,6 +13,7 @@ use App\Models\GrowthRecord;
 use App\Models\MedicationRequest;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\ActiveCentre;
 use App\Support\Csv;
 use App\Support\Lists;
 use Illuminate\Http\RedirectResponse;
@@ -193,6 +194,7 @@ class StudentController extends Controller
                 'age' => is_numeric($row['age'] ?? null) ? (int) $row['age'] : null,
                 'class' => $class,
                 'parent_id' => $parent?->id,
+                'centre_id' => $this->resolveCentreId($row['centre'] ?? null),
             ]);
 
             $imported++;
@@ -344,7 +346,25 @@ class StudentController extends Controller
         }
 
         $data['has_special_needs'] = (bool) ($data['has_special_needs'] ?? false);
+        $data['centre_id'] = $this->resolveCentreId($data['centre_id'] ?? null);
 
         return $data;
+    }
+
+    /**
+     * A child without a centre is visible to every teacher with a matching
+     * class, so fall back to the active/first centre instead of leaving it
+     * null. Returns null only when the installation has no centres at all.
+     */
+    private function resolveCentreId(mixed $value): ?int
+    {
+        $id = is_numeric($value) ? (int) $value : ActiveCentre::id();
+
+        if ($id && Centre::query()->whereKey($id)->exists()) {
+            return $id;
+        }
+
+        return Centre::query()->active()->orderBy('sort')->value('id')
+            ?? Centre::query()->orderBy('id')->value('id');
     }
 }

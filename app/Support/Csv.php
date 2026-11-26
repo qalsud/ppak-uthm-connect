@@ -63,10 +63,24 @@ class Csv
             fputcsv($out, $headers);
 
             foreach ($rows as $row) {
-                fputcsv($out, $row);
+                fputcsv($out, array_map([self::class, 'safeCell'], $row));
             }
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Prevent spreadsheet formula injection. A name or note beginning with
+     * =, +, -, @ or a control character must not become an executable formula
+     * when an admin opens the export in Excel or Sheets.
+     */
+    private static function safeCell(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return preg_match('/^[=+\-@\t\r]/', $value) === 1 ? "'".$value : $value;
     }
 }

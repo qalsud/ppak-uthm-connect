@@ -115,7 +115,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint JavaScript/TypeScript
         run: npm run lint
@@ -124,7 +124,7 @@ jobs:
         run: npm run typecheck
 
       - name: Audit production dependencies
-        run: npm audit --omit=dev
+        run: npm audit
 
       - name: Build assets
         run: npm run build

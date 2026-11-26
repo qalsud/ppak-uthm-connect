@@ -220,9 +220,11 @@ test('a student cannot be linked to a non-parent account', function () {
     expect(Student::count())->toBe(0);
 });
 
-test('admin can import teachers from a csv with a default password', function () {
-    $csv = "name,email,ic_number,phone\n"
-        ."Cikgu Nurin,nurin@ppakuthm.com,900101-01-1234,0123456789\n";
+test('admin can import teachers from a csv with class and centre', function () {
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre', 'short_name' => 'Test']);
+
+    $csv = "name,email,ic_number,phone,password,class,centre\n"
+        ."Cikgu Nurin,nurin@ppakuthm.com,900101-01-1234,0123456789,Password123,6bintang,test-centre\n";
 
     $this->actingAs(admin())
         ->post(route('admin.teachers.import'), ['file' => csvUpload('teachers.csv', $csv)])
@@ -232,9 +234,31 @@ test('admin can import teachers from a csv with a default password', function ()
 
     expect($teacher)->not->toBeNull()
         ->and($teacher->role)->toBe(UserRole::Teacher)
-        ->and($teacher->status)->toBe(AccountStatus::Active);
+        ->and($teacher->status)->toBe(AccountStatus::Active)
+        ->and($teacher->class)->toBe('6bintang')
+        ->and($teacher->centres()->pluck('centres.id')->all())->toBe([$centre->id]);
 
-    expect(Hash::check('password123', $teacher->password))->toBeTrue();
+    expect(Hash::check('Password123', $teacher->password))->toBeTrue();
+});
+
+test('teacher import skips rows without a class, centre or strong password', function () {
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre']);
+
+    $csv = "name,email,password,class,centre\n"
+        ."No Class,no-class@ppakuthm.com,Password123,,{$centre->code}\n"
+        ."No Centre,no-centre@ppakuthm.com,Password123,6bintang,\n"
+        ."Bad Centre,bad-centre@ppakuthm.com,Password123,6bintang,missing\n"
+        ."Weak Password,weak@ppakuthm.com,short,6bintang,{$centre->code}\n";
+
+    $this->actingAs(admin())
+        ->post(route('admin.teachers.import'), ['file' => csvUpload('teachers.csv', $csv)])
+        ->assertSessionHas('import_report');
+
+    $report = session('import_report');
+
+    expect($report['imported'])->toBe(0)
+        ->and(collect($report['skipped'])->pluck('reason')->all())
+        ->toBe(['missing_class', 'missing_centre', 'invalid_centre', 'invalid_password']);
 });
 
 test('admin can reset a teacher password', function () {
@@ -433,12 +457,13 @@ test('student import reports skipped rows with reasons', function () {
 });
 
 test('teacher import reports duplicate emails', function () {
+    $centre = Centre::create(['name' => 'Test Centre', 'code' => 'test-centre']);
     User::factory()->role(UserRole::Teacher)->create(['email' => 'exists@ppakuthm.com']);
 
-    $csv = "name,email\n"
-        ."Cikgu A,exists@ppakuthm.com\n"
-        ."Cikgu B,\n"
-        ."Cikgu C,new@ppakuthm.com\n";
+    $csv = "name,email,password,class,centre\n"
+        ."Cikgu A,exists@ppakuthm.com,Password123,6bintang,{$centre->code}\n"
+        ."Cikgu B,,Password123,6bintang,{$centre->code}\n"
+        ."Cikgu C,new@ppakuthm.com,Password123,6bintang,{$centre->code}\n";
 
     $this->actingAs(admin())
         ->post(route('admin.teachers.import'), ['file' => csvUpload('teachers.csv', $csv)])
